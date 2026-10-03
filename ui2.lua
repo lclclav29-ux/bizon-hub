@@ -1,12 +1,11 @@
 -- 🐗 Bizon Hub UI-2 (Slider + Label — Aesthetic)
-local UserInputService = game:UseInputService or game:GetService("UserInputService")
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
 local T = Hub.Theme
 
--- SLIDER
 function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     local container = Instance.new("Frame")
     container.BackgroundColor3 = T.Bg3
@@ -27,7 +26,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     stroke.Thickness = 1
     stroke.Transparency = 0.5
 
-    -- Название
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -90, 0, 18)
     label.Position = UDim2.new(0, 16, 0, 8)
@@ -39,7 +37,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
 
-    -- Значение
     local valueLabel = Instance.new("TextLabel")
     valueLabel.Size = UDim2.new(0, 50, 0, 18)
     valueLabel.Position = UDim2.new(1, -66, 0, 8)
@@ -53,7 +50,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     valueLabel.Parent = container
     Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
 
-    -- Slider
     local sliderBg = Instance.new("Frame")
     sliderBg.Size = UDim2.new(1, -32, 0, 5)
     sliderBg.Position = UDim2.new(0, 16, 1, -14)
@@ -75,7 +71,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
         ColorSequenceKeypoint.new(1, T.AccentGlow),
     })
 
-    -- Кружок
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 14, 0, 14)
     knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -7, 0.5, -7)
@@ -107,7 +102,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
         if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
     end)
 
-    -- Hover
     container.MouseEnter:Connect(function()
         TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.15}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.55}):Play()
@@ -120,7 +114,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     return container
 end
 
--- LABEL (заголовок раздела на 2 колонки)
 function Hub.createLabel(parent, text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 0, 26)
