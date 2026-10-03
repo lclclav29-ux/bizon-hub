@@ -12,9 +12,9 @@ local T = Hub.Theme
 local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
--- Настройки по умолчанию
 S.FarmHitCooldown = 0.1
 S.FarmTargetName = "Hitbox"
+S.FarmRange = 20
 
 -- === UI HELPERS ===
 local function createToggle(parent, name, default, callback)
@@ -201,15 +201,11 @@ end)
 
 createLabel(FarmTab, "НАСТРОЙКИ")
 
-createSlider(FarmTab, "Радиус поиска", 5, 100, 20, function(val) S.FarmRange = val end)
+createSlider(FarmTab, "Радиус поиска", 5, 100, S.FarmRange, function(val) S.FarmRange = val end)
 createSlider(FarmTab, "Задержка (x100)", 1, 30, 10, function(val) S.FarmHitCooldown = val / 100 end)
-
 createToggle(FarmTab, "Использовать инструмент", S.FarmUseTool, function(state) S.FarmUseTool = state end)
 
--- === ЛОГИКА АВТО КЛИКЕРА ===
--- Работает просто: если рядом с тобой есть цель — кликаем
--- Никаких телепортов, никаких движений. Ты сам подходишь.
-
+-- === ПОИСК ЦЕЛИ РЯДОМ ===
 local function hasTargetNearby()
     local ch = player.Character
     if not ch then return false end
@@ -221,7 +217,6 @@ local function hasTargetNearby()
 
     for _, obj in pairs(searchRoot:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower():find(targetName) then
-            -- Не часть игрока
             local isPlayerPart = false
             for _, plr in pairs(game.Players:GetPlayers()) do
                 if plr.Character and obj:IsDescendantOf(plr.Character) then
@@ -230,9 +225,7 @@ local function hasTargetNearby()
             end
             if not isPlayerPart then
                 local d = (obj.Position - rp.Position).Magnitude
-                if d <= S.FarmRange then
-                    return true
-                end
+                if d <= S.FarmRange then return true end
             end
         end
     end
@@ -245,29 +238,23 @@ local function startClicker()
     if clickerThread then return end
     clickerThread = task.spawn(function()
         while S.AutoFarmEnabled and not Hub.IsPanicked do
-            -- Проверяем есть ли цель рядом
             if hasTargetNearby() then
                 local ch = player.Character
                 if ch then
-                    -- Активируем инструмент (меч, кулак и т.д.)
                     local tool = ch:FindFirstChildWhichIsA("Tool")
                     if tool and S.FarmUseTool then
                         pcall(function() tool:Activate() end)
                     end
-
-                    -- Виртуальный клик мышью
                     pcall(function()
                         VirtualUser:Button1Down(Vector2.new(0, 0))
                         task.wait(S.FarmHitCooldown)
                         VirtualUser:Button1Up(Vector2.new(0, 0))
                     end)
-
                     task.wait(S.FarmHitCooldown)
                 else
                     task.wait(0.5)
                 end
             else
-                -- Нет цели рядом — ждём
                 task.wait(0.2)
             end
         end
@@ -276,7 +263,6 @@ local function startClicker()
     end)
 end
 
--- Отслеживаем включение/выключение
 local lastState = false
 Hub.addConnection(RunService.Heartbeat:Connect(function()
     if Hub.IsPanicked then return end
@@ -285,7 +271,6 @@ Hub.addConnection(RunService.Heartbeat:Connect(function()
         startClicker()
     elseif not S.AutoFarmEnabled and lastState then
         lastState = false
-        -- clickerThread сам завершится
     end
 end))
 
