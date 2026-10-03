@@ -1,15 +1,42 @@
--- 🐗 Bizon Hub v2.4 — Loader (Force Cache-Bust)
+-- 🐗 Bizon Hub v2.5 — Loader with Auto-Update
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
+local LOCAL_VERSION = "2.5"
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
--- === ФОРС-ОБХОД КЭША ===
--- Каждый вызов с уникальным параметром — executor НЕ МОЖЕТ вернуть кэш
+-- === АВТО-ОБХОД КЭША ===
+-- Уникальный ID для каждой сессии + версия файла = форсированное обновление
+local SESSION_ID = tostring(math.floor(tick() * 1000)) .. "_" .. tostring(math.random(1, 99999999))
+
 local function bustCache(url)
     local sep = url:find("?") and "&" or "?"
-    return url .. sep .. "cb=" .. tostring(math.floor(tick() * 1000)) .. "&r=" .. tostring(math.random(1, 999999999))
+    return url .. sep .. "v=" .. LOCAL_VERSION .. "&s=" .. SESSION_ID
+end
+
+-- === ПРОВЕРКА ОБНОВЛЕНИЙ ===
+local function checkUpdates()
+    -- Скачиваем version.txt с GitHub
+    local ok, remoteVer = pcall(function()
+        return game:HttpGet(BASE .. "version.txt?s=" .. SESSION_ID, true)
+    end)
+    
+    if not ok or not remoteVer then
+        print("🐗 Не удалось проверить версию")
+        return false, nil
+    end
+    
+    -- Очищаем от пробелов
+    remoteVer = remoteVer:match("^%s*(.-)%s*$")
+    
+    if remoteVer ~= LOCAL_VERSION then
+        print("🐗 🔄 Найдено обновление: " .. LOCAL_VERSION .. " → " .. remoteVer)
+        return true, remoteVer
+    else
+        print("🐗 ✅ Версия актуальна: " .. LOCAL_VERSION)
+        return false, remoteVer
+    end
 end
 
 -- === НАСТРОЙКИ РЕКЛАМЫ ===
@@ -31,10 +58,9 @@ end
 
 local function saveKey(key, expiryTs)
     if not hasFileAPI() then return false end
-    local ok = pcall(function()
+    return pcall(function()
         writefile(SAVE_FILE, tostring(key) .. "|" .. tostring(expiryTs or 0))
     end)
-    return ok
 end
 
 local function loadSavedKey()
@@ -78,7 +104,7 @@ local function loadValidKeys()
     return keys
 end
 
--- === UI ===
+-- === UI КЛЮЧА ===
 local function showUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BizonKeySystem"
@@ -133,7 +159,7 @@ local function showUI()
     SubTitle.Size = UDim2.new(1, 0, 0, 20)
     SubTitle.Position = UDim2.new(0, 0, 0, 44)
     SubTitle.BackgroundTransparency = 1
-    SubTitle.Text = AD_CONFIG.SubTitle
+    SubTitle.Text = "v" .. LOCAL_VERSION .. " — " .. AD_CONFIG.SubTitle
     SubTitle.TextColor3 = Color3.fromRGB(140, 140, 165)
     SubTitle.Font = Enum.Font.Gotham
     SubTitle.TextSize = 12
@@ -370,7 +396,7 @@ local function showUI()
     end
 end
 
--- === ЗАГРУЗКА МОДУЛЕЙ С ФОРС-ОБХОДОМ КЭША ===
+-- === ЗАГРУЗКА МОДУЛЕЙ ===
 local function loadModule(name)
     local url = bustCache(BASE .. name .. ".lua")
     print("🐗 Загрузка " .. name .. "...")
@@ -385,7 +411,24 @@ local function loadModule(name)
     task.wait(0.2)
 end
 
-print("🐗 Bizon Hub: старт (v2.4)")
+-- === ГЛАВНЫЙ ПОТОК ===
+print("🐗 Bizon Hub: старт (v" .. LOCAL_VERSION .. ")")
+print("🔑 Session ID: " .. SESSION_ID)
+
+-- Проверяем обновления
+task.spawn(function()
+    task.wait(0.3)
+    local hasUpdate, newVer = checkUpdates()
+    if hasUpdate then
+        pcall(function()
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "🐗 Bizon Hub",
+                Text = "Доступно обновление: " .. newVer,
+                Duration = 5,
+            })
+        end)
+    end
+end)
 
 local saved = loadSavedKey()
 if saved and saved.key and os.time() < saved.expiry then
@@ -399,7 +442,7 @@ if saved and saved.key and os.time() < saved.expiry then
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (ключ сохранён)",
+                Text = "Автовход (v" .. LOCAL_VERSION .. ")",
                 Duration = 3,
             })
         end)
@@ -417,7 +460,7 @@ else
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Загружен!",
+                Text = "Загружен (v" .. LOCAL_VERSION .. ")",
                 Duration = 4,
             })
         end)
