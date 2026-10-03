@@ -343,5 +343,219 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
         if Hub.Panic then Hub.Panic() end
     end
 end))
+-- === UI HELPERS (ОБЩИЕ) ===
+function Hub.createToggle(parent, name, default, callback, onRight)
+    local state = default or false
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 48)
+    container.BackgroundColor3 = T.Bg3
+    container.BorderSizePixel = 0
+    container.Parent = parent
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
 
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -90, 1, 0)
+    label.Position = UDim2.new(0, 16, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = T.Text
+    label.Font = Enum.Font.GothamMedium
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = container
+
+    if onRight then
+        local gear = Instance.new("TextLabel")
+        gear.Size = UDim2.new(0, 24, 0, 24)
+        gear.Position = UDim2.new(1, -90, 0.5, -12)
+        gear.BackgroundTransparency = 1
+        gear.Text = "⚙"
+        gear.TextColor3 = T.TextDim
+        gear.Font = Enum.Font.GothamBold
+        gear.TextSize = 16
+        gear.Parent = container
+    end
+
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 52, 0, 26)
+    toggleBtn.Position = UDim2.new(1, -64, 0.5, -13)
+    toggleBtn.BackgroundColor3 = T.Bg
+    toggleBtn.Text = ""
+    toggleBtn.BorderSizePixel = 0
+    toggleBtn.AutoButtonColor = false
+    toggleBtn.Parent = container
+    Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 20, 0, 20)
+    knob.Position = UDim2.new(0, 3, 0.5, -10)
+    knob.BackgroundColor3 = T.TextDim
+    knob.BorderSizePixel = 0
+    knob.Parent = toggleBtn
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+    local function upd()
+        if state then
+            TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Accent}):Play()
+            TweenService:Create(knob, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.new(1,1,1)}):Play()
+        else
+            TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg}):Play()
+            TweenService:Create(knob, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -10), BackgroundColor3 = T.TextDim}):Play()
+        end
+    end
+    upd()
+
+    toggleBtn.MouseButton1Click:Connect(function()
+        state = not state
+        upd()
+        if callback then callback(state) end
+    end)
+    container.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            state = not state
+            upd()
+            if callback then callback(state) end
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 and onRight then
+            onRight()
+        end
+    end)
+    return container
+end
+
+function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 62)
+    container.BackgroundColor3 = T.Bg3
+    container.BorderSizePixel = 0
+    container.Parent = parent
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -100, 0, 22)
+    label.Position = UDim2.new(0, 16, 0, 8)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = T.Text
+    label.Font = Enum.Font.GothamMedium
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = container
+
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(0, 60, 0, 22)
+    valueLabel.Position = UDim2.new(1, -76, 0, 8)
+    valueLabel.BackgroundColor3 = T.Accent
+    valueLabel.BackgroundTransparency = 0.85
+    valueLabel.Text = tostring(default)
+    valueLabel.TextColor3 = T.Accent
+    valueLabel.Font = Enum.Font.GothamBold
+    valueLabel.TextSize = 12
+    valueLabel.BorderSizePixel = 0
+    valueLabel.Parent = container
+    Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
+
+    local sliderBg = Instance.new("Frame")
+    sliderBg.Size = UDim2.new(1, -32, 0, 8)
+    sliderBg.Position = UDim2.new(0, 16, 0, 42)
+    sliderBg.BackgroundColor3 = T.Bg
+    sliderBg.BorderSizePixel = 0
+    sliderBg.Parent = container
+    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
+
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new((default - minVal) / (maxVal - minVal), 0, 1, 0)
+    fill.BackgroundColor3 = T.Accent
+    fill.BorderSizePixel = 0
+    fill.Parent = sliderBg
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 18, 0, 18)
+    knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -9, 0.5, -9)
+    knob.BackgroundColor3 = Color3.new(1,1,1)
+    knob.BorderSizePixel = 0
+    knob.Parent = sliderBg
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+    local sliding = false
+    local function upd(input)
+        local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+        local v = math.floor(minVal + (maxVal - minVal) * relX)
+        fill.Size = UDim2.new(relX, 0, 1, 0)
+        knob.Position = UDim2.new(relX, -9, 0.5, -9)
+        valueLabel.Text = tostring(v)
+        callback(v)
+    end
+    sliderBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; upd(input) end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
+    end)
+    return container
+end
+
+function Hub.createLabel(parent, text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 22)
+    label.BackgroundTransparency = 1
+    label.Text = "— " .. text .. " —"
+    label.TextColor3 = T.TextDim
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 10
+    label.Parent = parent
+    return label
+end
+
+function Hub.createKeybind(parent, name, defaultKey, callback)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 44)
+    container.BackgroundColor3 = T.Bg3
+    container.BorderSizePixel = 0
+    container.Parent = parent
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.5, 0, 1, 0)
+    label.Position = UDim2.new(0, 16, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = T.Text
+    label.Font = Enum.Font.GothamMedium
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = container
+
+    local keyBtn = Instance.new("TextButton")
+    keyBtn.Size = UDim2.new(0, 100, 0, 28)
+    keyBtn.Position = UDim2.new(1, -116, 0.5, -14)
+    keyBtn.BackgroundColor3 = T.Bg
+    keyBtn.Text = defaultKey.Name
+    keyBtn.TextColor3 = T.Accent
+    keyBtn.Font = Enum.Font.GothamBold
+    keyBtn.TextSize = 12
+    keyBtn.BorderSizePixel = 0
+    keyBtn.AutoButtonColor = false
+    keyBtn.Parent = container
+    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 8)
+
+    local awaiting = false
+    keyBtn.MouseButton1Click:Connect(function()
+        awaiting = true
+        keyBtn.Text = "Нажми..."
+        keyBtn.TextColor3 = Color3.fromRGB(255, 200, 0)
+    end)
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if awaiting and not gp and input.UserInputType == Enum.UserInputType.Keyboard then
+            keyBtn.Text = input.KeyCode.Name
+            keyBtn.TextColor3 = T.Accent
+            awaiting = false
+            callback(input.KeyCode)
+        end
+    end)
+    return container
+end
 print("🐗 Core загружен (v2.0)")
