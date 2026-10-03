@@ -1,7 +1,8 @@
--- 🐗 Bizon Hub Farm Tab
+-- 🐗 Bizon Hub Farm Tab v2 (Teleport + Fast Hit)
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Hub = _G.BizonHub
@@ -11,6 +12,11 @@ local T = Hub.Theme
 local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
+-- Дополнительные настройки
+S.FarmTeleport = true        -- телепорт к цели
+S.FarmHitCooldown = 0.05     -- задержка между ударами
+
+-- === UI HELPERS ===
 local function createToggle(parent, name, default, callback)
     local state = default or false
     local container = Instance.new("Frame")
@@ -193,7 +199,7 @@ local function createTextInput(parent, name, default, callback)
     return container
 end
 
--- FARM TAB
+-- === FARM TAB ===
 local FarmTab = Hub.createTab("Farm", "🌾")
 createLabel(FarmTab, "АВТО ФАРМ ГРУШ")
 
@@ -207,38 +213,59 @@ createTextInput(FarmTab, "Имя объекта", S.FarmTargetName, function(tex
     print("🐗 Поиск: " .. text)
 end)
 
-createSlider(FarmTab, "Радиус поиска", 5, 100, S.FarmRange, function(val) S.FarmRange = val end)
-createSlider(FarmTab, "Скорость подхода", 16, 100, S.FarmSpeed, function(val) S.FarmSpeed = val end)
-createSlider(FarmTab, "Задержка удара", 1, 20, 1, function(val) S.FarmAttackDelay = val / 10 end)
+createLabel(FarmTab, "НАСТРОЙКИ")
+
+createToggle(FarmTab, "⚡ Телепорт к цели", S.FarmTeleport, function(state)
+    S.FarmTeleport = state
+end)
+
+createSlider(FarmTab, "Радиус поиска", 10, 300, S.FarmRange, function(val) S.FarmRange = val end)
+createSlider(FarmTab, "Задержка удара (x100)", 1, 30, 5, function(val)
+    S.FarmHitCooldown = val / 100
+end)
 
 createToggle(FarmTab, "Использовать инструмент", S.FarmUseTool, function(state) S.FarmUseTool = state end)
 
--- Farm logic
+-- === ПОИСК ЦЕЛИ (оптимизированный) ===
+local cachedFolder = nil
+
 local function findNearestTarget()
     local ch = player.Character
     if not ch then return nil end
     local rp = ch:FindFirstChild("HumanoidRootPart")
     if not rp then return nil end
+
     local closest, minDist = nil, S.FarmRange
-    for _, obj in pairs(Workspace:GetDescendants()) do
-        if obj.Name:lower():find(S.FarmTargetName:lower()) then
+    local targetName = S.FarmTargetName:lower()
+
+    -- Ищем только в Workspace (не в потомках глубоко — это быстрее)
+    for _, obj in pairs(Workspace:GetChildren()) do
+        local nameLower = obj.Name:lower()
+        if nameLower:find(targetName) then
             local part = nil
-            if obj:IsA("BasePart") then part = obj
+            if obj:IsA("BasePart") then
+                part = obj
             elseif obj:IsA("Model") then
                 part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
             end
             if part then
                 local d = (part.Position - rp.Position).Magnitude
-                if d < minDist then minDist = d; closest = part end
+                if d < minDist then
+                    minDist = d
+                    closest = part
+                end
             end
         end
     end
     return closest
 end
 
+-- === ОСНОВНОЙ ЦИКЛ ===
+local isAttacking = false
+
 task.spawn(function()
     while not Hub.IsPanicked do
-        task.wait(0.1)
+        task.wait(0.05)
         if S.AutoFarmEnabled then
             local ch = player.Character
             if ch then
@@ -247,28 +274,52 @@ task.spawn(function()
                 if hum and rp then
                     local target = findNearestTarget()
                     if target then
-                        local d = (target.Position - rp.Position).Magnitude
-                        if d > 8 then
-                            hum.WalkSpeed = S.FarmSpeed
-                            hum:MoveTo(target.Position)
+                        -- Телепорт к цели
+                        if S.FarmTeleport then
+                            local offset = Vector3.new(0, 3, 3)
+                            rp.CFrame = CFrame.new(target.Position + offset, target.Position)
                         else
-                            hum.WalkSpeed = 0
-                            local tool = ch:FindFirstChildWhichIsA("Tool")
-                            if tool and S.FarmUseTool then
-                                pcall(function() tool:Activate() end)
+                            local d = (target.Position - rp.Position).Magnitude
+                            if d > 8 then
+                                hum:MoveTo(target.Position)
                             end
-                            pcall(function()
-                                VirtualUser:Button1Down(Vector2.new(0,0))
-                                task.wait(S.FarmAttackDelay)
-                                VirtualUser:Button1Up(Vector2.new(0,0))
+                        end
+
+                        -- Быстрые удары
+                        if not isAttacking then
+                            isAttacking = true
+                            task.spawn(function()
+                                while S.AutoFarmEnabled and not Hub.IsPanicked do
+                                    local ch2 = player.Character
+                                    if not ch2 then break end
+                                    local t = findNearestTarget()
+                                    if not t then break end
+
+                                    -- Активируем инструмент
+                                    local tool = ch2:FindFirstChildWhichIsA("Tool")
+                                    if tool and S.FarmUseTool then
+                                        pcall(function() tool:Activate() end)
+                                    end
+
+                                    -- Виртуальный клик (удар)
+                                    pcall(function()
+                                        VirtualUser:Button1Down(Vector2.new(0, 0))
+                                        task.wait(S.FarmHitCooldown)
+                                        VirtualUser:Button1Up(Vector2.new(0, 0))
+                                    end)
+
+                                    task.wait(S.FarmHitCooldown)
+                                end
+                                isAttacking = false
                             end)
-                            task.wait(S.FarmAttackDelay)
                         end
                     end
                 end
             end
+        else
+            task.wait(0.5)
         end
     end
 end)
 
-print("🐗 Farm модуль загружен")
+print("🐗 Farm модуль загружен (Teleport + FastHit)")
