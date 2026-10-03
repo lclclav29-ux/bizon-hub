@@ -1,7 +1,5 @@
--- 🐗 Bizon Hub Teleport v3
-local UserInputService = game:GetService("UserInputService")
+-- 🐗 Bizon Hub Teleport v4
 local TweenService = game:GetService("TweenService")
-
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
 local T = Hub.Theme
@@ -9,12 +7,40 @@ local player = game.Players.LocalPlayer
 
 local WORLDS = {
     {name = "🏠 Спавн",          pos = Vector3.new(0, 10, 0)},
-    {name = "🌀 Мир 1 (Портал)", pos = Vector3.new(10, 10, 78)},
+    {name = "🌀 Мир 1",          pos = Vector3.new(10, 10, 78)},
     {name = "🌀 Мир 2",          pos = Vector3.new(763, 10, 92)},
 }
 
 local savedPos = nil
 local TpTab = Hub.createTab("Teleport", "🌀")
+
+-- Хелпер: получаем tab info
+local function getTabInfo()
+    return Hub.Tabs["Teleport"]
+end
+
+-- Хелпер: получить/создать строку 2 колонки
+local function getRow()
+    local tab = getTabInfo()
+    if not tab then return TpTab end
+    
+    if not tab.tpRow or tab.tpCol >= 2 then
+        local row = Instance.new("Frame")
+        row.Size = UDim2.new(1, 0, 0, 52)
+        row.BackgroundTransparency = 1
+        row.Parent = TpTab
+        
+        local layout = Instance.new("UIListLayout", row)
+        layout.FillDirection = Enum.FillDirection.Horizontal
+        layout.Padding = UDim.new(0, 6)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        
+        tab.tpRow = row
+        tab.tpCol = 0
+    end
+    tab.tpCol = tab.tpCol + 1
+    return tab.tpRow
+end
 
 -- Функция телепорта
 local function teleportTo(pos)
@@ -26,8 +52,8 @@ local function teleportTo(pos)
     print("🌀 Телепорт в " .. tostring(pos))
 end
 
--- Кнопка-карточка для телепорта
-local function createTeleportCard(parent, name, position)
+-- Создание кнопки-карточки на полширины
+local function createCard(parent, label, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.5, -3, 0, 52)
     btn.BackgroundColor3 = T.Bg3
@@ -54,7 +80,7 @@ local function createTeleportCard(parent, name, position)
     lbl.Size = UDim2.new(1, -16, 1, 0)
     lbl.Position = UDim2.new(0, 14, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = name
+    lbl.Text = label
     lbl.TextColor3 = T.Text
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextSize = 12
@@ -71,130 +97,67 @@ local function createTeleportCard(parent, name, position)
     end)
 
     btn.MouseButton1Click:Connect(function()
-        teleportTo(position)
-        lbl.Text = "✅ " .. name
-        task.wait(0.5)
-        lbl.Text = name
+        callback(lbl)
     end)
     return btn
 end
 
--- Получаем/создаём строку на 2 колонки
-local function getTpRow()
-    if not TpTab.currentRow or TpTab.colCount >= 2 then
-        local row = Instance.new("Frame")
-        row.Size = UDim2.new(1, 0, 0, 52)
-        row.BackgroundTransparency = 1
-        row.Parent = TpTab
-        
-        local layout = Instance.new("UIListLayout", row)
-        layout.FillDirection = Enum.FillDirection.Horizontal
-        layout.Padding = UDim.new(0, 6)
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        
-        TpTab.currentRow = row
-        TpTab.colCount = 0
+-- Сбросить row перед заголовком
+local function resetRow()
+    local tab = getTabInfo()
+    if tab then
+        tab.tpRow = nil
+        tab.tpCol = 0
     end
-    TpTab.colCount = TpTab.colCount + 1
-    return TpTab.currentRow
 end
 
--- Заголовок
+-- ========== БЫСТРЫЙ ТЕЛЕПОРТ ==========
 Hub.createLabel(TpTab, "Быстрый телепорт")
-TpTab.currentRow = nil
-TpTab.colCount = 0
+resetRow()
 
--- Кнопки миров
 for _, world in pairs(WORLDS) do
-    createTeleportCard(getTpRow(), world.name, world.pos)
+    local row = getRow()
+    createCard(row, world.name, function(lbl)
+        teleportTo(world.pos)
+        lbl.Text = "✅ " .. world.name
+        task.wait(0.6)
+        lbl.Text = world.name
+    end)
 end
 
--- Заголовок
+-- ========== СОХРАНЁННЫЕ ТОЧКИ ==========
 Hub.createLabel(TpTab, "Сохранённые точки")
-TpTab.currentRow = nil
-TpTab.colCount = 0
+resetRow()
 
 -- Save
-local saveBtn = Instance.new("TextButton")
-saveBtn.Size = UDim2.new(0.5, -3, 0, 52)
-saveBtn.BackgroundColor3 = T.Bg3
-saveBtn.BackgroundTransparency = 0.35
-saveBtn.Text = ""
-saveBtn.BorderSizePixel = 0
-saveBtn.AutoButtonColor = false
-saveBtn.Parent = getTpRow()
-Instance.new("UICorner", saveBtn).CornerRadius = UDim.new(0, 12)
-
-local saveStroke = Instance.new("UIStroke", saveBtn)
-saveStroke.Color = T.Stroke
-saveStroke.Thickness = 1
-saveStroke.Transparency = 0.5
-
-local saveLbl = Instance.new("TextLabel")
-saveLbl.Size = UDim2.new(1, -16, 1, 0)
-saveLbl.Position = UDim2.new(0, 14, 0, 0)
-saveLbl.BackgroundTransparency = 1
-saveLbl.Text = "💾 Сохранить"
-saveLbl.TextColor3 = T.Text
-saveLbl.Font = Enum.Font.GothamMedium
-saveLbl.TextSize = 12
-saveLbl.TextXAlignment = Enum.TextXAlignment.Left
-saveLbl.Parent = saveBtn
-
-saveBtn.MouseButton1Click:Connect(function()
+local saveRow = getRow()
+createCard(saveRow, "💾 Сохранить позицию", function(lbl)
     local ch = player.Character
     if not ch then return end
     local hrp = ch:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     savedPos = hrp.Position
-    saveLbl.Text = "✅ Сохранено"
+    lbl.Text = "✅ Сохранено"
     task.wait(1.2)
-    saveLbl.Text = "💾 Сохранить"
+    lbl.Text = "💾 Сохранить позицию"
 end)
 
 -- Load
-local loadBtn = Instance.new("TextButton")
-loadBtn.Size = UDim2.new(0.5, -3, 0, 52)
-loadBtn.BackgroundColor3 = T.Bg3
-loadBtn.BackgroundTransparency = 0.35
-loadBtn.Text = ""
-loadBtn.BorderSizePixel = 0
-loadBtn.AutoButtonColor = false
-loadBtn.Parent = getTpRow()
-Instance.new("UICorner", loadBtn).CornerRadius = UDim.new(0, 12)
-
-local loadStroke = Instance.new("UIStroke", loadBtn)
-loadStroke.Color = T.Stroke
-loadStroke.Thickness = 1
-loadStroke.Transparency = 0.5
-
-local loadLbl = Instance.new("TextLabel")
-loadLbl.Size = UDim2.new(1, -16, 1, 0)
-loadLbl.Position = UDim2.new(0, 14, 0, 0)
-loadLbl.BackgroundTransparency = 1
-loadLbl.Text = "📍 Вернуться"
-loadLbl.TextColor3 = T.Text
-loadLbl.Font = Enum.Font.GothamMedium
-loadLbl.TextSize = 12
-loadLbl.TextXAlignment = Enum.TextXAlignment.Left
-loadLbl.Parent = loadBtn
-
-loadBtn.MouseButton1Click:Connect(function()
+local loadRow = getRow()
+createCard(loadRow, "📍 Вернуться", function(lbl)
     if not savedPos then
-        loadLbl.Text = "❌ Сначала сохрани"
+        lbl.Text = "❌ Сначала сохрани"
         task.wait(1.2)
-        loadLbl.Text = "📍 Вернуться"
+        lbl.Text = "📍 Вернуться"
         return
     end
     teleportTo(savedPos)
 end)
 
--- Заголовок
+-- ========== ИГРОКИ ОНЛАЙН ==========
 Hub.createLabel(TpTab, "Игроки онлайн")
-TpTab.currentRow = nil
-TpTab.colCount = 0
+resetRow()
 
--- Список игроков на всю ширину
 local playersList = Instance.new("ScrollingFrame")
 playersList.Size = UDim2.new(1, 0, 0, 180)
 playersList.BackgroundColor3 = T.Bg
@@ -296,4 +259,4 @@ task.spawn(function()
     end
 end)
 
-print("🐗 Teleport загружен")
+print("🐗 Teleport v4 загружен")
