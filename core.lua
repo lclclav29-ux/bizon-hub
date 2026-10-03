@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v3.0 — Pulse Design
+-- 🐗 Bizon Hub Core v3.0 — Pulse Design (FULL)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -176,7 +176,6 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- Пульсация glow
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
         TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.95, Thickness = 10}):Play()
@@ -187,7 +186,6 @@ task.spawn(function()
     end
 end)
 
--- FPS (сглаженный)
 local fpsHistory = {}
 task.spawn(function()
     local lastUpdate = tick()
@@ -213,7 +211,6 @@ task.spawn(function()
     end
 end)
 
--- Ping (сглаженный)
 local pingHistory = {}
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
@@ -247,7 +244,7 @@ function Hub.setEdition(edition)
 end
 
 -- ============================================
--- ПЛАВАЮЩАЯ КНОПКА (круглая с glow)
+-- ПЛАВАЮЩАЯ КНОПКА
 -- ============================================
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Size = UDim2.new(0, 56, 0, 56)
@@ -306,7 +303,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
 end))
 
 -- ============================================
--- ГЛАВНОЕ ОКНО (стеклянное)
+-- ГЛАВНОЕ ОКНО
 -- ============================================
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 720, 0, 500)
@@ -336,9 +333,7 @@ MFgrad.Color = ColorSequence.new({
 MFgrad.Rotation = 135
 Hub.MainFrame = MainFrame
 
--- ============================================
--- ЗАГОЛОВОК + ПОИСК
--- ============================================
+-- HEADER
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 70)
 Header.BackgroundTransparency = 1
@@ -365,7 +360,6 @@ LogoText.TextSize = 20
 LogoText.TextXAlignment = Enum.TextXAlignment.Left
 LogoText.Parent = Header
 
--- Поиск
 local SearchFrame = Instance.new("Frame")
 SearchFrame.Size = UDim2.new(0, 220, 0, 36)
 SearchFrame.Position = UDim2.new(0.5, -110, 0, 18)
@@ -401,7 +395,6 @@ SearchBox.TextXAlignment = Enum.TextXAlignment.Left
 SearchBox.ClearTextOnFocus = false
 SearchBox.Parent = SearchFrame
 
--- Закрыть
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 32, 0, 32)
 CloseBtn.Position = UDim2.new(1, -46, 0, 20)
@@ -423,7 +416,6 @@ CloseBtn.MouseLeave:Connect(function()
 end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
--- Drag window
 local winDrag, winStart, winStartPos
 Hub.addConnection(Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -440,9 +432,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- ============================================
--- ВЕРХНИЕ ВКЛАДКИ
--- ============================================
+-- TABS
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, -52, 0, 40)
 TabBar.Position = UDim2.new(0, 26, 0, 82)
@@ -505,7 +495,6 @@ function Hub.createTab(name, icon)
     container.Visible = false
     container.Parent = Content
 
-    -- 2 колонки grid
     local layout = Instance.new("UIGridLayout", container)
     layout.CellSize = UDim2.new(0.5, -4, 0, 56)
     layout.CellPadding = UDim2.new(0, 8, 0, 8)
@@ -532,9 +521,7 @@ function Hub.createTab(name, icon)
     return container
 end
 
--- ============================================
--- TOGGLE (большой, как в Pulse)
--- ============================================
+-- TOGGLE
 function Hub.createToggle(parent, name, default, callback, onRight)
     local state = default or false
     local container = Instance.new("Frame")
@@ -618,9 +605,8 @@ function Hub.createToggle(parent, name, default, callback, onRight)
     end)
     return container
 end
--- ============================================
--- SLIDER (ползунок)
--- ============================================
+
+-- SLIDER
 function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, 0, 1, 0)
@@ -707,30 +693,20 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     return container
 end
 
--- ============================================
--- LABEL (заголовок раздела, на всю ширину)
--- ============================================
+-- LABEL
 function Hub.createLabel(parent, text)
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, -4, 0, 24)
+    label.Size = UDim2.new(1, 0, 0, 24)
     label.BackgroundTransparency = 1
     label.Text = "— " .. text .. " —"
     label.TextColor3 = T.TextDim
     label.Font = Enum.Font.GothamBold
     label.TextSize = 10
     label.Parent = parent
-    -- Растягиваем на 2 колонки
-    local layout = parent:FindFirstChildOfClass("UIGridLayout")
-    if layout then
-        label.Size = UDim2.new(1, 0, 0, 24)
-        label.LayoutOrder = -100
-    end
     return label
 end
 
--- ============================================
--- KEYBIND (выбор клавиши)
--- ============================================
+-- KEYBIND
 function Hub.createKeybind(parent, name, defaultKey, callback)
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, 0, 1, 0)
@@ -756,68 +732,4 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
 
-    local keyBtn = Instance.new("TextButton")
-    keyBtn.Size = UDim2.new(0, 80, 0, 26)
-    keyBtn.Position = UDim2.new(1, -92, 0.5, -13)
-    keyBtn.BackgroundColor3 = T.Bg
-    keyBtn.Text = defaultKey.Name
-    keyBtn.TextColor3 = T.Accent
-    keyBtn.Font = Enum.Font.GothamBold
-    keyBtn.TextSize = 11
-    keyBtn.BorderSizePixel = 0
-    keyBtn.AutoButtonColor = false
-    keyBtn.Parent = container
-    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 6)
-
-    local awaiting = false
-    keyBtn.MouseButton1Click:Connect(function()
-        awaiting = true
-        keyBtn.Text = "Нажми..."
-        keyBtn.TextColor3 = T.Warning
-    end)
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if awaiting and not gp and input.UserInputType == Enum.UserInputType.Keyboard then
-            keyBtn.Text = input.KeyCode.Name
-            keyBtn.TextColor3 = T.Accent
-            awaiting = false
-            callback(input.KeyCode)
-        end
-    end)
-    return container
-end
-
--- ============================================
--- TOGGLE MENU (открытие/закрытие)
--- ============================================
-local menuOpen = false
-function Hub.toggleMenu()
-    menuOpen = not menuOpen
-    MainFrame.Visible = menuOpen
-    if menuOpen then
-        -- Анимация появления
-        MainFrame.Size = UDim2.new(0, 720, 0, 0)
-        MainFrame.BackgroundTransparency = 1
-        TweenService:Create(MainFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 720, 0, 500),
-            BackgroundTransparency = 0.08,
-        }):Play()
-        
-        -- Открываем первую вкладку если не открыта
-        if not Hub.CurrentTab and Tabs["Speed"] then
-            Hub.switchTab("Speed")
-        end
-    end
-end
-
--- Привязываем кнопку
-FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
-
--- Открытие на RCtrl
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        Hub.toggleMenu()
-    end
-end))
-
-print("🐗 Core загружен (v3.0 Pulse Style)")
+    local keyBtn = Instance
