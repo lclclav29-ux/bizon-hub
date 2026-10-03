@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v3.3 — Loader (Fullscreen Splash)
+-- 🐗 Bizon Hub v3.4 — Loader (Fixed Order)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -35,7 +35,7 @@ local AD_CONFIG = {
 }
 
 -- ============================================
--- FULLSCREEN SPLASH SCREEN
+-- FULLSCREEN SPLASH
 -- ============================================
 local function showSplash()
     local splashGui = Instance.new("ScreenGui")
@@ -46,7 +46,6 @@ local function showSplash()
     splashGui.DisplayOrder = 999
     splashGui.Parent = player:WaitForChild("PlayerGui")
 
-    -- FULLSCREEN фон
     local overlay = Instance.new("Frame")
     overlay.Size = UDim2.new(1, 0, 1, 0)
     overlay.BackgroundColor3 = THEME.Bg
@@ -62,14 +61,12 @@ local function showSplash()
     })
     bgGrad.Rotation = 45
 
-    -- Центральный контейнер
     local centerFrame = Instance.new("Frame")
     centerFrame.Size = UDim2.new(0, 500, 0, 300)
     centerFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
     centerFrame.BackgroundTransparency = 1
     centerFrame.Parent = splashGui
 
-    -- Иконка
     local icon = Instance.new("TextLabel")
     icon.Size = UDim2.new(0, 120, 0, 120)
     icon.Position = UDim2.new(0.5, -60, 0, 0)
@@ -83,7 +80,6 @@ local function showSplash()
     icon.Parent = centerFrame
     Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
 
-    -- Название
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 50)
     title.Position = UDim2.new(0, 0, 0, 130)
@@ -95,7 +91,6 @@ local function showSplash()
     title.TextTransparency = 1
     title.Parent = centerFrame
 
-    -- Приветствие
     local greeting = Instance.new("TextLabel")
     greeting.Size = UDim2.new(1, 0, 0, 30)
     greeting.Position = UDim2.new(0, 0, 0, 185)
@@ -107,7 +102,6 @@ local function showSplash()
     greeting.TextTransparency = 1
     greeting.Parent = centerFrame
 
-    -- Прогресс-бар
     local progressBg = Instance.new("Frame")
     progressBg.Size = UDim2.new(0, 400, 0, 8)
     progressBg.Position = UDim2.new(0.5, -200, 0, 240)
@@ -130,7 +124,6 @@ local function showSplash()
         ColorSequenceKeypoint.new(1, THEME.AccentGlow),
     })
 
-    -- Процент
     local percentLabel = Instance.new("TextLabel")
     percentLabel.Size = UDim2.new(0, 400, 0, 20)
     percentLabel.Position = UDim2.new(0.5, -200, 0, 258)
@@ -142,7 +135,6 @@ local function showSplash()
     percentLabel.TextTransparency = 1
     percentLabel.Parent = centerFrame
 
-    -- Анимация появления
     task.spawn(function()
         TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
         TweenService:Create(icon, TweenInfo.new(0.5), {BackgroundTransparency = 0.3}):Play()
@@ -156,7 +148,6 @@ local function showSplash()
         TweenService:Create(percentLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
     end)
 
-    -- Пульсация иконки
     task.spawn(function()
         while centerFrame.Parent do
             TweenService:Create(icon, TweenInfo.new(0.8, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 130, 0, 130), Position = UDim2.new(0.5, -65, 0, -5)}):Play()
@@ -188,7 +179,7 @@ local function showSplash()
     return splashGui, setProgress, close
 end
 
--- === ПАМЯТЬ КЛЮЧА ===
+-- === ПАМЯТЬ ===
 local SAVE_FILE = "bizon_key.txt"
 
 local function hasFileAPI()
@@ -536,13 +527,13 @@ local function loadAllModulesWithProgress(setProgress)
         else
             print("🐗 ✅ " .. name .. " загружен")
         end
-        task.wait(0.15)
+        task.wait(0.25)  -- ⚠️ Больше задержки
     end
     if setProgress then setProgress(100) end
 end
 
 -- === ГЛАВНЫЙ ПОТОК ===
-print("🐗 Bizon Hub: старт (v3.3)")
+print("🐗 Bizon Hub: старт (v3.4)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
@@ -552,11 +543,11 @@ if needKey then
     task.spawn(function()
         showKeyUI()
         print("✅ Ключ подтверждён!")
-        task.wait(0.2)
+        task.wait(0.3)
         
         local splashGui, setProgress, closeSplash = showSplash()
         loadAllModulesWithProgress(setProgress)
-        task.wait(0.8)
+        task.wait(1)
         closeSplash()
         
         pcall(function()
@@ -573,13 +564,13 @@ else
         print("✅ Автовход: " .. saved.key)
         local splashGui, setProgress, closeSplash = showSplash()
         loadAllModulesWithProgress(setProgress)
-        task.wait(0.8)
+        task.wait(1)
         closeSplash()
         
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v3.3)",
+                Text = "Автовход (v3.4)",
                 Duration = 3,
             })
         end)
