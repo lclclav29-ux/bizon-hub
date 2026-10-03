@@ -733,3 +733,21 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     label.Parent = container
 
     local keyBtn = Instance
+
+-- === ПРИВЯЗКА КНОПКИ (в самом конце) ===
+if not Hub.toggleMenu then
+    local menuOpen2 = false
+    Hub.toggleMenu = function()
+        menuOpen2 = not menuOpen2
+        MainFrame.Visible = menuOpen2
+        if menuOpen2 and not Hub.CurrentTab then
+            Hub.switchTab("Speed")
+        end
+    end
+end
+
+FloatBtn.MouseButton1Click:Connect(function()
+    Hub.toggleMenu()
+end)
+
+print("🐗 FloatBtn привязан к toggleMenu")
