@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v3.0 — Pulse Design (FULL)
+-- 🐗 Bizon Hub Core v3.1 (Base)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -16,7 +16,6 @@ function Hub.addConnection(conn)
     return conn
 end
 
--- === ФИОЛЕТОВАЯ ТЕМА (Pulse Style) ===
 Hub.Theme = {
     Bg = Color3.fromRGB(15, 12, 25),
     Bg2 = Color3.fromRGB(20, 16, 32),
@@ -48,13 +47,13 @@ Hub.Settings = {
 local T = Hub.Theme
 local S = Hub.Settings
 
--- Удаляем старый GUI
+-- Удаляем старые GUI
 local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
 if oldWM then oldWM:Destroy() end
 
--- === ROOT ===
+-- ROOT
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -63,9 +62,7 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
--- ============================================
--- ВОДЯНОЙ ЗНАК
--- ============================================
+-- WATERMARK
 local WatermarkGui = Instance.new("ScreenGui")
 WatermarkGui.Name = "BizonWatermark"
 WatermarkGui.ResetOnSpawn = false
@@ -131,13 +128,6 @@ WMfps.TextSize = 12
 WMfps.TextXAlignment = Enum.TextXAlignment.Left
 WMfps.Parent = WMFrame
 
-local WMsep2 = Instance.new("Frame")
-WMsep2.Size = UDim2.new(0, 1, 0, 24)
-WMsep2.Position = UDim2.new(0, 262, 0.5, -12)
-WMsep2.BackgroundColor3 = T.Stroke
-WMsep2.BorderSizePixel = 0
-WMsep2.Parent = WMFrame
-
 local WMping = Instance.new("TextLabel")
 WMping.Size = UDim2.new(0, 65, 1, 0)
 WMping.Position = UDim2.new(0, 270, 0, 0)
@@ -153,7 +143,7 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 30, 1, 0)
 WMver.Position = UDim2.new(1, -36, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "3.0"
+WMver.Text = "3.1"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
@@ -176,6 +166,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
+-- Пульсация
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
         TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.95, Thickness = 10}):Play()
@@ -186,6 +177,7 @@ task.spawn(function()
     end
 end)
 
+-- FPS
 local fpsHistory = {}
 task.spawn(function()
     local lastUpdate = tick()
@@ -211,6 +203,7 @@ task.spawn(function()
     end
 end)
 
+-- Ping
 local pingHistory = {}
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
@@ -239,13 +232,10 @@ function Hub.setEdition(edition)
         WMtitle.TextColor3 = Color3.fromRGB(255, 200, 50)
         WMicon.TextColor3 = Color3.fromRGB(255, 200, 50)
         WMstroke.Color = Color3.fromRGB(255, 200, 50)
-        WMglow.Color = Color3.fromRGB(255, 200, 50)
     end
 end
 
--- ============================================
--- ПЛАВАЮЩАЯ КНОПКА
--- ============================================
+-- FLOAT BUTTON
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Size = UDim2.new(0, 56, 0, 56)
 FloatBtn.Position = UDim2.new(0, 20, 0.5, -28)
@@ -279,13 +269,6 @@ task.spawn(function()
     end
 end)
 
-FloatBtn.MouseEnter:Connect(function()
-    TweenService:Create(FloatBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, 64, 0, 64), Position = UDim2.new(0, 16, 0.5, -32)}):Play()
-end)
-FloatBtn.MouseLeave:Connect(function()
-    TweenService:Create(FloatBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, 56, 0, 56), Position = UDim2.new(0, 20, 0.5, -28)}):Play()
-end)
-
 local fbDrag, fbStart, fbStartPos
 Hub.addConnection(FloatBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -302,9 +285,9 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- ============================================
--- ГЛАВНОЕ ОКНО
--- ============================================
+Hub.FloatBtn = FloatBtn
+
+-- MAIN FRAME
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 720, 0, 500)
 MainFrame.Position = UDim2.new(0.5, -360, 0.5, -250)
@@ -369,10 +352,6 @@ SearchFrame.BorderSizePixel = 0
 SearchFrame.Parent = Header
 Instance.new("UICorner", SearchFrame).CornerRadius = UDim.new(0, 8)
 
-local SearchStroke = Instance.new("UIStroke", SearchFrame)
-SearchStroke.Color = T.Stroke
-SearchStroke.Thickness = 1
-
 local SearchIcon = Instance.new("TextLabel")
 SearchIcon.Size = UDim2.new(0, 24, 1, 0)
 SearchIcon.Position = UDim2.new(0, 8, 0, 0)
@@ -407,13 +386,6 @@ CloseBtn.BorderSizePixel = 0
 CloseBtn.AutoButtonColor = false
 CloseBtn.Parent = Header
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
-
-CloseBtn.MouseEnter:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Danger, TextColor3 = Color3.new(1,1,1)}):Play()
-end)
-CloseBtn.MouseLeave:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Bg3, TextColor3 = T.TextDim}):Play()
-end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
 local winDrag, winStart, winStartPos
@@ -432,7 +404,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- TABS
+-- TAB BAR
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, -52, 0, 40)
 TabBar.Position = UDim2.new(0, 26, 0, 82)
@@ -506,248 +478,28 @@ function Hub.createTab(name, icon)
 
     Tabs[name] = {button = tabBtn, container = container}
     tabBtn.MouseButton1Click:Connect(function() Hub.switchTab(name) end)
-    
-    tabBtn.MouseEnter:Connect(function()
-        if Hub.CurrentTab ~= name then
-            TweenService:Create(tabBtn, TweenInfo.new(0.15), {TextColor3 = T.Text}):Play()
-        end
-    end)
-    tabBtn.MouseLeave:Connect(function()
-        if Hub.CurrentTab ~= name then
-            TweenService:Create(tabBtn, TweenInfo.new(0.15), {TextColor3 = T.TextDim}):Play()
-        end
-    end)
-    
     return container
 end
 
--- TOGGLE
-function Hub.createToggle(parent, name, default, callback, onRight)
-    local state = default or false
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 1, 0)
-    container.BackgroundColor3 = T.Bg3
-    container.BackgroundTransparency = 0.3
-    container.BorderSizePixel = 0
-    container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-
-    local stroke = Instance.new("UIStroke", container)
-    stroke.Color = T.Stroke
-    stroke.Thickness = 1
-    stroke.Transparency = 0.5
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -90, 1, 0)
-    label.Position = UDim2.new(0, 16, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = T.Text
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 13
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 46, 0, 24)
-    toggleBtn.Position = UDim2.new(1, -58, 0.5, -12)
-    toggleBtn.BackgroundColor3 = T.Bg
-    toggleBtn.Text = ""
-    toggleBtn.BorderSizePixel = 0
-    toggleBtn.AutoButtonColor = false
-    toggleBtn.Parent = container
-    Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
-
-    local toggleStroke = Instance.new("UIStroke", toggleBtn)
-    toggleStroke.Color = T.Stroke
-    toggleStroke.Thickness = 1
-
-    local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 18, 0, 18)
-    knob.Position = UDim2.new(0, 3, 0.5, -9)
-    knob.BackgroundColor3 = T.TextDim
-    knob.BorderSizePixel = 0
-    knob.Parent = toggleBtn
-    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
-    local function upd()
-        if state then
-            TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Accent}):Play()
-            TweenService:Create(toggleStroke, TweenInfo.new(0.2), {Color = T.AccentGlow}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.2), {
-                Position = UDim2.new(1, -21, 0.5, -9),
-                BackgroundColor3 = Color3.new(1,1,1)
-            }):Play()
-        else
-            TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg}):Play()
-            TweenService:Create(toggleStroke, TweenInfo.new(0.2), {Color = T.Stroke}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.2), {
-                Position = UDim2.new(0, 3, 0.5, -9),
-                BackgroundColor3 = T.TextDim
-            }):Play()
-        end
-    end
-    upd()
-
-    toggleBtn.MouseButton1Click:Connect(function()
-        state = not state
-        upd()
-        if callback then callback(state) end
-    end)
-    container.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            state = not state
-            upd()
-            if callback then callback(state) end
-        elseif input.UserInputType == Enum.UserInputType.MouseButton2 and onRight then
-            onRight()
-        end
-    end)
-    return container
-end
-
--- SLIDER
-function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 1, 0)
-    container.BackgroundColor3 = T.Bg3
-    container.BackgroundTransparency = 0.3
-    container.BorderSizePixel = 0
-    container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-
-    local stroke = Instance.new("UIStroke", container)
-    stroke.Color = T.Stroke
-    stroke.Thickness = 1
-    stroke.Transparency = 0.5
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -90, 0, 22)
-    label.Position = UDim2.new(0, 16, 0, 8)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = T.Text
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 12
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local valueLabel = Instance.new("TextLabel")
-    valueLabel.Size = UDim2.new(0, 50, 0, 20)
-    valueLabel.Position = UDim2.new(1, -66, 0, 8)
-    valueLabel.BackgroundColor3 = T.Accent
-    valueLabel.BackgroundTransparency = 0.8
-    valueLabel.Text = tostring(default)
-    valueLabel.TextColor3 = T.Accent
-    valueLabel.Font = Enum.Font.GothamBold
-    valueLabel.TextSize = 11
-    valueLabel.BorderSizePixel = 0
-    valueLabel.Parent = container
-    Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
-
-    local sliderBg = Instance.new("Frame")
-    sliderBg.Size = UDim2.new(1, -32, 0, 6)
-    sliderBg.Position = UDim2.new(0, 16, 1, -18)
-    sliderBg.BackgroundColor3 = T.Bg
-    sliderBg.BorderSizePixel = 0
-    sliderBg.Parent = container
-    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
-
-    local fill = Instance.new("Frame")
-    fill.Size = UDim2.new((default - minVal) / (maxVal - minVal), 0, 1, 0)
-    fill.BackgroundColor3 = T.Accent
-    fill.BorderSizePixel = 0
-    fill.Parent = sliderBg
-    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-
-    local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 14, 0, 14)
-    knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -7, 0.5, -7)
-    knob.BackgroundColor3 = Color3.new(1,1,1)
-    knob.BorderSizePixel = 0
-    knob.Parent = sliderBg
-    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
-    local knobStroke = Instance.new("UIStroke", knob)
-    knobStroke.Color = T.AccentGlow
-    knobStroke.Thickness = 2
-
-    local sliding = false
-    local function upd(input)
-        local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
-        local v = math.floor(minVal + (maxVal - minVal) * relX)
-        fill.Size = UDim2.new(relX, 0, 1, 0)
-        knob.Position = UDim2.new(relX, -7, 0.5, -7)
-        valueLabel.Text = tostring(v)
-        callback(v)
-    end
-    sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; upd(input) end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
-    end)
-    return container
-end
-
--- LABEL
-function Hub.createLabel(parent, text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 24)
-    label.BackgroundTransparency = 1
-    label.Text = "— " .. text .. " —"
-    label.TextColor3 = T.TextDim
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 10
-    label.Parent = parent
-    return label
-end
-
--- KEYBIND
-function Hub.createKeybind(parent, name, defaultKey, callback)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 1, 0)
-    container.BackgroundColor3 = T.Bg3
-    container.BackgroundTransparency = 0.3
-    container.BorderSizePixel = 0
-    container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-
-    local stroke = Instance.new("UIStroke", container)
-    stroke.Color = T.Stroke
-    stroke.Thickness = 1
-    stroke.Transparency = 0.5
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, 0, 1, 0)
-    label.Position = UDim2.new(0, 16, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = T.Text
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 12
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local keyBtn = Instance
-
--- === ПРИВЯЗКА КНОПКИ (в самом конце) ===
-if not Hub.toggleMenu then
-    local menuOpen2 = false
-    Hub.toggleMenu = function()
-        menuOpen2 = not menuOpen2
-        MainFrame.Visible = menuOpen2
-        if menuOpen2 and not Hub.CurrentTab then
+-- TOGGLE MENU
+local menuOpen = false
+function Hub.toggleMenu()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+    if menuOpen then
+        if not Hub.CurrentTab and Tabs["Speed"] then
             Hub.switchTab("Speed")
         end
     end
 end
 
-FloatBtn.MouseButton1Click:Connect(function()
-    Hub.toggleMenu()
-end)
+FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
 
-print("🐗 FloatBtn привязан к toggleMenu")
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        Hub.toggleMenu()
+    end
+end))
+
+print("🐗 Core v3.1 (Base) загружен")
