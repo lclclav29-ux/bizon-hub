@@ -1,10 +1,16 @@
--- 🐗 Bizon Hub v2.2 — Loader
+-- 🐗 Bizon Hub v2.4 — Loader (Force Cache-Bust)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
-local CACHE = "?nocache=" .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999))
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
+
+-- === ФОРС-ОБХОД КЭША ===
+-- Каждый вызов с уникальным параметром — executor НЕ МОЖЕТ вернуть кэш
+local function bustCache(url)
+    local sep = url:find("?") and "&" or "?"
+    return url .. sep .. "cb=" .. tostring(math.floor(tick() * 1000)) .. "&r=" .. tostring(math.random(1, 999999999))
+end
 
 -- === НАСТРОЙКИ РЕКЛАМЫ ===
 local AD_CONFIG = {
@@ -59,7 +65,7 @@ end
 -- === ЗАГРУЗКА КЛЮЧЕЙ ===
 local function loadValidKeys()
     local ok, data = pcall(function()
-        return game:HttpGet(BASE .. "keys.txt" .. CACHE, true)
+        return game:HttpGet(bustCache(BASE .. "keys.txt"), true)
     end)
     if not ok or not data then return {} end
     local keys = {}
@@ -202,7 +208,6 @@ local function showUI()
     KeyInput.Parent = Frame
     Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 10)
 
-    -- Remember me
     local rememberState = true
     local RemBox = Instance.new("Frame")
     RemBox.Size = UDim2.new(1, -40, 0, 26)
@@ -269,7 +274,6 @@ local function showUI()
     StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
     StatusLabel.Parent = Frame
 
-    -- Таймер + подписка
     local subPhase = 1
     task.spawn(function()
         for i = AD_CONFIG.WaitTime, 1, -1 do
@@ -289,7 +293,7 @@ local function showUI()
                 pcall(function()
                     if setclipboard then setclipboard(AD_CONFIG.PromoURL) end
                 end)
-                SubBtn.Text = "✅ Ссылка скопирована! Подпишись и жми снова"
+                SubBtn.Text = "✅ Ссылка скопирована!"
                 SubBtn.BackgroundColor3 = Color3.fromRGB(50, 220, 130)
                 task.wait(1.5)
                 SubBtn.Text = "🔓 Я ПОДПИСАЛСЯ — ДАТЬ КЛЮЧ"
@@ -299,7 +303,6 @@ local function showUI()
                 local newKey = generateKey()
                 local expiryTs = os.time() + 86400
                 saveKey(newKey, expiryTs)
-
                 Status.Text = "🎁 Твой ключ: " .. newKey
                 Status.TextColor3 = Color3.fromRGB(50, 220, 130)
                 SubBtn.Text = "✅ Ключ получен!"
@@ -310,7 +313,6 @@ local function showUI()
         end)
     end)
 
-    -- Вход по введённому ключу
     local function tryLogin()
         local entered = KeyInput.Text:upper():gsub("%s", "")
         if entered == "" then
@@ -368,19 +370,23 @@ local function showUI()
     end
 end
 
--- === ЗАГРУЗКА МОДУЛЕЙ ===
+-- === ЗАГРУЗКА МОДУЛЕЙ С ФОРС-ОБХОДОМ КЭША ===
 local function loadModule(name)
-    local url = BASE .. name .. ".lua" .. CACHE
+    local url = bustCache(BASE .. name .. ".lua")
+    print("🐗 Загрузка " .. name .. "...")
     local ok, err = pcall(function()
         loadstring(game:HttpGet(url))()
     end)
-    if not ok then warn("🐗 Ошибка " .. name .. ": " .. tostring(err)) end
-    task.wait(0.1)
+    if not ok then
+        warn("🐗 ❌ Ошибка " .. name .. ": " .. tostring(err))
+    else
+        print("🐗 ✅ " .. name .. " загружен")
+    end
+    task.wait(0.2)
 end
 
-print("🐗 Bizon Hub: старт")
+print("🐗 Bizon Hub: старт (v2.4)")
 
--- Проверка сохранённого ключа
 local saved = loadSavedKey()
 if saved and saved.key and os.time() < saved.expiry then
     print("✅ Автовход: " .. saved.key)
