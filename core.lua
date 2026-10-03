@@ -1,5 +1,5 @@
--- === TOGGLE (Pulse style) ===
-function Hub.createToggle(parent, name, default, callback)
+-- === TOGGLE (с ПКМ для настроек) ===
+function Hub.createToggle(parent, name, default, callback, onRightClick)
     local state = default or false
     local container = Instance.new("Frame")
     container.BackgroundColor3 = T.Bg3
@@ -13,7 +13,6 @@ function Hub.createToggle(parent, name, default, callback)
     stroke.Thickness = 1
     stroke.Transparency = 0.4
 
-    -- Градиент
     local grad = Instance.new("UIGradient", container)
     grad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, T.Bg4),
@@ -32,6 +31,28 @@ function Hub.createToggle(parent, name, default, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
 
+    -- Индикатор "⚙" справа (появляется при наведении если есть onRightClick)
+    if onRightClick then
+        local gearIcon = Instance.new("TextLabel")
+        gearIcon.Size = UDim2.new(0, 20, 0, 20)
+        gearIcon.Position = UDim2.new(1, -88, 0.5, -10)
+        gearIcon.BackgroundTransparency = 1
+        gearIcon.Text = "⚙"
+        gearIcon.TextColor3 = T.TextDim
+        gearIcon.Font = Enum.Font.GothamBold
+        gearIcon.TextSize = 14
+        gearIcon.TextTransparency = 1
+        gearIcon.Parent = container
+
+        -- Показываем "⚙" при hover
+        container.MouseEnter:Connect(function()
+            TweenService:Create(gearIcon, TweenInfo.new(0.2), {TextTransparency = 0.3}):Play()
+        end)
+        container.MouseLeave:Connect(function()
+            TweenService:Create(gearIcon, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        end)
+    end
+
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 48, 0, 26)
     toggleBtn.Position = UDim2.new(1, -60, 0.5, -13)
@@ -46,13 +67,6 @@ function Hub.createToggle(parent, name, default, callback)
     toggleStroke.Color = T.Stroke
     toggleStroke.Thickness = 1
     toggleStroke.Transparency = 0.5
-
-    local toggleGrad = Instance.new("UIGradient", toggleBtn)
-    toggleGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, T.Accent),
-        ColorSequenceKeypoint.new(1, T.Accent2),
-    })
-    toggleGrad.Rotation = 45
 
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 20, 0, 20)
@@ -88,7 +102,7 @@ function Hub.createToggle(parent, name, default, callback)
     end
     upd()
 
-    -- Hover на всю карточку
+    -- Hover
     container.MouseEnter:Connect(function()
         TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.2}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.5}):Play()
@@ -98,22 +112,31 @@ function Hub.createToggle(parent, name, default, callback)
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Stroke, Transparency = 0.4}):Play()
     end)
 
+    -- ЛКМ по toggle
     toggleBtn.MouseButton1Click:Connect(function()
         state = not state
         upd()
         if callback then callback(state) end
     end)
+
+    -- ЛКМ по карточке = тоже переключение
+    -- ПКМ = открыть настройки
     container.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             state = not state
             upd()
             if callback then callback(state) end
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+            if onRightClick then
+                onRightClick()
+            end
         end
     end)
+
     return container
 end
 
--- === SLIDER (Pulse style) ===
+-- === SLIDER ===
 function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     local container = Instance.new("Frame")
     container.BackgroundColor3 = T.Bg3
@@ -158,13 +181,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     valueLabel.Parent = container
     Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
 
-    local valueGrad = Instance.new("UIGradient", valueLabel)
-    valueGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, T.Accent),
-        ColorSequenceKeypoint.new(1, T.Accent2),
-    })
-    valueGrad.Rotation = 45
-
     local sliderBg = Instance.new("Frame")
     sliderBg.Size = UDim2.new(1, -36, 0, 6)
     sliderBg.Position = UDim2.new(0, 18, 1, -18)
@@ -185,7 +201,6 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
         ColorSequenceKeypoint.new(0, T.Accent),
         ColorSequenceKeypoint.new(1, T.AccentGlow),
     })
-    fillGrad.Rotation = 0
 
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 16, 0, 16)
@@ -212,20 +227,15 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then 
             sliding = true
             upd(input)
-            TweenService:Create(knob, TweenInfo.new(0.15), {Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(knob.Position.X.Scale, -10, 0.5, -10)}):Play()
         end
     end)
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then 
-            sliding = false
-            TweenService:Create(knob, TweenInfo.new(0.15), {Size = UDim2.new(0, 16, 0, 16)}):Play()
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
     end)
     UserInputService.InputChanged:Connect(function(input)
         if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
     end)
 
-    -- Hover
     container.MouseEnter:Connect(function()
         TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.2}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.5}):Play()
@@ -297,11 +307,6 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     keyBtn.Parent = container
     Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 8)
 
-    local keyStroke = Instance.new("UIStroke", keyBtn)
-    keyStroke.Color = T.Accent
-    keyStroke.Thickness = 1
-    keyStroke.Transparency = 0.5
-
     local awaiting = false
     keyBtn.MouseButton1Click:Connect(function()
         awaiting = true
@@ -319,13 +324,116 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     return container
 end
 
+-- ============================================
+-- FLOATING SETTINGS PANEL (для ПКМ настроек)
+-- ============================================
+local SettingsPanel = Instance.new("Frame")
+SettingsPanel.Name = "SettingsPanel"
+SettingsPanel.Size = UDim2.new(0, 260, 0, 0)
+SettingsPanel.Position = UDim2.new(0, 0, 0, 0)
+SettingsPanel.BackgroundColor3 = T.Bg
+SettingsPanel.BackgroundTransparency = 0.05
+SettingsPanel.BorderSizePixel = 0
+SettingsPanel.Visible = false
+SettingsPanel.ZIndex = 50
+SettingsPanel.Parent = ScreenGui
+Instance.new("UICorner", SettingsPanel).CornerRadius = UDim.new(0, 14)
+
+local SPstroke = Instance.new("UIStroke", SettingsPanel)
+SPstroke.Color = T.Accent
+SPstroke.Thickness = 1.5
+SPstroke.Transparency = 0.3
+
+-- Список настроек (контейнер)
+local SPContent = Instance.new("ScrollingFrame")
+SPContent.Name = "Content"
+SPContent.Size = UDim2.new(1, -12, 1, -12)
+SPContent.Position = UDim2.new(0, 6, 0, 6)
+SPContent.BackgroundTransparency = 1
+SPContent.BorderSizePixel = 0
+SPContent.ScrollBarThickness = 3
+SPContent.ScrollBarImageColor3 = T.Accent
+SPContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+SPContent.Parent = SettingsPanel
+
+local SPLayout = Instance.new("UIListLayout", SPContent)
+SPLayout.Padding = UDim.new(0, 6)
+SPLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+SPLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    SPContent.CanvasSize = UDim2.new(0, 0, 0, SPLayout.AbsoluteContentSize.Y + 12)
+    SettingsPanel.Size = UDim2.new(0, 260, 0, math.clamp(SPLayout.AbsoluteContentSize.Y + 20, 50, 400))
+end)
+
+Hub.SettingsPanel = SettingsPanel
+
+-- Функция открытия панели настроек
+function Hub.openSettings(sourceContainer, settingsFn)
+    -- Очищаем
+    for _, child in pairs(SPContent:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+
+    -- Заполняем настройками
+    settingsFn(SPContent)
+
+    -- Позиционируем рядом с карточкой (справа)
+    local pos = sourceContainer.AbsolutePosition
+    local size = sourceContainer.AbsoluteSize
+
+    SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 10, 0, pos.Y)
+    SettingsPanel.Size = UDim2.new(0, 260, 0, 0)
+    SettingsPanel.Visible = true
+    SettingsPanel.BackgroundTransparency = 1
+
+    -- Анимация открытия
+    TweenService:Create(SettingsPanel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+        BackgroundTransparency = 0.05,
+    }):Play()
+
+    -- Авто-закрытие через 5 сек если не активна
+    task.spawn(function()
+        task.wait(0.1)
+        while SettingsPanel.Visible do
+            task.wait(0.3)
+        end
+    end)
+end
+
+function Hub.closeSettings()
+    SettingsPanel.Visible = false
+    for _, child in pairs(SPContent:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+end
+
+-- Закрытие панели по клику вне
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and SettingsPanel.Visible then
+        local mousePos = UserInputService:GetMouseLocation()
+        local panelPos = SettingsPanel.AbsolutePosition
+        local panelSize = SettingsPanel.AbsoluteSize
+
+        if not (mousePos.X >= panelPos.X and mousePos.X <= panelPos.X + panelSize.X 
+                and mousePos.Y >= panelPos.Y and mousePos.Y <= panelPos.Y + panelSize.Y) then
+            -- Проверяем что клик не по кнопке которая открыла
+            Hub.closeSettings()
+        end
+    end
+end))
+
 -- === TOGGLE MENU ===
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
     MainFrame.Visible = menuOpen
+    if not menuOpen then Hub.closeSettings() end
     if menuOpen then
-        -- Анимация открытия
         MainFrame.Size = UDim2.new(0, 720, 0, 0)
         MainFrame.BackgroundTransparency = 1
         TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -340,13 +448,6 @@ end
 
 FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
 
--- Клик анимация на FloatBtn
-FloatBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(FloatBtn, TweenInfo.new(0.1), {Size = UDim2.new(0, 48, 0, 48), Position = UDim2.new(0, 24, 0.5, -24)}):Play()
-    task.wait(0.1)
-    TweenService:Create(FloatBtn, TweenInfo.new(0.15), {Size = UDim2.new(0, 56, 0, 56), Position = UDim2.new(0, 20, 0.5, -28)}):Play()
-end)
-
 Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.RightControl then
@@ -354,4 +455,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core v3.4 (Beautiful) загружен")
+print("🐗 Core v3.5 (Right-click settings) загружен")
