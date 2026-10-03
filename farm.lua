@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Farm — Simple Auto Clicker (FINAL)
+-- 🐗 Bizon Hub Farm — Simple Auto Clicker (FINAL v2)
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
@@ -12,13 +12,12 @@ local T = Hub.Theme
 local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
--- Жёсткие настройки (без UI)
+-- Жёсткие настройки
 S.FarmTargetName = "Hitbox"
 S.FarmRange = 20
 S.FarmHitCooldown = 0.1
 S.FarmUseTool = true
 
--- === UI HELPERS ===
 local function createToggle(parent, name, default, callback)
     local state = default or false
     local container = Instance.new("Frame")
@@ -93,7 +92,7 @@ createToggle(FarmTab, "👊 Auto Clicker", false, function(state)
     print("🐗 Auto Clicker: " .. (state and "ВКЛ" or "ВЫКЛ"))
 end)
 
-createLabel(FarmTab, "Цель: Hitbox | Радиус: 20")
+createLabel(FarmTab, "Цель: Hitbox | Радиус: 20 studs")
 
 -- === ПОИСК ЦЕЛИ ===
 local function hasTargetNearby()
@@ -123,7 +122,7 @@ local function hasTargetNearby()
     return false
 end
 
--- === ПРОСТОЙ ЦИКЛ (без тредов-в-тредах) ===
+-- === ПРОСТОЙ ЦИКЛ ===
 task.spawn(function()
     while not Hub.IsPanicked do
         task.wait(S.FarmHitCooldown)
@@ -147,4 +146,4 @@ task.spawn(function()
     end
 end)
 
-print("🐗 Farm модуль загружен (FINAL — Simple Auto Clicker)")
+print("🐗 Farm модуль загружен (FINAL v2 — Simple Auto Clicker)")
