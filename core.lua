@@ -44,14 +44,12 @@ Hub.Settings = {
 }
 
 local T = Hub.Theme
-local S = Hub.Settings
 
 local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
 if oldWM then oldWM:Destroy() end
 
--- ROOT
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -265,9 +263,24 @@ function Hub.openSettings(sourceContainer, settingsFn)
     for _, child in pairs(SPContent:GetChildren()) do
         if not child:IsA("UIListLayout") then child:Destroy() end
     end
+
+    if not sourceContainer then
+        warn("🐗 openSettings: sourceContainer = nil")
+        return
+    end
+
     settingsFn(SPContent)
-    local pos = sourceContainer.AbsolutePosition
-    local size = sourceContainer.AbsoluteSize
+
+    task.wait(0.05)
+
+    local ok, pos = pcall(function() return sourceContainer.AbsolutePosition end)
+    if not ok or not pos then
+        warn("🐗 openSettings: AbsolutePosition недоступен")
+        SettingsPanel.Visible = false
+        return
+    end
+
+    local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
     SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 10, 0, pos.Y)
     SettingsPanel.Size = UDim2.new(0, 260, 0, 0)
     SettingsPanel.Visible = true
@@ -293,7 +306,6 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
--- TOGGLE MENU
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
