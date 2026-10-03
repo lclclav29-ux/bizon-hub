@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Farm Tab v3 (Teleport + FastHit + Auto Scanner)
+-- 🐗 Bizon Hub Farm Tab v4 (оптимизированный + правильное отключение)
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
@@ -13,7 +13,7 @@ local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
 S.FarmTeleport = true
-S.FarmHitCooldown = 0.05
+S.FarmHitCooldown = 0.08
 
 -- === UI HELPERS ===
 local function createToggle(parent, name, default, callback)
@@ -24,7 +24,6 @@ local function createToggle(parent, name, default, callback)
     container.BorderSizePixel = 0
     container.Parent = parent
     Instance.new("UICorner", container).CornerRadius = UDim.new(0, 8)
-
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -90, 1, 0)
     label.Position = UDim2.new(0, 14, 0, 0)
@@ -35,7 +34,6 @@ local function createToggle(parent, name, default, callback)
     label.TextSize = 14
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
-
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 54, 0, 26)
     toggleBtn.Position = UDim2.new(1, -64, 0.5, -13)
@@ -45,7 +43,6 @@ local function createToggle(parent, name, default, callback)
     toggleBtn.AutoButtonColor = false
     toggleBtn.Parent = container
     Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
-
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 20, 0, 20)
     knob.Position = UDim2.new(0, 3, 0.5, -10)
@@ -53,7 +50,6 @@ local function createToggle(parent, name, default, callback)
     knob.BorderSizePixel = 0
     knob.Parent = toggleBtn
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
     local function updateVisual()
         if state then
             TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Accent}):Play()
@@ -79,7 +75,6 @@ local function createSlider(parent, name, minVal, maxVal, default, callback)
     container.BorderSizePixel = 0
     container.Parent = parent
     Instance.new("UICorner", container).CornerRadius = UDim.new(0, 8)
-
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -100, 0, 22)
     label.Position = UDim2.new(0, 14, 0, 8)
@@ -90,7 +85,6 @@ local function createSlider(parent, name, minVal, maxVal, default, callback)
     label.TextSize = 13
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
-
     local valueLabel = Instance.new("TextLabel")
     valueLabel.Size = UDim2.new(0, 70, 0, 22)
     valueLabel.Position = UDim2.new(1, -84, 0, 8)
@@ -103,7 +97,6 @@ local function createSlider(parent, name, minVal, maxVal, default, callback)
     valueLabel.BorderSizePixel = 0
     valueLabel.Parent = container
     Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
-
     local sliderBg = Instance.new("Frame")
     sliderBg.Size = UDim2.new(1, -28, 0, 8)
     sliderBg.Position = UDim2.new(0, 14, 0, 40)
@@ -111,14 +104,12 @@ local function createSlider(parent, name, minVal, maxVal, default, callback)
     sliderBg.BorderSizePixel = 0
     sliderBg.Parent = container
     Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
-
     local fill = Instance.new("Frame")
     fill.Size = UDim2.new((default - minVal) / (maxVal - minVal), 0, 1, 0)
     fill.BackgroundColor3 = T.Accent
     fill.BorderSizePixel = 0
     fill.Parent = sliderBg
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-
     local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 16, 0, 16)
     knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -8, 0.5, -8)
@@ -126,7 +117,6 @@ local function createSlider(parent, name, minVal, maxVal, default, callback)
     knob.BorderSizePixel = 0
     knob.Parent = sliderBg
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
     local sliding = false
     local function updateSlider(input)
         local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
@@ -137,10 +127,7 @@ local function createSlider(parent, name, minVal, maxVal, default, callback)
         callback(value)
     end
     sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            sliding = true
-            updateSlider(input)
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; updateSlider(input) end
     end)
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
@@ -170,7 +157,6 @@ local function createTextInput(parent, name, default, callback)
     container.BorderSizePixel = 0
     container.Parent = parent
     Instance.new("UICorner", container).CornerRadius = UDim.new(0, 8)
-
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.45, 0, 1, 0)
     label.Position = UDim2.new(0, 14, 0, 0)
@@ -181,7 +167,6 @@ local function createTextInput(parent, name, default, callback)
     label.TextSize = 13
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
-
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(0, 130, 0, 30)
     box.Position = UDim2.new(1, -144, 0.5, -15)
@@ -205,9 +190,15 @@ createLabel(FarmTab, "АВТО ФАРМ ГРУШ")
 createToggle(FarmTab, "🌾 Auto Farm", S.AutoFarmEnabled, function(state)
     S.AutoFarmEnabled = state
     print("🐗 Auto Farm: " .. (state and "ВКЛ" or "ВЫКЛ"))
+    if not state then
+        -- Возвращаем скорость игроку
+        local ch = player.Character
+        if ch and ch:FindFirstChild("Humanoid") then
+            ch.Humanoid.WalkSpeed = 16
+        end
+    end
 end)
 
--- Поле "Имя объекта" + кнопка сканера
 local targetInputFrame = createTextInput(FarmTab, "Имя объекта", S.FarmTargetName, function(text)
     S.FarmTargetName = text
     print("🐗 Поиск: " .. text)
@@ -243,7 +234,6 @@ ScanPanel.Visible = false
 ScanPanel.ZIndex = 10
 ScanPanel.Parent = Hub.ScreenGui
 Instance.new("UICorner", ScanPanel).CornerRadius = UDim.new(0, 12)
-
 local SPstroke = Instance.new("UIStroke", ScanPanel)
 SPstroke.Color = T.Accent
 SPstroke.Thickness = 1.5
@@ -255,7 +245,6 @@ SPHeader.BorderSizePixel = 0
 SPHeader.ZIndex = 10
 SPHeader.Parent = ScanPanel
 Instance.new("UICorner", SPHeader).CornerRadius = UDim.new(0, 12)
-
 local SPHfix = Instance.new("Frame")
 SPHfix.Size = UDim2.new(1, 0, 0, 12)
 SPHfix.Position = UDim2.new(0, 0, 1, -12)
@@ -291,25 +280,6 @@ SPClose.Parent = SPHeader
 Instance.new("UICorner", SPClose).CornerRadius = UDim.new(0, 8)
 SPClose.MouseButton1Click:Connect(function() ScanPanel.Visible = false end)
 
--- Перетаскивание панели сканера
-local spDrag, spStart, spStartPos
-SPHeader.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        spDrag = true
-        spStart = input.Position
-        spStartPos = ScanPanel.Position
-    end
-end)
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then spDrag = false end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if spDrag and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local d = input.Position - spStart
-        ScanPanel.Position = UDim2.new(spStartPos.X.Scale, spStartPos.X.Offset + d.X, spStartPos.Y.Scale, spStartPos.Y.Offset + d.Y)
-    end
-end)
-
 local SPContent = Instance.new("ScrollingFrame")
 SPContent.Size = UDim2.new(1, -20, 1, -52)
 SPContent.Position = UDim2.new(0, 10, 0, 48)
@@ -320,22 +290,62 @@ SPContent.ScrollBarImageColor3 = T.Accent
 SPContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 SPContent.ZIndex = 10
 SPContent.Parent = ScanPanel
-
 local SPLayout = Instance.new("UIListLayout", SPContent)
 SPLayout.Padding = UDim.new(0, 4)
 SPLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
 SPLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     SPContent.CanvasSize = UDim2.new(0, 0, 0, SPLayout.AbsoluteContentSize.Y + 10)
 end)
 
--- === ФУНКЦИЯ СКАНИРОВАНИЯ ===
-local function scanObjects()
-    -- Очищаем старый список
-    for _, child in pairs(SPContent:GetChildren()) do
-        if child:IsA("TextButton") or child:IsA("Frame") then
-            child:Destroy()
+-- === ОПТИМИЗИРОВАННЫЙ ПОИСК ЦЕЛЕЙ ===
+-- Кэш: перестраивается редко, а не каждый тик
+local targetsCache = {}
+local lastScanTime = 0
+local SCAN_INTERVAL = 0.5  -- сканируем раз в 0.5 секунды вместо каждый тик
+
+local function refreshTargetsCache()
+    local now = tick()
+    if now - lastScanTime < SCAN_INTERVAL then return targetsCache end
+    lastScanTime = now
+
+    local ch = player.Character
+    if not ch then return {} end
+    local rp = ch:FindFirstChild("HumanoidRootPart")
+    if not rp then return {} end
+
+    local targets = {}
+    local targetName = S.FarmTargetName:lower()
+
+    -- Оптимизация: ищем в Workspace.Map (обычно там все игровые объекты)
+    -- Если Map нет — сканируем Workspace напрямую
+    local searchRoots = {}
+    local map = Workspace:FindFirstChild("Map")
+    if map then
+        table.insert(searchRoots, map)
+    else
+        table.insert(searchRoots, Workspace)
+    end
+
+    for _, root in pairs(searchRoots) do
+        for _, obj in pairs(root:GetDescendants()) do
+            if obj:IsA("BasePart") and obj.Name:lower():find(targetName) then
+                local d = (obj.Position - rp.Position).Magnitude
+                if d <= S.FarmRange then
+                    table.insert(targets, {part = obj, dist = d})
+                end
+            end
         end
+    end
+
+    table.sort(targets, function(a, b) return a.dist < b.dist end)
+    targetsCache = targets
+    return targets
+end
+
+-- === СКАНЕР (для GUI) ===
+local function scanObjects()
+    for _, child in pairs(SPContent:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
     end
 
     local ch = player.Character
@@ -344,55 +354,39 @@ local function scanObjects()
     if not rp then return end
 
     local found = {}
-    local scanRadius = 150
+    local seen = {}
 
-    -- Проходим по всем объектам Workspace
-    for _, obj in pairs(Workspace:GetDescendants()) do
+    -- Ищем в Workspace.Map или Workspace
+    local searchRoot = Workspace:FindFirstChild("Map") or Workspace
+
+    for _, obj in pairs(searchRoot:GetDescendants()) do
         if obj:IsA("BasePart") or obj:IsA("Model") then
-            -- Пропускаем персонажа игрока и других игроков
             local isPlayer = false
             for _, plr in pairs(game.Players:GetPlayers()) do
                 if plr.Character and (obj == plr.Character or obj:IsDescendantOf(plr.Character)) then
-                    isPlayer = true
-                    break
+                    isPlayer = true; break
                 end
             end
-            if isPlayer then continue end
-
-            local part = obj
-            if obj:IsA("Model") then
-                part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-            end
-            if part and part:IsA("BasePart") then
-                local d = (part.Position - rp.Position).Magnitude
-                if d <= scanRadius then
-                    table.insert(found, {
-                        name = obj.Name,
-                        dist = d,
-                        class = obj.ClassName,
-                    })
+            if not isPlayer then
+                local part = obj
+                if obj:IsA("Model") then
+                    part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                end
+                if part and part:IsA("BasePart") then
+                    local d = (part.Position - rp.Position).Magnitude
+                    if d <= 150 and not seen[obj.Name] then
+                        seen[obj.Name] = true
+                        table.insert(found, {name = obj.Name, dist = d, class = obj.ClassName})
+                    end
                 end
             end
         end
     end
 
-    -- Сортируем по расстоянию
     table.sort(found, function(a, b) return a.dist < b.dist end)
 
-    -- Убираем дубликаты по имени
-    local seen = {}
-    local unique = {}
-    for _, item in pairs(found) do
-        if not seen[item.name] then
-            seen[item.name] = true
-            table.insert(unique, item)
-        end
-    end
-
-    -- Ограничиваем 60 объектами
-    for i = 1, math.min(#unique, 60) do
-        local info = unique[i]
-
+    for i = 1, math.min(#found, 50) do
+        local info = found[i]
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 50)
         btn.BackgroundColor3 = T.Tertiary
@@ -403,7 +397,6 @@ local function scanObjects()
         btn.Parent = SPContent
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-        -- Имя объекта
         local nameLbl = Instance.new("TextLabel")
         nameLbl.Size = UDim2.new(1, -14, 0, 22)
         nameLbl.Position = UDim2.new(0, 8, 0, 4)
@@ -416,7 +409,6 @@ local function scanObjects()
         nameLbl.ZIndex = 10
         nameLbl.Parent = btn
 
-        -- Информация
         local infoLbl = Instance.new("TextLabel")
         infoLbl.Size = UDim2.new(1, -14, 0, 18)
         infoLbl.Position = UDim2.new(0, 8, 0, 26)
@@ -435,39 +427,19 @@ local function scanObjects()
         btn.MouseLeave:Connect(function()
             TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = T.Tertiary}):Play()
         end)
-
-        -- Клик — установить это имя в цель фарма
         btn.MouseButton1Click:Connect(function()
             S.FarmTargetName = info.name
-            -- Обновляем TextBox в поле "Имя объекта"
             for _, desc in pairs(targetInputFrame:GetDescendants()) do
-                if desc:IsA("TextBox") then
-                    desc.Text = info.name
-                    break
-                end
+                if desc:IsA("TextBox") then desc.Text = info.name; break end
             end
-            print("🐗 Цель установлена: " .. info.name)
-            -- Меняем цвет кнопки для подтверждения
+            print("🐗 Цель: " .. info.name)
             btn.BackgroundColor3 = T.Success
             task.wait(0.3)
             TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = T.Tertiary}):Play()
         end)
     end
 
-    if #unique == 0 then
-        local emptyLbl = Instance.new("TextLabel")
-        emptyLbl.Size = UDim2.new(1, 0, 0, 60)
-        emptyLbl.BackgroundTransparency = 1
-        emptyLbl.Text = "❌ Объектов рядом не найдено\nПодойди ближе к грушам"
-        emptyLbl.TextColor3 = T.TextDim
-        emptyLbl.Font = Enum.Font.Gotham
-        emptyLbl.TextSize = 13
-        emptyLbl.TextWrapped = true
-        emptyLbl.ZIndex = 10
-        emptyLbl.Parent = SPContent
-    end
-
-    print(string.format("🐗 Найдено %d уникальных объектов (в радиусе %d)", #unique, scanRadius))
+    print(string.format("🐗 Найдено уникальных: %d", #found))
 end
 
 scanBtn.MouseButton1Click:Connect(function()
@@ -478,95 +450,108 @@ scanBtn.MouseButton1Click:Connect(function()
     ScanPanel.Visible = true
 end)
 
--- Остальные настройки фарма
 createLabel(FarmTab, "НАСТРОЙКИ")
-
-createToggle(FarmTab, "⚡ Телепорт к цели", S.FarmTeleport, function(state)
-    S.FarmTeleport = state
-end)
-
+createToggle(FarmTab, "⚡ Телепорт к цели", S.FarmTeleport, function(state) S.FarmTeleport = state end)
 createSlider(FarmTab, "Радиус поиска", 10, 300, S.FarmRange, function(val) S.FarmRange = val end)
-createSlider(FarmTab, "Задержка удара (x100)", 1, 30, 5, function(val)
-    S.FarmHitCooldown = val / 100
-end)
-
+createSlider(FarmTab, "Задержка удара (x100)", 1, 30, 8, function(val) S.FarmHitCooldown = val / 100 end)
 createToggle(FarmTab, "Использовать инструмент", S.FarmUseTool, function(state) S.FarmUseTool = state end)
 
--- === ПОИСК ЦЕЛИ ===
-local function findNearestTarget()
-    local ch = player.Character
-    if not ch then return nil end
-    local rp = ch:FindFirstChild("HumanoidRootPart")
-    if not rp then return nil end
-    local closest, minDist = nil, S.FarmRange
-    local targetName = S.FarmTargetName:lower()
-    for _, obj in pairs(Workspace:GetChildren()) do
-        if obj.Name:lower():find(targetName) then
-            local part = nil
-            if obj:IsA("BasePart") then part = obj
-            elseif obj:IsA("Model") then
-                part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-            end
-            if part then
-                local d = (part.Position - rp.Position).Magnitude
-                if d < minDist then minDist = d; closest = part end
-            end
-        end
-    end
-    return closest
-end
+-- === УМНЫЙ ЦИКЛ ФАРМА ===
+local farmThread = nil
 
--- === ОСНОВНОЙ ЦИКЛ ФАРМА ===
-local isAttacking = false
+local function startFarmLoop()
+    if farmThread then return end
+    farmThread = task.spawn(function()
+        local currentTarget = nil
+        local attackBusy = false
 
-task.spawn(function()
-    while not Hub.IsPanicked do
-        task.wait(0.05)
-        if S.AutoFarmEnabled then
+        while S.AutoFarmEnabled and not Hub.IsPanicked do
+            task.wait(0.1)
+
             local ch = player.Character
-            if ch then
-                local hum = ch:FindFirstChild("Humanoid")
-                local rp = ch:FindFirstChild("HumanoidRootPart")
-                if hum and rp then
-                    local target = findNearestTarget()
-                    if target then
-                        if S.FarmTeleport then
-                            local offset = Vector3.new(0, 3, 3)
-                            rp.CFrame = CFrame.new(target.Position + offset, target.Position)
-                        else
-                            local d = (target.Position - rp.Position).Magnitude
-                            if d > 8 then hum:MoveTo(target.Position) end
-                        end
+            if not ch then task.wait(0.5); continue end
+            local hum = ch:FindFirstChild("Humanoid")
+            local rp = ch:FindFirstChild("HumanoidRootPart")
+            if not hum or not rp then task.wait(0.5); continue end
 
-                        if not isAttacking then
-                            isAttacking = true
-                            task.spawn(function()
-                                while S.AutoFarmEnabled and not Hub.IsPanicked do
-                                    local ch2 = player.Character
-                                    if not ch2 then break end
-                                    local t = findNearestTarget()
-                                    if not t then break end
-                                    local tool = ch2:FindFirstChildWhichIsA("Tool")
-                                    if tool and S.FarmUseTool then
-                                        pcall(function() tool:Activate() end)
-                                    end
-                                    pcall(function()
-                                        VirtualUser:Button1Down(Vector2.new(0, 0))
-                                        task.wait(S.FarmHitCooldown)
-                                        VirtualUser:Button1Up(Vector2.new(0, 0))
-                                    end)
-                                    task.wait(S.FarmHitCooldown)
-                                end
-                                isAttacking = false
-                            end)
-                        end
-                    end
+            -- Проверяем текущую цель
+            if currentTarget and not currentTarget.Parent then
+                currentTarget = nil
+                print("🐗 Груша сломана — ищу новую")
+            end
+
+            -- Ищем новую если нет
+            if not currentTarget then
+                local targets = refreshTargetsCache()
+                if #targets > 0 then
+                    currentTarget = targets[1].part
+                    print(string.format("🐗 Цель: %s (%.0f studs) | Всего: %d", currentTarget.Name, targets[1].dist, #targets))
                 end
             end
-        else
-            task.wait(0.5)
-        end
-    end
-end)
 
-print("🐗 Farm модуль загружен (Teleport + FastHit + Scanner)")
+            -- Действия с целью
+            if currentTarget and currentTarget.Parent then
+                local d = (currentTarget.Position - rp.Position).Magnitude
+
+                -- Телепорт / подход
+                if S.FarmTeleport and d > 5 then
+                    local dir = (rp.Position - currentTarget.Position).Unit
+                    local newPos = currentTarget.Position + dir * 3 + Vector3.new(0, 3, 0)
+                    rp.CFrame = CFrame.new(newPos, currentTarget.Position)
+                elseif not S.FarmTeleport and d > 8 then
+                    hum:MoveTo(currentTarget.Position)
+                end
+
+                -- Атака
+                if not attackBusy then
+                    attackBusy = true
+                    task.spawn(function()
+                        while S.AutoFarmEnabled and not Hub.IsPanicked and currentTarget and currentTarget.Parent do
+                            local ch2 = player.Character
+                            if not ch2 then break end
+                            local tool = ch2:FindFirstChildWhichIsA("Tool")
+                            if tool and S.FarmUseTool then
+                                pcall(function() tool:Activate() end)
+                            end
+                            pcall(function()
+                                VirtualUser:Button1Down(Vector2.new(0, 0))
+                                task.wait(S.FarmHitCooldown)
+                                VirtualUser:Button1Up(Vector2.new(0, 0))
+                            end)
+                            task.wait(S.FarmHitCooldown)
+                        end
+                        attackBusy = false
+                    end)
+                end
+            end
+        end
+
+        -- При выходе из цикла — сброс
+        farmThread = nil
+        print("🐗 Цикл фарма остановлен")
+    end)
+end
+
+-- Подписываемся на изменение AutoFarmEnabled
+-- Используем Heartbeat чтобы отслеживать переключение
+local lastFarmState = false
+Hub.addConnection(RunService.Heartbeat:Connect(function()
+    if Hub.IsPanicked then return end
+    if S.AutoFarmEnabled and not lastFarmState then
+        -- Только что включили
+        lastFarmState = true
+        startFarmLoop()
+    elseif not S.AutoFarmEnabled and lastFarmState then
+        -- Только что выключили
+        lastFarmState = false
+        -- farmThread сам завершится по проверке S.AutoFarmEnabled
+        -- Плюс сбрасываем скорость
+        local ch = player.Character
+        if ch and ch:FindFirstChild("Humanoid") then
+            ch.Humanoid.WalkSpeed = 16
+        end
+        targetsCache = {}
+    end
+end))
+
+print("🐗 Farm модуль загружен (v4 — оптимизированный)")
