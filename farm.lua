@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Farm — Simple Auto Clicker
+-- 🐗 Bizon Hub Farm — Simple Auto Clicker (FINAL)
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
@@ -12,10 +12,11 @@ local T = Hub.Theme
 local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
--- Фиксированные настройки (без UI)
+-- Жёсткие настройки (без UI)
 S.FarmTargetName = "Hitbox"
 S.FarmRange = 20
 S.FarmHitCooldown = 0.1
+S.FarmUseTool = true
 
 -- === UI HELPERS ===
 local function createToggle(parent, name, default, callback)
@@ -92,16 +93,16 @@ createToggle(FarmTab, "👊 Auto Clicker", false, function(state)
     print("🐗 Auto Clicker: " .. (state and "ВКЛ" or "ВЫКЛ"))
 end)
 
+createLabel(FarmTab, "Цель: Hitbox | Радиус: 20")
+
 -- === ПОИСК ЦЕЛИ ===
 local function hasTargetNearby()
     local ch = player.Character
     if not ch then return false end
     local rp = ch:FindFirstChild("HumanoidRootPart")
     if not rp then return false end
-
     local searchRoot = Workspace:FindFirstChild("Map") or Workspace
     local targetName = S.FarmTargetName:lower()
-
     for _, obj in pairs(searchRoot:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower():find(targetName) then
             local isPlayerPart = false
@@ -123,38 +124,17 @@ local function hasTargetNearby()
 end
 
 -- === ПРОСТОЙ ЦИКЛ (без тредов-в-тредах) ===
-local lastState = false
-
-Hub.addConnection(RunService.Heartbeat:Connect(function()
-    if Hub.IsPanicked then return end
-    -- Отслеживаем переключение для сброса скорости
-    if S.AutoFarmEnabled ~= lastState then
-        lastState = S.AutoFarmEnabled
-        if not lastState then
-            -- Только что выключили — сбрасываем скорость
-            local ch = player.Character
-            if ch and ch:FindFirstChild("Humanoid") then
-                ch.Humanoid.WalkSpeed = 16
-            end
-        end
-    end
-end))
-
--- Основной кликер (проверяет S.AutoFarmEnabled каждый тик)
 task.spawn(function()
     while not Hub.IsPanicked do
         task.wait(S.FarmHitCooldown)
-
-        -- ГЛАВНАЯ ПРОВЕРКА: если выключено — ничего не делаем
         if not S.AutoFarmEnabled then
             continue
         end
-
         if hasTargetNearby() then
             local ch = player.Character
             if ch then
                 local tool = ch:FindFirstChildWhichIsA("Tool")
-                if tool then
+                if tool and S.FarmUseTool then
                     pcall(function() tool:Activate() end)
                 end
                 pcall(function()
@@ -167,4 +147,4 @@ task.spawn(function()
     end
 end)
 
-print("🐗 Farm модуль загружен (Simple Auto Clicker)")
+print("🐗 Farm модуль загружен (FINAL — Simple Auto Clicker)")
