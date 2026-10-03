@@ -1,8 +1,7 @@
--- 🐗 Bizon Hub Misc
+-- 🐗 Bizon Hub Misc (Optimized)
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
-local TweenService = game:GetService("TweenService")
 
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
@@ -10,7 +9,6 @@ local T = Hub.Theme
 local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
--- === MISC TAB ===
 local MiscTab = Hub.createTab("Misc", "🎯")
 
 Hub.createLabel(MiscTab, "ПРОЧЕЕ")
@@ -34,7 +32,7 @@ end)
 
 Hub.createLabel(MiscTab, "ОПАСНАЯ ЗОНА")
 
--- === PANIC BUTTON ===
+-- PANIC
 local panicContainer = Instance.new("Frame")
 panicContainer.Size = UDim2.new(1, 0, 0, 60)
 panicContainer.BackgroundColor3 = T.Bg3
@@ -81,20 +79,26 @@ panicBtn.MouseButton1Click:Connect(function()
     Hub.Connections = {}
     pcall(function()
         if Hub.ScreenGui and Hub.ScreenGui.Parent then Hub.ScreenGui:Destroy() end
+        local wm = player.PlayerGui:FindFirstChild("BizonWatermark")
+        if wm then wm:Destroy() end
     end)
     print("🐗 Bizon Hub: PANIC")
 end)
 
--- === NOCLIP ===
+-- === NOCLIP (раз в 10 кадров) ===
+local noclipCounter = 0
 Hub.addConnection(RunService.Heartbeat:Connect(function()
     if Hub.IsPanicked then return end
-    if S.Noclip then
-        local ch = player.Character
-        if ch then
-            for _, p in pairs(ch:GetDescendants()) do
-                if p:IsA("BasePart") and p.CanCollide then
-                    p.CanCollide = false
-                end
+    if not S.Noclip then return end
+    noclipCounter = noclipCounter + 1
+    if noclipCounter < 10 then return end
+    noclipCounter = 0
+
+    local ch = player.Character
+    if ch then
+        for _, p in pairs(ch:GetDescendants()) do
+            if p:IsA("BasePart") and p.CanCollide then
+                p.CanCollide = false
             end
         end
     end
