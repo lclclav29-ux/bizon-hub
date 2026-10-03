@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Teleport v5
+-- 🐗 Bizon Hub Teleport v6 (Clean)
 local TweenService = game:GetService("TweenService")
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
@@ -13,8 +13,6 @@ local WORLDS = {
 
 local savedPos = nil
 local TpTab = Hub.createTab("Teleport", "🌀")
-
--- ============ УТИЛИТЫ ============
 
 -- Получить инфо вкладки
 local function getTabInfo()
@@ -44,7 +42,6 @@ local function getRow()
     return tab.tpRow
 end
 
--- Сбросить строку
 local function resetRow()
     local tab = getTabInfo()
     if tab then
@@ -53,7 +50,7 @@ local function resetRow()
     end
 end
 
--- УНИВЕРСАЛЬНАЯ функция телепорта
+-- Телепорт
 local function teleportTo(pos)
     local ch = player.Character
     if not ch then return false end
@@ -63,37 +60,10 @@ local function teleportTo(pos)
     return true
 end
 
--- УНИВЕРСАЛЬНАЯ функция поиска позиции игрока
-local function getPlayerPosition(plr)
-    if not plr or not plr.Character then return nil end
-    local char = plr.Character
-    
-    -- Пробуем разные части по очереди
-    local targetPart = char:FindFirstChild("HumanoidRootPart")
-        or char:FindFirstChild("UpperTorso")
-        or char:FindFirstChild("Torso")
-        or char:FindFirstChild("Head")
-    
-    -- Если не нашли — берём ЛЮБУЮ BasePart
-    if not targetPart then
-        for _, obj in pairs(char:GetDescendants()) do
-            if obj:IsA("BasePart") then
-                targetPart = obj
-                break
-            end
-        end
-    end
-    
-    if targetPart then
-        return targetPart.Position
-    end
-    return nil
-end
-
--- ============ СОЗДАНИЕ КАРТОЧКИ ============
-local function createCard(parent, label, callback, half)
+-- Кнопка-карточка
+local function createCard(parent, label, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = half and UDim2.new(0.5, -3, 0, 52) or UDim2.new(1, 0, 0, 52)
+    btn.Size = UDim2.new(0.5, -3, 0, 52)
     btn.BackgroundColor3 = T.Bg3
     btn.BackgroundTransparency = 0.35
     btn.Text = ""
@@ -151,7 +121,7 @@ for _, world in pairs(WORLDS) do
         lbl.Text = "✅ " .. world.name
         task.wait(0.6)
         lbl.Text = world.name
-    end, true)
+    end)
 end
 
 -- ============ СОХРАНЁННЫЕ ТОЧКИ ============
@@ -167,7 +137,7 @@ createCard(getRow(), "💾 Сохранить позицию", function(lbl)
     lbl.Text = "✅ Сохранено"
     task.wait(1.2)
     lbl.Text = "💾 Сохранить позицию"
-end, true)
+end)
 
 createCard(getRow(), "📍 Вернуться", function(lbl)
     if not savedPos then
@@ -177,174 +147,6 @@ createCard(getRow(), "📍 Вернуться", function(lbl)
         return
     end
     teleportTo(savedPos)
-end, true)
-
--- ============ ИГРОКИ ОНЛАЙН ============
-Hub.createLabel(TpTab, "Игроки онлайн")
-resetRow()
-
--- Контейнер со списком игроков (на всю ширину)
-local playersList = Instance.new("ScrollingFrame")
-playersList.Size = UDim2.new(1, 0, 0, 220)
-playersList.BackgroundColor3 = T.Bg
-playersList.BackgroundTransparency = 0.5
-playersList.BorderSizePixel = 0
-playersList.ScrollBarThickness = 3
-playersList.ScrollBarImageColor3 = T.Accent
-playersList.CanvasSize = UDim2.new(0, 0, 0, 0)
-playersList.Parent = TpTab
-Instance.new("UICorner", playersList).CornerRadius = UDim.new(0, 12)
-
-local listLayout = Instance.new("UIListLayout", playersList)
-listLayout.Padding = UDim.new(0, 4)
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-local listPad = Instance.new("UIPadding", playersList)
-listPad.PaddingTop = UDim.new(0, 6)
-listPad.PaddingBottom = UDim.new(0, 6)
-listPad.PaddingLeft = UDim.new(0, 6)
-listPad.PaddingRight = UDim.new(0, 6)
-
-listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    playersList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 12)
 end)
 
--- Обновление списка игроков
-local function updatePlayersList()
-    for _, child in pairs(playersList:GetChildren()) do
-        if child:IsA("TextButton") or child:IsA("TextLabel") then
-            child:Destroy()
-        end
-    end
-
-    local players = {}
-    for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= player then 
-            table.insert(players, plr) 
-        end
-    end
-    table.sort(players, function(a, b) 
-        return a.Name:lower() < b.Name:lower() 
-    end)
-
-    if #players == 0 then
-        local empty = Instance.new("TextLabel")
-        empty.Size = UDim2.new(1, 0, 0, 40)
-        empty.BackgroundTransparency = 1
-        empty.Text = "😴 Кроме тебя никого нет"
-        empty.TextColor3 = T.TextDim
-        empty.Font = Enum.Font.Gotham
-        empty.TextSize = 12
-        empty.Parent = playersList
-        return
-    end
-
-    for _, plr in pairs(players) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 34)
-        btn.BackgroundColor3 = T.Bg3
-        btn.BackgroundTransparency = 0.35
-        btn.Text = ""
-        btn.BorderSizePixel = 0
-        btn.AutoButtonColor = false
-        btn.Parent = playersList
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-
-        -- Индикатор (зелёный/красный)
-        local dot = Instance.new("Frame")
-        dot.Size = UDim2.new(0, 8, 0, 8)
-        dot.Position = UDim2.new(0, 10, 0.5, -4)
-        dot.BackgroundColor3 = plr.Character and T.Success or T.Danger
-        dot.BorderSizePixel = 0
-        dot.Parent = btn
-        Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-
-        -- Имя
-        local nameLbl = Instance.new("TextLabel")
-        nameLbl.Size = UDim2.new(1, -70, 1, 0)
-        nameLbl.Position = UDim2.new(0, 26, 0, 0)
-        nameLbl.BackgroundTransparency = 1
-        nameLbl.Text = plr.Name
-        nameLbl.TextColor3 = T.Text
-        nameLbl.Font = Enum.Font.GothamMedium
-        nameLbl.TextSize = 12
-        nameLbl.TextXAlignment = Enum.TextXAlignment.Left
-        nameLbl.Parent = btn
-
-        -- Кнопка TP
-        local tpLbl = Instance.new("TextLabel")
-        tpLbl.Size = UDim2.new(0, 50, 1, 0)
-        tpLbl.Position = UDim2.new(1, -55, 0, 0)
-        tpLbl.BackgroundTransparency = 1
-        tpLbl.Text = "TP →"
-        tpLbl.TextColor3 = T.Accent
-        tpLbl.Font = Enum.Font.GothamBold
-        tpLbl.TextSize = 11
-        tpLbl.Parent = btn
-
-        -- Hover
-        btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = 0.15}):Play()
-        end)
-        btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = 0.35}):Play()
-        end)
-
-        -- Клик = телепорт
-        btn.MouseButton1Click:Connect(function()
-            -- Проверяем персонажа
-            if not plr.Character then
-                nameLbl.Text = "❌ " .. plr.Name .. " (нет персонажа)"
-                nameLbl.TextColor3 = T.Danger
-                task.wait(1.5)
-                nameLbl.Text = plr.Name
-                nameLbl.TextColor3 = T.Text
-                return
-            end
-            
-            -- Универсальный поиск позиции
-            local pos = getPlayerPosition(plr)
-            
-            if not pos then
-                nameLbl.Text = "❌ Не могу найти позицию"
-                nameLbl.TextColor3 = T.Danger
-                task.wait(1.5)
-                nameLbl.Text = plr.Name
-                nameLbl.TextColor3 = T.Text
-                return
-            end
-            
-            -- Телепорт
-            local ok = teleportTo(pos)
-            
-            if ok then
-                nameLbl.Text = "✅ Телепорт к " .. plr.Name
-                nameLbl.TextColor3 = T.Success
-                task.wait(0.6)
-                nameLbl.Text = plr.Name
-                nameLbl.TextColor3 = T.Text
-            else
-                nameLbl.Text = "❌ Ошибка телепорта"
-                nameLbl.TextColor3 = T.Danger
-                task.wait(1.5)
-                nameLbl.Text = plr.Name
-                nameLbl.TextColor3 = T.Text
-            end
-        end)
-    end
-end
-
--- Первое обновление
-updatePlayersList()
-
--- Авто-обновление каждые 3 секунды
-task.spawn(function()
-    while TpTab.Parent and not Hub.IsPanicked do
-        task.wait(3)
-        if TpTab.Parent then 
-            pcall(updatePlayersList)
-        end
-    end
-end)
-
-print("🐗 Teleport v5 загружен")
+print("🐗 Teleport v6 загружен (Clean)")
