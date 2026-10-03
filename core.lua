@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v2.3 (FULL)
+-- 🐗 Bizon Hub Core v3.0 — Pulse Design
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -7,7 +7,6 @@ local Stats = game:GetService("Stats")
 
 local player = Players.LocalPlayer
 _G.BizonHub = _G.BizonHub or {}
-
 local Hub = _G.BizonHub
 Hub.Connections = Hub.Connections or {}
 Hub.IsPanicked = false
@@ -17,18 +16,22 @@ function Hub.addConnection(conn)
     return conn
 end
 
+-- === ФИОЛЕТОВАЯ ТЕМА (Pulse Style) ===
 Hub.Theme = {
-    Bg = Color3.fromRGB(22, 22, 30),
-    Bg2 = Color3.fromRGB(30, 30, 42),
-    Bg3 = Color3.fromRGB(42, 42, 58),
-    Bg4 = Color3.fromRGB(55, 55, 75),
-    Accent = Color3.fromRGB(255, 145, 30),
-    Accent2 = Color3.fromRGB(255, 90, 20),
-    Text = Color3.fromRGB(235, 235, 245),
-    TextDim = Color3.fromRGB(140, 140, 165),
-    Success = Color3.fromRGB(50, 220, 130),
-    Danger = Color3.fromRGB(240, 65, 75),
-    Stroke = Color3.fromRGB(60, 60, 85),
+    Bg = Color3.fromRGB(15, 12, 25),
+    Bg2 = Color3.fromRGB(20, 16, 32),
+    Bg3 = Color3.fromRGB(28, 22, 45),
+    Bg4 = Color3.fromRGB(38, 30, 60),
+    Accent = Color3.fromRGB(168, 85, 247),
+    Accent2 = Color3.fromRGB(126, 34, 206),
+    AccentGlow = Color3.fromRGB(200, 130, 255),
+    Text = Color3.fromRGB(240, 235, 255),
+    TextDim = Color3.fromRGB(140, 130, 165),
+    TextDisabled = Color3.fromRGB(80, 75, 100),
+    Success = Color3.fromRGB(80, 240, 160),
+    Danger = Color3.fromRGB(240, 70, 100),
+    Warning = Color3.fromRGB(255, 200, 50),
+    Stroke = Color3.fromRGB(60, 50, 90),
 }
 
 Hub.Settings = {
@@ -45,9 +48,7 @@ Hub.Settings = {
 local T = Hub.Theme
 local S = Hub.Settings
 
-Hub.WatermarkEdition = "FREE"
-
--- Удаляем старые GUI
+-- Удаляем старый GUI
 local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
@@ -63,7 +64,7 @@ ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
 -- ============================================
--- WATERMARK (Large, Right Top)
+-- ВОДЯНОЙ ЗНАК
 -- ============================================
 local WatermarkGui = Instance.new("ScreenGui")
 WatermarkGui.Name = "BizonWatermark"
@@ -73,107 +74,73 @@ WatermarkGui.IgnoreGuiInset = true
 WatermarkGui.Parent = player:WaitForChild("PlayerGui")
 
 local WMFrame = Instance.new("Frame")
-WMFrame.Size = UDim2.new(0, 460, 0, 58)
-WMFrame.Position = UDim2.new(1, -480, 0, 20)
+WMFrame.Size = UDim2.new(0, 360, 0, 44)
+WMFrame.Position = UDim2.new(1, -380, 0, 20)
 WMFrame.BackgroundColor3 = T.Bg
-WMFrame.BackgroundTransparency = 0.1
+WMFrame.BackgroundTransparency = 0.15
 WMFrame.BorderSizePixel = 0
 WMFrame.Parent = WatermarkGui
-Instance.new("UICorner", WMFrame).CornerRadius = UDim.new(0, 14)
+Instance.new("UICorner", WMFrame).CornerRadius = UDim.new(0, 12)
 
 local WMstroke = Instance.new("UIStroke", WMFrame)
 WMstroke.Color = T.Accent
-WMstroke.Thickness = 2
+WMstroke.Thickness = 1.5
+WMstroke.Transparency = 0.3
 
-local WMgrad = Instance.new("UIGradient", WMFrame)
-WMgrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, T.Bg2),
-    ColorSequenceKeypoint.new(1, T.Bg),
-})
-WMgrad.Rotation = 45
+local WMglow = Instance.new("UIStroke", WMFrame)
+WMglow.Color = T.AccentGlow
+WMglow.Thickness = 6
+WMglow.Transparency = 0.85
 
 local WMicon = Instance.new("TextLabel")
-WMicon.Size = UDim2.new(0, 50, 1, 0)
-WMicon.Position = UDim2.new(0, 12, 0, 0)
+WMicon.Size = UDim2.new(0, 40, 1, 0)
+WMicon.Position = UDim2.new(0, 8, 0, 0)
 WMicon.BackgroundTransparency = 1
 WMicon.Text = "🐗"
 WMicon.TextColor3 = T.Accent
 WMicon.Font = Enum.Font.GothamBold
-WMicon.TextSize = 30
+WMicon.TextSize = 22
 WMicon.Parent = WMFrame
 
 local WMtitle = Instance.new("TextLabel")
-WMtitle.Size = UDim2.new(0, 180, 0, 32)
-WMtitle.Position = UDim2.new(0, 62, 0, 6)
+WMtitle.Size = UDim2.new(0, 140, 1, 0)
+WMtitle.Position = UDim2.new(0, 46, 0, 0)
 WMtitle.BackgroundTransparency = 1
 WMtitle.Text = "BIZON HUB"
 WMtitle.TextColor3 = T.Accent
 WMtitle.Font = Enum.Font.GothamBlack
-WMtitle.TextSize = 22
+WMtitle.TextSize = 15
 WMtitle.TextXAlignment = Enum.TextXAlignment.Left
 WMtitle.Parent = WMFrame
 
-local WMversion = Instance.new("TextLabel")
-WMversion.Size = UDim2.new(0, 180, 0, 18)
-WMversion.Position = UDim2.new(0, 62, 0, 36)
-WMversion.BackgroundTransparency = 1
-WMversion.Text = "version v2.3"
-WMversion.TextColor3 = T.TextDim
-WMversion.Font = Enum.Font.GothamMedium
-WMversion.TextSize = 11
-WMversion.TextXAlignment = Enum.TextXAlignment.Left
-WMversion.Parent = WMFrame
-
 local WMsep1 = Instance.new("Frame")
-WMsep1.Size = UDim2.new(0, 2, 0, 32)
-WMsep1.Position = UDim2.new(0, 250, 0.5, -16)
+WMsep1.Size = UDim2.new(0, 1, 0, 24)
+WMsep1.Position = UDim2.new(0, 188, 0.5, -12)
 WMsep1.BackgroundColor3 = T.Stroke
 WMsep1.BorderSizePixel = 0
 WMsep1.Parent = WMFrame
 
-local WMedition = Instance.new("TextLabel")
-WMedition.Size = UDim2.new(0, 100, 0, 22)
-WMedition.Position = UDim2.new(0, 262, 0, 10)
-WMedition.BackgroundTransparency = 1
-WMedition.Text = "FREE"
-WMedition.TextColor3 = T.TextDim
-WMedition.Font = Enum.Font.GothamBlack
-WMedition.TextSize = 16
-WMedition.TextXAlignment = Enum.TextXAlignment.Left
-WMedition.Parent = WMFrame
-
-local WMeditionLabel = Instance.new("TextLabel")
-WMeditionLabel.Size = UDim2.new(0, 100, 0, 16)
-WMeditionLabel.Position = UDim2.new(0, 262, 0, 32)
-WMeditionLabel.BackgroundTransparency = 1
-WMeditionLabel.Text = "edition"
-WMeditionLabel.TextColor3 = T.TextDim
-WMeditionLabel.Font = Enum.Font.Gotham
-WMeditionLabel.TextSize = 10
-WMeditionLabel.TextXAlignment = Enum.TextXAlignment.Left
-WMeditionLabel.Parent = WMFrame
+local WMfps = Instance.new("TextLabel")
+WMfps.Size = UDim2.new(0, 65, 1, 0)
+WMfps.Position = UDim2.new(0, 196, 0, 0)
+WMfps.BackgroundTransparency = 1
+WMfps.Text = "FPS: --"
+WMfps.TextColor3 = T.Text
+WMfps.Font = Enum.Font.GothamBold
+WMfps.TextSize = 12
+WMfps.TextXAlignment = Enum.TextXAlignment.Left
+WMfps.Parent = WMFrame
 
 local WMsep2 = Instance.new("Frame")
-WMsep2.Size = UDim2.new(0, 2, 0, 32)
-WMsep2.Position = UDim2.new(0, 366, 0.5, -16)
+WMsep2.Size = UDim2.new(0, 1, 0, 24)
+WMsep2.Position = UDim2.new(0, 262, 0.5, -12)
 WMsep2.BackgroundColor3 = T.Stroke
 WMsep2.BorderSizePixel = 0
 WMsep2.Parent = WMFrame
 
-local WMfps = Instance.new("TextLabel")
-WMfps.Size = UDim2.new(0, 90, 0, 22)
-WMfps.Position = UDim2.new(0, 376, 0, 10)
-WMfps.BackgroundTransparency = 1
-WMfps.Text = "FPS: --"
-WMfps.TextColor3 = T.Text
-WMfps.Font = Enum.Font.GothamBlack
-WMfps.TextSize = 15
-WMfps.TextXAlignment = Enum.TextXAlignment.Left
-WMfps.Parent = WMFrame
-
 local WMping = Instance.new("TextLabel")
-WMping.Size = UDim2.new(0, 90, 0, 18)
-WMping.Position = UDim2.new(0, 376, 0, 32)
+WMping.Size = UDim2.new(0, 65, 1, 0)
+WMping.Position = UDim2.new(0, 270, 0, 0)
 WMping.BackgroundTransparency = 1
 WMping.Text = "PING: --"
 WMping.TextColor3 = T.Text
@@ -182,6 +149,17 @@ WMping.TextSize = 12
 WMping.TextXAlignment = Enum.TextXAlignment.Left
 WMping.Parent = WMFrame
 
+local WMver = Instance.new("TextLabel")
+WMver.Size = UDim2.new(0, 30, 1, 0)
+WMver.Position = UDim2.new(1, -36, 0, 0)
+WMver.BackgroundTransparency = 1
+WMver.Text = "3.0"
+WMver.TextColor3 = T.TextDim
+WMver.Font = Enum.Font.GothamBold
+WMver.TextSize = 10
+WMver.Parent = WMFrame
+
+-- Drag watermark
 local wmDrag, wmStart, wmStartPos
 Hub.addConnection(WMFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -198,6 +176,18 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
+-- Пульсация glow
+task.spawn(function()
+    while WMFrame.Parent and not Hub.IsPanicked do
+        TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.95, Thickness = 10}):Play()
+        task.wait(2)
+        if Hub.IsPanicked then break end
+        TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.75, Thickness = 6}):Play()
+        task.wait(2)
+    end
+end)
+
+-- FPS (сглаженный)
 local fpsHistory = {}
 task.spawn(function()
     local lastUpdate = tick()
@@ -216,13 +206,14 @@ task.spawn(function()
             local avgFps = math.floor(sum / #fpsHistory)
             local color = T.Success
             if avgFps < 30 then color = T.Danger
-            elseif avgFps < 60 then color = Color3.fromRGB(255, 200, 0) end
+            elseif avgFps < 60 then color = T.Warning end
             WMfps.Text = "FPS: " .. tostring(avgFps)
             WMfps.TextColor3 = color
         end
     end
 end)
 
+-- Ping (сглаженный)
 local pingHistory = {}
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
@@ -237,7 +228,7 @@ task.spawn(function()
             local avgPing = math.floor(sum / #pingHistory)
             local color = T.Success
             if avgPing > 200 then color = T.Danger
-            elseif avgPing > 100 then color = Color3.fromRGB(255, 200, 0) end
+            elseif avgPing > 100 then color = T.Warning end
             WMping.Text = "PING: " .. tostring(avgPing)
             WMping.TextColor3 = color
         end
@@ -247,39 +238,56 @@ end)
 
 Hub.Watermark = WMFrame
 function Hub.setEdition(edition)
-    Hub.WatermarkEdition = edition
-    WMedition.Text = edition
     if edition == "PREMIUM" then
-        WMedition.TextColor3 = Color3.fromRGB(255, 200, 50)
-        WMstroke.Color = Color3.fromRGB(255, 200, 50)
         WMtitle.TextColor3 = Color3.fromRGB(255, 200, 50)
         WMicon.TextColor3 = Color3.fromRGB(255, 200, 50)
-    else
-        WMedition.TextColor3 = T.TextDim
-        WMstroke.Color = T.Accent
-        WMtitle.TextColor3 = T.Accent
-        WMicon.TextColor3 = T.Accent
+        WMstroke.Color = Color3.fromRGB(255, 200, 50)
+        WMglow.Color = Color3.fromRGB(255, 200, 50)
     end
 end
 
--- === FLOAT BUTTON ===
+-- ============================================
+-- ПЛАВАЮЩАЯ КНОПКА (круглая с glow)
+-- ============================================
 local FloatBtn = Instance.new("TextButton")
-FloatBtn.Size = UDim2.new(0, 130, 0, 46)
-FloatBtn.Position = UDim2.new(0, 20, 0, 100)
+FloatBtn.Size = UDim2.new(0, 56, 0, 56)
+FloatBtn.Position = UDim2.new(0, 20, 0.5, -28)
 FloatBtn.BackgroundColor3 = T.Bg
-FloatBtn.Text = "🐗  BIZON HUB"
+FloatBtn.BackgroundTransparency = 0.1
+FloatBtn.Text = "🐗"
 FloatBtn.TextColor3 = T.Accent
 FloatBtn.Font = Enum.Font.GothamBold
-FloatBtn.TextSize = 14
+FloatBtn.TextSize = 28
 FloatBtn.BorderSizePixel = 0
 FloatBtn.AutoButtonColor = false
 FloatBtn.Parent = ScreenGui
-Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(0, 14)
+Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
 
 local FBstroke = Instance.new("UIStroke", FloatBtn)
 FBstroke.Color = T.Accent
 FBstroke.Thickness = 1.5
-FBstroke.Transparency = 0.3
+
+local FBglow = Instance.new("UIStroke", FloatBtn)
+FBglow.Color = T.AccentGlow
+FBglow.Thickness = 6
+FBglow.Transparency = 0.8
+
+task.spawn(function()
+    while FloatBtn.Parent and not Hub.IsPanicked do
+        TweenService:Create(FBglow, TweenInfo.new(1.5), {Transparency = 0.95, Thickness = 12}):Play()
+        task.wait(1.5)
+        if Hub.IsPanicked then break end
+        TweenService:Create(FBglow, TweenInfo.new(1.5), {Transparency = 0.7, Thickness = 6}):Play()
+        task.wait(1.5)
+    end
+end)
+
+FloatBtn.MouseEnter:Connect(function()
+    TweenService:Create(FloatBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, 64, 0, 64), Position = UDim2.new(0, 16, 0.5, -32)}):Play()
+end)
+FloatBtn.MouseLeave:Connect(function()
+    TweenService:Create(FloatBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, 56, 0, 56), Position = UDim2.new(0, 20, 0.5, -28)}):Play()
+end)
 
 local fbDrag, fbStart, fbStartPos
 Hub.addConnection(FloatBtn.InputBegan:Connect(function(input)
@@ -297,21 +305,14 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
-task.spawn(function()
-    while FloatBtn.Parent and not Hub.IsPanicked do
-        TweenService:Create(FBstroke, TweenInfo.new(2.5), {Transparency = 0.7}):Play()
-        task.wait(2.5)
-        if Hub.IsPanicked then break end
-        TweenService:Create(FBstroke, TweenInfo.new(2.5), {Transparency = 0.3}):Play()
-        task.wait(2.5)
-    end
-end)
-
--- === MAIN FRAME ===
+-- ============================================
+-- ГЛАВНОЕ ОКНО (стеклянное)
+-- ============================================
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 560, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -280, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 720, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -360, 0.5, -250)
 MainFrame.BackgroundColor3 = T.Bg
+MainFrame.BackgroundTransparency = 0.08
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
@@ -320,60 +321,109 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 22)
 local MFstroke = Instance.new("UIStroke", MainFrame)
 MFstroke.Color = T.Stroke
 MFstroke.Thickness = 1.5
+MFstroke.Transparency = 0.3
+
+local MFglow = Instance.new("UIStroke", MainFrame)
+MFglow.Color = T.AccentGlow
+MFglow.Thickness = 8
+MFglow.Transparency = 0.9
+
+local MFgrad = Instance.new("UIGradient", MainFrame)
+MFgrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(22, 16, 38)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 8, 20)),
+})
+MFgrad.Rotation = 135
 Hub.MainFrame = MainFrame
 
+-- ============================================
+-- ЗАГОЛОВОК + ПОИСК
+-- ============================================
 local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1, 0, 0, 58)
-Header.BackgroundColor3 = T.Bg2
-Header.BorderSizePixel = 0
+Header.Size = UDim2.new(1, 0, 0, 70)
+Header.BackgroundTransparency = 1
 Header.Parent = MainFrame
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 22)
 
-local HeaderFix = Instance.new("Frame")
-HeaderFix.Size = UDim2.new(1, 0, 0, 20)
-HeaderFix.Position = UDim2.new(0, 0, 1, -20)
-HeaderFix.BackgroundColor3 = T.Bg2
-HeaderFix.BorderSizePixel = 0
-HeaderFix.Parent = Header
+local LogoIcon = Instance.new("TextLabel")
+LogoIcon.Size = UDim2.new(0, 32, 0, 40)
+LogoIcon.Position = UDim2.new(0, 26, 0, 18)
+LogoIcon.BackgroundTransparency = 1
+LogoIcon.Text = "🐗"
+LogoIcon.TextColor3 = T.Accent
+LogoIcon.Font = Enum.Font.GothamBold
+LogoIcon.TextSize = 24
+LogoIcon.Parent = Header
 
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-TitleLabel.Position = UDim2.new(0, 24, 0, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "🐗  BIZON HUB"
-TitleLabel.TextColor3 = T.Accent
-TitleLabel.Font = Enum.Font.GothamBlack
-TitleLabel.TextSize = 20
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = Header
+local LogoText = Instance.new("TextLabel")
+LogoText.Size = UDim2.new(0, 200, 0, 40)
+LogoText.Position = UDim2.new(0, 60, 0, 18)
+LogoText.BackgroundTransparency = 1
+LogoText.Text = "Bizon Hub"
+LogoText.TextColor3 = T.Text
+LogoText.Font = Enum.Font.GothamBlack
+LogoText.TextSize = 20
+LogoText.TextXAlignment = Enum.TextXAlignment.Left
+LogoText.Parent = Header
 
-local Version = Instance.new("TextLabel")
-Version.Size = UDim2.new(0, 65, 0, 22)
-Version.Position = UDim2.new(0, 230, 0.5, -11)
-Version.BackgroundColor3 = T.Accent
-Version.BackgroundTransparency = 0.82
-Version.Text = "v2.3"
-Version.TextColor3 = T.Accent
-Version.Font = Enum.Font.GothamBold
-Version.TextSize = 11
-Version.BorderSizePixel = 0
-Version.Parent = Header
-Instance.new("UICorner", Version).CornerRadius = UDim.new(1, 0)
+-- Поиск
+local SearchFrame = Instance.new("Frame")
+SearchFrame.Size = UDim2.new(0, 220, 0, 36)
+SearchFrame.Position = UDim2.new(0.5, -110, 0, 18)
+SearchFrame.BackgroundColor3 = T.Bg3
+SearchFrame.BackgroundTransparency = 0.3
+SearchFrame.BorderSizePixel = 0
+SearchFrame.Parent = Header
+Instance.new("UICorner", SearchFrame).CornerRadius = UDim.new(0, 8)
 
+local SearchStroke = Instance.new("UIStroke", SearchFrame)
+SearchStroke.Color = T.Stroke
+SearchStroke.Thickness = 1
+
+local SearchIcon = Instance.new("TextLabel")
+SearchIcon.Size = UDim2.new(0, 24, 1, 0)
+SearchIcon.Position = UDim2.new(0, 8, 0, 0)
+SearchIcon.BackgroundTransparency = 1
+SearchIcon.Text = "🔍"
+SearchIcon.TextSize = 12
+SearchIcon.Parent = SearchFrame
+
+local SearchBox = Instance.new("TextBox")
+SearchBox.Size = UDim2.new(1, -38, 1, 0)
+SearchBox.Position = UDim2.new(0, 32, 0, 0)
+SearchBox.BackgroundTransparency = 1
+SearchBox.Text = ""
+SearchBox.PlaceholderText = "Search..."
+SearchBox.PlaceholderColor3 = T.TextDim
+SearchBox.TextColor3 = T.Text
+SearchBox.Font = Enum.Font.GothamMedium
+SearchBox.TextSize = 12
+SearchBox.TextXAlignment = Enum.TextXAlignment.Left
+SearchBox.ClearTextOnFocus = false
+SearchBox.Parent = SearchFrame
+
+-- Закрыть
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 36, 0, 36)
-CloseBtn.Position = UDim2.new(1, -48, 0.5, -18)
+CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+CloseBtn.Position = UDim2.new(1, -46, 0, 20)
 CloseBtn.BackgroundColor3 = T.Bg3
 CloseBtn.Text = "✕"
 CloseBtn.TextColor3 = T.TextDim
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 16
+CloseBtn.TextSize = 14
 CloseBtn.BorderSizePixel = 0
 CloseBtn.AutoButtonColor = false
 CloseBtn.Parent = Header
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+
+CloseBtn.MouseEnter:Connect(function()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Danger, TextColor3 = Color3.new(1,1,1)}):Play()
+end)
+CloseBtn.MouseLeave:Connect(function()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Bg3, TextColor3 = T.TextDim}):Play()
+end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
+-- Drag window
 local winDrag, winStart, winStartPos
 Hub.addConnection(Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -390,31 +440,25 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
+-- ============================================
+-- ВЕРХНИЕ ВКЛАДКИ
+-- ============================================
 local TabBar = Instance.new("Frame")
-TabBar.Size = UDim2.new(0, 150, 1, -80)
-TabBar.Position = UDim2.new(0, 12, 0, 68)
-TabBar.BackgroundColor3 = T.Bg2
-TabBar.BorderSizePixel = 0
+TabBar.Size = UDim2.new(1, -52, 0, 40)
+TabBar.Position = UDim2.new(0, 26, 0, 82)
+TabBar.BackgroundTransparency = 1
 TabBar.Parent = MainFrame
-Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 16)
 
 local TabList = Instance.new("UIListLayout", TabBar)
-TabList.Padding = UDim.new(0, 6)
+TabList.FillDirection = Enum.FillDirection.Horizontal
+TabList.Padding = UDim.new(0, 4)
 TabList.SortOrder = Enum.SortOrder.LayoutOrder
-TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
-local TabPad = Instance.new("UIPadding", TabBar)
-TabPad.PaddingTop = UDim.new(0, 10)
-TabPad.PaddingLeft = UDim.new(0, 8)
-TabPad.PaddingRight = UDim.new(0, 8)
 
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, -180, 1, -80)
-Content.Position = UDim2.new(0, 168, 0, 68)
-Content.BackgroundColor3 = T.Bg2
-Content.BorderSizePixel = 0
+Content.Size = UDim2.new(1, -52, 1, -180)
+Content.Position = UDim2.new(0, 26, 0, 130)
+Content.BackgroundTransparency = 1
 Content.Parent = MainFrame
-Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 16)
 
 local Tabs = {}
 Hub.Tabs = Tabs
@@ -423,67 +467,88 @@ Hub.CurrentTab = nil
 function Hub.switchTab(name)
     if Hub.CurrentTab == name then return end
     if Hub.CurrentTab and Tabs[Hub.CurrentTab] then
-        TweenService:Create(Tabs[Hub.CurrentTab].button, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg2, TextColor3 = T.TextDim}):Play()
+        TweenService:Create(Tabs[Hub.CurrentTab].button, TweenInfo.new(0.25), {
+            BackgroundTransparency = 1,
+            TextColor3 = T.TextDim,
+        }):Play()
         Tabs[Hub.CurrentTab].container.Visible = false
     end
     Hub.CurrentTab = name
-    TweenService:Create(Tabs[name].button, TweenInfo.new(0.2), {BackgroundColor3 = T.Accent, TextColor3 = T.Bg}):Play()
+    TweenService:Create(Tabs[name].button, TweenInfo.new(0.25), {
+        BackgroundTransparency = 0,
+        TextColor3 = T.Accent,
+    }):Play()
     Tabs[name].container.Visible = true
 end
 
 function Hub.createTab(name, icon)
     local tabBtn = Instance.new("TextButton")
-    tabBtn.Size = UDim2.new(1, -8, 0, 38)
-    tabBtn.BackgroundColor3 = T.Bg2
+    tabBtn.Size = UDim2.new(0, 110, 1, 0)
+    tabBtn.BackgroundColor3 = T.Bg3
+    tabBtn.BackgroundTransparency = 1
     tabBtn.Text = (icon or "") .. "  " .. name
     tabBtn.TextColor3 = T.TextDim
     tabBtn.Font = Enum.Font.GothamBold
-    tabBtn.TextSize = 13
-    tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+    tabBtn.TextSize = 12
     tabBtn.BorderSizePixel = 0
     tabBtn.AutoButtonColor = false
     tabBtn.Parent = TabBar
-    Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 12)
-    local Tpad = Instance.new("UIPadding", tabBtn)
-    Tpad.PaddingLeft = UDim.new(0, 12)
+    Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 8)
 
     local container = Instance.new("ScrollingFrame")
-    container.Size = UDim2.new(1, -16, 1, -16)
-    container.Position = UDim2.new(0, 8, 0, 8)
+    container.Size = UDim2.new(1, 0, 1, 0)
     container.BackgroundTransparency = 1
     container.BorderSizePixel = 0
-    container.ScrollBarThickness = 4
+    container.ScrollBarThickness = 3
     container.ScrollBarImageColor3 = T.Accent
     container.CanvasSize = UDim2.new(0, 0, 0, 0)
     container.Visible = false
     container.Parent = Content
 
-    local layout = Instance.new("UIListLayout", container)
-    layout.Padding = UDim.new(0, 8)
+    -- 2 колонки grid
+    local layout = Instance.new("UIGridLayout", container)
+    layout.CellSize = UDim2.new(0.5, -4, 0, 56)
+    layout.CellPadding = UDim2.new(0, 8, 0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    local pad = Instance.new("UIPadding", container)
-    pad.PaddingTop = UDim.new(0, 8)
-    pad.PaddingBottom = UDim.new(0, 8)
-    pad.PaddingLeft = UDim.new(0, 8)
-    pad.PaddingRight = UDim.new(0, 8)
 
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 16)
+        container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
     end)
 
     Tabs[name] = {button = tabBtn, container = container}
     tabBtn.MouseButton1Click:Connect(function() Hub.switchTab(name) end)
+    
+    tabBtn.MouseEnter:Connect(function()
+        if Hub.CurrentTab ~= name then
+            TweenService:Create(tabBtn, TweenInfo.new(0.15), {TextColor3 = T.Text}):Play()
+        end
+    end)
+    tabBtn.MouseLeave:Connect(function()
+        if Hub.CurrentTab ~= name then
+            TweenService:Create(tabBtn, TweenInfo.new(0.15), {TextColor3 = T.TextDim}):Play()
+        end
+    end)
+    
     return container
 end
 
+-- ============================================
+-- TOGGLE (большой, как в Pulse)
+-- ============================================
 function Hub.createToggle(parent, name, default, callback, onRight)
     local state = default or false
     local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 48)
+    container.Size = UDim2.new(1, 0, 1, 0)
     container.BackgroundColor3 = T.Bg3
+    container.BackgroundTransparency = 0.3
     container.BorderSizePixel = 0
     container.Parent = parent
     Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
+
+    local stroke = Instance.new("UIStroke", container)
+    stroke.Color = T.Stroke
+    stroke.Thickness = 1
+    stroke.Transparency = 0.5
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -90, 1, 0)
@@ -492,13 +557,13 @@ function Hub.createToggle(parent, name, default, callback, onRight)
     label.Text = name
     label.TextColor3 = T.Text
     label.Font = Enum.Font.GothamMedium
-    label.TextSize = 14
+    label.TextSize = 13
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
 
     local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 52, 0, 26)
-    toggleBtn.Position = UDim2.new(1, -64, 0.5, -13)
+    toggleBtn.Size = UDim2.new(0, 46, 0, 24)
+    toggleBtn.Position = UDim2.new(1, -58, 0.5, -12)
     toggleBtn.BackgroundColor3 = T.Bg
     toggleBtn.Text = ""
     toggleBtn.BorderSizePixel = 0
@@ -506,9 +571,13 @@ function Hub.createToggle(parent, name, default, callback, onRight)
     toggleBtn.Parent = container
     Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
 
+    local toggleStroke = Instance.new("UIStroke", toggleBtn)
+    toggleStroke.Color = T.Stroke
+    toggleStroke.Thickness = 1
+
     local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 20, 0, 20)
-    knob.Position = UDim2.new(0, 3, 0.5, -10)
+    knob.Size = UDim2.new(0, 18, 0, 18)
+    knob.Position = UDim2.new(0, 3, 0.5, -9)
     knob.BackgroundColor3 = T.TextDim
     knob.BorderSizePixel = 0
     knob.Parent = toggleBtn
@@ -517,10 +586,18 @@ function Hub.createToggle(parent, name, default, callback, onRight)
     local function upd()
         if state then
             TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Accent}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.2), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.new(1,1,1)}):Play()
+            TweenService:Create(toggleStroke, TweenInfo.new(0.2), {Color = T.AccentGlow}):Play()
+            TweenService:Create(knob, TweenInfo.new(0.2), {
+                Position = UDim2.new(1, -21, 0.5, -9),
+                BackgroundColor3 = Color3.new(1,1,1)
+            }):Play()
         else
             TweenService:Create(toggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -10), BackgroundColor3 = T.TextDim}):Play()
+            TweenService:Create(toggleStroke, TweenInfo.new(0.2), {Color = T.Stroke}):Play()
+            TweenService:Create(knob, TweenInfo.new(0.2), {
+                Position = UDim2.new(0, 3, 0.5, -9),
+                BackgroundColor3 = T.TextDim
+            }):Play()
         end
     end
     upd()
@@ -541,166 +618,3 @@ function Hub.createToggle(parent, name, default, callback, onRight)
     end)
     return container
 end
-
-function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 62)
-    container.BackgroundColor3 = T.Bg3
-    container.BorderSizePixel = 0
-    container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -100, 0, 22)
-    label.Position = UDim2.new(0, 16, 0, 8)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = T.Text
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 13
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local valueLabel = Instance.new("TextLabel")
-    valueLabel.Size = UDim2.new(0, 60, 0, 22)
-    valueLabel.Position = UDim2.new(1, -76, 0, 8)
-    valueLabel.BackgroundColor3 = T.Accent
-    valueLabel.BackgroundTransparency = 0.85
-    valueLabel.Text = tostring(default)
-    valueLabel.TextColor3 = T.Accent
-    valueLabel.Font = Enum.Font.GothamBold
-    valueLabel.TextSize = 12
-    valueLabel.BorderSizePixel = 0
-    valueLabel.Parent = container
-    Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
-
-    local sliderBg = Instance.new("Frame")
-    sliderBg.Size = UDim2.new(1, -32, 0, 8)
-    sliderBg.Position = UDim2.new(0, 16, 0, 42)
-    sliderBg.BackgroundColor3 = T.Bg
-    sliderBg.BorderSizePixel = 0
-    sliderBg.Parent = container
-    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
-
-    local fill = Instance.new("Frame")
-    fill.Size = UDim2.new((default - minVal) / (maxVal - minVal), 0, 1, 0)
-    fill.BackgroundColor3 = T.Accent
-    fill.BorderSizePixel = 0
-    fill.Parent = sliderBg
-    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-
-    local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 18, 0, 18)
-    knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -9, 0.5, -9)
-    knob.BackgroundColor3 = Color3.new(1,1,1)
-    knob.BorderSizePixel = 0
-    knob.Parent = sliderBg
-    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
-    local sliding = false
-    local function upd(input)
-        local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
-        local v = math.floor(minVal + (maxVal - minVal) * relX)
-        fill.Size = UDim2.new(relX, 0, 1, 0)
-        knob.Position = UDim2.new(relX, -9, 0.5, -9)
-        valueLabel.Text = tostring(v)
-        callback(v)
-    end
-    sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; upd(input) end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
-    end)
-    return container
-end
-
-function Hub.createLabel(parent, text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 22)
-    label.BackgroundTransparency = 1
-    label.Text = "— " .. text .. " —"
-    label.TextColor3 = T.TextDim
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 10
-    label.Parent = parent
-    return label
-end
-
-function Hub.createKeybind(parent, name, defaultKey, callback)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 44)
-    container.BackgroundColor3 = T.Bg3
-    container.BorderSizePixel = 0
-    container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, 0, 1, 0)
-    label.Position = UDim2.new(0, 16, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = T.Text
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 13
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local keyBtn = Instance.new("TextButton")
-    keyBtn.Size = UDim2.new(0, 100, 0, 28)
-    keyBtn.Position = UDim2.new(1, -116, 0.5, -14)
-    keyBtn.BackgroundColor3 = T.Bg
-    keyBtn.Text = defaultKey.Name
-    keyBtn.TextColor3 = T.Accent
-    keyBtn.Font = Enum.Font.GothamBold
-    keyBtn.TextSize = 12
-    keyBtn.BorderSizePixel = 0
-    keyBtn.AutoButtonColor = false
-    keyBtn.Parent = container
-    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 8)
-
-    local awaiting = false
-    keyBtn.MouseButton1Click:Connect(function()
-        awaiting = true
-        keyBtn.Text = "Нажми..."
-        keyBtn.TextColor3 = Color3.fromRGB(255, 200, 0)
-    end)
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if awaiting and not gp and input.UserInputType == Enum.UserInputType.Keyboard then
-            keyBtn.Text = input.KeyCode.Name
-            keyBtn.TextColor3 = T.Accent
-            awaiting = false
-            callback(input.KeyCode)
-        end
-    end)
-    return container
-end
-
-local menuOpen = false
-function Hub.toggleMenu()
-    menuOpen = not menuOpen
-    MainFrame.Visible = menuOpen
-    if menuOpen then
-        MainFrame.Size = UDim2.new(0, 560, 0, 0)
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 560, 0, 400)
-        }):Play()
-        if not Hub.CurrentTab and Tabs["Speed"] then
-            Hub.switchTab("Speed")
-        end
-    end
-end
-
-FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
-
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        Hub.toggleMenu()
-    end
-end))
-
-print("🐗 Core загружен (v2.3 FULL)")
