@@ -1,4 +1,7 @@
--- 🐗 Bizon Hub Teleport (v2 — Hub.createToggle)
+-- 🐗 Bizon Hub Teleport v3
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
 local T = Hub.Theme
@@ -11,11 +14,9 @@ local WORLDS = {
 }
 
 local savedPos = nil
-
 local TpTab = Hub.createTab("Teleport", "🌀")
 
-Hub.createLabel(TpTab, "Быстрый телепорт")
-
+-- Функция телепорта
 local function teleportTo(pos)
     local ch = player.Character
     if not ch then return end
@@ -25,16 +26,16 @@ local function teleportTo(pos)
     print("🌀 Телепорт в " .. tostring(pos))
 end
 
--- Кнопки миров через createToggle в режиме "кнопка"
-for _, world in pairs(WORLDS) do
+-- Кнопка-карточка для телепорта
+local function createTeleportCard(parent, name, position)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.Size = UDim2.new(0.5, -3, 0, 52)
     btn.BackgroundColor3 = T.Bg3
     btn.BackgroundTransparency = 0.35
     btn.Text = ""
     btn.BorderSizePixel = 0
     btn.AutoButtonColor = false
-    btn.Parent = TpTab
+    btn.Parent = parent
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
 
     local grad = Instance.new("UIGradient", btn)
@@ -50,13 +51,13 @@ for _, world in pairs(WORLDS) do
     stroke.Transparency = 0.5
 
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -20, 1, 0)
-    lbl.Position = UDim2.new(0, 16, 0, 0)
+    lbl.Size = UDim2.new(1, -16, 1, 0)
+    lbl.Position = UDim2.new(0, 14, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = world.name
+    lbl.Text = name
     lbl.TextColor3 = T.Text
     lbl.Font = Enum.Font.GothamMedium
-    lbl.TextSize = 13
+    lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = btn
 
@@ -70,37 +71,75 @@ for _, world in pairs(WORLDS) do
     end)
 
     btn.MouseButton1Click:Connect(function()
-        teleportTo(world.pos)
+        teleportTo(position)
+        lbl.Text = "✅ " .. name
+        task.wait(0.5)
+        lbl.Text = name
     end)
+    return btn
 end
 
-Hub.createLabel(TpTab, "Сохранённые точки")
+-- Получаем/создаём строку на 2 колонки
+local function getTpRow()
+    if not TpTab.currentRow or TpTab.colCount >= 2 then
+        local row = Instance.new("Frame")
+        row.Size = UDim2.new(1, 0, 0, 52)
+        row.BackgroundTransparency = 1
+        row.Parent = TpTab
+        
+        local layout = Instance.new("UIListLayout", row)
+        layout.FillDirection = Enum.FillDirection.Horizontal
+        layout.Padding = UDim.new(0, 6)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        
+        TpTab.currentRow = row
+        TpTab.colCount = 0
+    end
+    TpTab.colCount = TpTab.colCount + 1
+    return TpTab.currentRow
+end
 
+-- Заголовок
+Hub.createLabel(TpTab, "Быстрый телепорт")
+TpTab.currentRow = nil
+TpTab.colCount = 0
+
+-- Кнопки миров
+for _, world in pairs(WORLDS) do
+    createTeleportCard(getTpRow(), world.name, world.pos)
+end
+
+-- Заголовок
+Hub.createLabel(TpTab, "Сохранённые точки")
+TpTab.currentRow = nil
+TpTab.colCount = 0
+
+-- Save
 local saveBtn = Instance.new("TextButton")
-saveBtn.Size = UDim2.new(1, 0, 1, 0)
+saveBtn.Size = UDim2.new(0.5, -3, 0, 52)
 saveBtn.BackgroundColor3 = T.Bg3
 saveBtn.BackgroundTransparency = 0.35
 saveBtn.Text = ""
 saveBtn.BorderSizePixel = 0
 saveBtn.AutoButtonColor = false
-saveBtn.Parent = TpTab
+saveBtn.Parent = getTpRow()
 Instance.new("UICorner", saveBtn).CornerRadius = UDim.new(0, 12)
 
-local stroke2 = Instance.new("UIStroke", saveBtn)
-stroke2.Color = T.Stroke
-stroke2.Thickness = 1
-stroke2.Transparency = 0.5
+local saveStroke = Instance.new("UIStroke", saveBtn)
+saveStroke.Color = T.Stroke
+saveStroke.Thickness = 1
+saveStroke.Transparency = 0.5
 
-local lbl2 = Instance.new("TextLabel")
-lbl2.Size = UDim2.new(1, -20, 1, 0)
-lbl2.Position = UDim2.new(0, 16, 0, 0)
-lbl2.BackgroundTransparency = 1
-lbl2.Text = "💾 Сохранить позицию"
-lbl2.TextColor3 = T.Text
-lbl2.Font = Enum.Font.GothamMedium
-lbl2.TextSize = 13
-lbl2.TextXAlignment = Enum.TextXAlignment.Left
-lbl2.Parent = saveBtn
+local saveLbl = Instance.new("TextLabel")
+saveLbl.Size = UDim2.new(1, -16, 1, 0)
+saveLbl.Position = UDim2.new(0, 14, 0, 0)
+saveLbl.BackgroundTransparency = 1
+saveLbl.Text = "💾 Сохранить"
+saveLbl.TextColor3 = T.Text
+saveLbl.Font = Enum.Font.GothamMedium
+saveLbl.TextSize = 12
+saveLbl.TextXAlignment = Enum.TextXAlignment.Left
+saveLbl.Parent = saveBtn
 
 saveBtn.MouseButton1Click:Connect(function()
     local ch = player.Character
@@ -108,49 +147,54 @@ saveBtn.MouseButton1Click:Connect(function()
     local hrp = ch:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     savedPos = hrp.Position
-    lbl2.Text = "✅ Сохранено (" .. math.floor(savedPos.X) .. ", " .. math.floor(savedPos.Z) .. ")"
-    task.wait(1.5)
-    lbl2.Text = "💾 Сохранить позицию"
+    saveLbl.Text = "✅ Сохранено"
+    task.wait(1.2)
+    saveLbl.Text = "💾 Сохранить"
 end)
 
+-- Load
 local loadBtn = Instance.new("TextButton")
-loadBtn.Size = UDim2.new(1, 0, 1, 0)
+loadBtn.Size = UDim2.new(0.5, -3, 0, 52)
 loadBtn.BackgroundColor3 = T.Bg3
 loadBtn.BackgroundTransparency = 0.35
 loadBtn.Text = ""
 loadBtn.BorderSizePixel = 0
 loadBtn.AutoButtonColor = false
-loadBtn.Parent = TpTab
+loadBtn.Parent = getTpRow()
 Instance.new("UICorner", loadBtn).CornerRadius = UDim.new(0, 12)
 
-local stroke3 = Instance.new("UIStroke", loadBtn)
-stroke3.Color = T.Stroke
-stroke3.Thickness = 1
-stroke3.Transparency = 0.5
+local loadStroke = Instance.new("UIStroke", loadBtn)
+loadStroke.Color = T.Stroke
+loadStroke.Thickness = 1
+loadStroke.Transparency = 0.5
 
-local lbl3 = Instance.new("TextLabel")
-lbl3.Size = UDim2.new(1, -20, 1, 0)
-lbl3.Position = UDim2.new(0, 16, 0, 0)
-lbl3.BackgroundTransparency = 1
-lbl3.Text = "📍 Вернуться к точке"
-lbl3.TextColor3 = T.Text
-lbl3.Font = Enum.Font.GothamMedium
-lbl3.TextSize = 13
-lbl3.TextXAlignment = Enum.TextXAlignment.Left
-lbl3.Parent = loadBtn
+local loadLbl = Instance.new("TextLabel")
+loadLbl.Size = UDim2.new(1, -16, 1, 0)
+loadLbl.Position = UDim2.new(0, 14, 0, 0)
+loadLbl.BackgroundTransparency = 1
+loadLbl.Text = "📍 Вернуться"
+loadLbl.TextColor3 = T.Text
+loadLbl.Font = Enum.Font.GothamMedium
+loadLbl.TextSize = 12
+loadLbl.TextXAlignment = Enum.TextXAlignment.Left
+loadLbl.Parent = loadBtn
 
 loadBtn.MouseButton1Click:Connect(function()
     if not savedPos then
-        lbl3.Text = "❌ Сначала сохрани"
-        task.wait(1.5)
-        lbl3.Text = "📍 Вернуться к точке"
+        loadLbl.Text = "❌ Сначала сохрани"
+        task.wait(1.2)
+        loadLbl.Text = "📍 Вернуться"
         return
     end
     teleportTo(savedPos)
 end)
 
+-- Заголовок
 Hub.createLabel(TpTab, "Игроки онлайн")
+TpTab.currentRow = nil
+TpTab.colCount = 0
 
+-- Список игроков на всю ширину
 local playersList = Instance.new("ScrollingFrame")
 playersList.Size = UDim2.new(1, 0, 0, 180)
 playersList.BackgroundColor3 = T.Bg
@@ -252,4 +296,4 @@ task.spawn(function()
     end
 end)
 
-print("🐗 Teleport модуль загружен")
+print("🐗 Teleport загружен")
