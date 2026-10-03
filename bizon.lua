@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v2.7 — Loader (Full)
+-- 🐗 Bizon Hub v2.8 — Loader (Multi UI)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -378,23 +378,29 @@ local function loadModule(name)
     task.wait(0.15)
 end
 
-print("🐗 Bizon Hub: старт (v2.7)")
+local function loadAllModules()
+    loadModule("core")
+    loadModule("ui1")
+    loadModule("ui2")
+    loadModule("ui3")
+    loadModule("utilities")
+    loadModule("teleport")
+    loadModule("farm")
+    loadModule("misc")
+end
+
+print("🐗 Bizon Hub: старт (v2.8)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
 if saved and saved.key and os.time() < saved.expiry then
     print("✅ Автовход: " .. saved.key)
     task.spawn(function()
-        loadModule("core")
-        loadModule("ui")
-        loadModule("utilities")
-        loadModule("teleport")
-        loadModule("farm")
-        loadModule("misc")
+        loadAllModules()
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v2.7)",
+                Text = "Автовход (v2.8)",
                 Duration = 3,
             })
         end)
@@ -404,12 +410,7 @@ else
     task.spawn(function()
         showUI()
         print("✅ Ключ подтверждён!")
-        loadModule("core")
-        loadModule("ui")
-        loadModule("utilities")
-        loadModule("teleport")
-        loadModule("farm")
-        loadModule("misc")
+        loadAllModules()
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
