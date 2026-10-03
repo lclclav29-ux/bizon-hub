@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v4.1 (Base + Watermark)
+-- 🐗 Bizon Hub Core v4.2 (Base + Watermark + 2col Tabs)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -59,9 +59,7 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
--- ============================================
 -- WATERMARK
--- ============================================
 local WatermarkGui = Instance.new("ScreenGui")
 WatermarkGui.Name = "BizonWatermark"
 WatermarkGui.ResetOnSpawn = false
@@ -142,13 +140,12 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 30, 1, 0)
 WMver.Position = UDim2.new(1, -34, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "4.1"
+WMver.Text = "4.2"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
 WMver.Parent = WMFrame
 
--- Drag watermark
 local wmDrag, wmStart, wmStartPos
 Hub.addConnection(WMFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -165,7 +162,6 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- Пульсация watermark
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
         TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.95, Thickness = 10}):Play()
@@ -176,7 +172,6 @@ task.spawn(function()
     end
 end)
 
--- FPS (сглаженный)
 local fpsHistory = {}
 task.spawn(function()
     local lastUpdate = tick()
@@ -202,7 +197,6 @@ task.spawn(function()
     end
 end)
 
--- Ping (сглаженный)
 local pingHistory = {}
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
@@ -226,13 +220,6 @@ task.spawn(function()
 end)
 
 Hub.Watermark = WMFrame
-function Hub.setEdition(edition)
-    if edition == "PREMIUM" then
-        WMtitle.TextColor3 = Color3.fromRGB(255, 200, 50)
-        WMicon.TextColor3 = Color3.fromRGB(255, 200, 50)
-        WMstroke.Color = Color3.fromRGB(255, 200, 50)
-    end
-end
 
 -- FLOAT BTN
 local FloatBtn = Instance.new("TextButton")
@@ -360,6 +347,7 @@ function Hub.switchTab(name)
     end
 end
 
+-- НОВАЯ createTab с UIListLayout для 2 колонок
 function Hub.createTab(name, icon)
     local tabBtn = Instance.new("TextButton")
     tabBtn.Size = UDim2.new(0, 110, 1, 0)
@@ -384,17 +372,21 @@ function Hub.createTab(name, icon)
     container.Visible = false
     container.Parent = Content
 
-    -- ⚠️ ВАЖНО: 2 колонки
-    local layout = Instance.new("UIGridLayout", container)
-    layout.CellSize = UDim2.new(0.5, -4, 0, 56)  -- 0.5 = половина ширины → 2 колонки
-    layout.CellPadding = UDim2.new(0, 8, 0, 8)
+    local layout = Instance.new("UIListLayout", container)
+    layout.Padding = UDim.new(0, 6)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
 
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
     end)
 
-    Hub.Tabs[name] = {button = tabBtn, container = container}
+    Hub.Tabs[name] = {
+        button = tabBtn,
+        container = container,
+        currentRow = nil,
+        colCount = 0
+    }
+    
     tabBtn.MouseButton1Click:Connect(function() Hub.switchTab(name) end)
     return container
 end
@@ -409,11 +401,6 @@ SettingsPanel.Visible = false
 SettingsPanel.ZIndex = 50
 SettingsPanel.Parent = ScreenGui
 Instance.new("UICorner", SettingsPanel).CornerRadius = UDim.new(0, 14)
-
-local SPstroke = Instance.new("UIStroke", SettingsPanel)
-SPstroke.Color = T.Accent
-SPstroke.Thickness = 1.5
-SPstroke.Transparency = 0.3
 
 local SPContent = Instance.new("ScrollingFrame")
 SPContent.Size = UDim2.new(1, -12, 1, -12)
@@ -446,7 +433,7 @@ function Hub.openSettings(sourceContainer, settingsFn)
     local ok, pos = pcall(function() return sourceContainer.AbsolutePosition end)
     if not ok or not pos then SettingsPanel.Visible = false; return end
     local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
-    SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 10, 0, pos.Y)
+    SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 10, 0, pos.y or pos.Y)
     SettingsPanel.Size = UDim2.new(0, 260, 0, 0)
     SettingsPanel.Visible = true
 end
@@ -490,4 +477,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core v4.1 (Base + Watermark) загружен")
+print("🐗 Core v4.2 загружен")
