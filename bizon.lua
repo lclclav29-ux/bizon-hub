@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v3.4 — Loader (Fixed Order)
+-- 🐗 Bizon Hub v3.5 — Loader (with Rebirth)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -509,7 +509,7 @@ local function showKeyUI()
 end
 
 -- === ЗАГРУЗКА МОДУЛЕЙ ===
-local MODULES = {"core", "ui1", "ui2", "ui3", "utilities", "teleport", "farm", "misc"}
+local MODULES = {"core", "ui1", "ui2", "ui3", "utilities", "teleport", "rebirth", "farm", "misc"}
 
 local function loadAllModulesWithProgress(setProgress)
     for i, name in ipairs(MODULES) do
@@ -527,13 +527,13 @@ local function loadAllModulesWithProgress(setProgress)
         else
             print("🐗 ✅ " .. name .. " загружен")
         end
-        task.wait(0.25)  -- ⚠️ Больше задержки
+        task.wait(0.25)
     end
     if setProgress then setProgress(100) end
 end
 
 -- === ГЛАВНЫЙ ПОТОК ===
-print("🐗 Bizon Hub: старт (v3.4)")
+print("🐗 Bizon Hub: старт (v3.5)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
@@ -570,7 +570,7 @@ else
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v3.4)",
+                Text = "Автовход (v3.5)",
                 Duration = 3,
             })
         end)
