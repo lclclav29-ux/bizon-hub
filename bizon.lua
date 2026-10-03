@@ -1,7 +1,8 @@
--- 🐗 Bizon Hub v2.8 — Loader (Multi UI)
+-- 🐗 Bizon Hub v3.2 — Loader (Splash + Key)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
@@ -12,15 +13,181 @@ local function bustCache(url)
     return url .. sep .. "s=" .. SESSION_ID .. "&r=" .. tostring(math.random(1, 999999999))
 end
 
+-- === ТЕМА ===
+local THEME = {
+    Bg = Color3.fromRGB(15, 12, 25),
+    Bg2 = Color3.fromRGB(28, 22, 45),
+    Accent = Color3.fromRGB(168, 85, 247),
+    AccentGlow = Color3.fromRGB(200, 130, 255),
+    Text = Color3.fromRGB(240, 235, 255),
+    TextDim = Color3.fromRGB(140, 130, 165),
+    Success = Color3.fromRGB(80, 240, 160),
+    Danger = Color3.fromRGB(240, 70, 100),
+    Warning = Color3.fromRGB(255, 200, 50),
+}
+
 local AD_CONFIG = {
     Title = "🐗 BIZON HUB",
     SubTitle = "Премиум чит для Roblox",
     PromoText = "📢 Подпишись на наш канал!\n\n🎁 Получи бесплатный доступ",
     PromoURL = "https://www.youtube.com/@HOBONI-f9t",
-    ButtonURL = "🔗 Открыть YouTube канал",
     WaitTime = 5,
 }
 
+-- === SPLASH SCREEN ===
+local function showSplash()
+    local splashGui = Instance.new("ScreenGui")
+    splashGui.Name = "BizonSplash"
+    splashGui.ResetOnSpawn = false
+    splashGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    splashGui.IgnoreGuiInset = true
+    splashGui.Parent = player:WaitForChild("PlayerGui")
+
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.new(1, 0, 1, 0)
+    overlay.BackgroundColor3 = Color3.new(0, 0, 0)
+    overlay.BackgroundTransparency = 1
+    overlay.BorderSizePixel = 0
+    overlay.Parent = splashGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 420, 0, 240)
+    frame.Position = UDim2.new(0.5, -210, 0.5, -120)
+    frame.BackgroundColor3 = THEME.Bg
+    frame.BackgroundTransparency = 1
+    frame.BorderSizePixel = 0
+    frame.Parent = splashGui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 22)
+
+    local frameStroke = Instance.new("UIStroke", frame)
+    frameStroke.Color = THEME.Accent
+    frameStroke.Thickness = 2
+    frameStroke.Transparency = 1
+
+    local glow = Instance.new("UIStroke", frame)
+    glow.Color = THEME.AccentGlow
+    glow.Thickness = 6
+    glow.Transparency = 1
+
+    -- Иконка
+    local icon = Instance.new("TextLabel")
+    icon.Size = UDim2.new(0, 80, 0, 80)
+    icon.Position = UDim2.new(0.5, -40, 0, 20)
+    icon.BackgroundColor3 = THEME.Bg2
+    icon.BackgroundTransparency = 1
+    icon.Text = "🐗"
+    icon.TextColor3 = THEME.Accent
+    icon.Font = Enum.Font.GothamBold
+    icon.TextSize = 55
+    icon.TextTransparency = 1
+    icon.Parent = frame
+    Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 40)
+
+    -- Название
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.Position = UDim2.new(0, 0, 0, 110)
+    title.BackgroundTransparency = 1
+    title.Text = "BIZON HUB"
+    title.TextColor3 = THEME.Accent
+    title.Font = Enum.Font.GothamBlack
+    title.TextSize = 24
+    title.TextTransparency = 1
+    title.Parent = frame
+
+    -- Приветствие
+    local greeting = Instance.new("TextLabel")
+    greeting.Size = UDim2.new(1, -40, 0, 24)
+    greeting.Position = UDim2.new(0, 20, 0, 145)
+    greeting.BackgroundTransparency = 1
+    greeting.Text = "👋 Приветствуем в Bizon Hub!"
+    greeting.TextColor3 = THEME.Text
+    greeting.Font = Enum.Font.GothamBold
+    greeting.TextSize = 14
+    greeting.TextTransparency = 1
+    greeting.Parent = frame
+
+    -- Прогресс-бар
+    local progressBg = Instance.new("Frame")
+    progressBg.Size = UDim2.new(1, -40, 0, 6)
+    progressBg.Position = UDim2.new(0, 20, 0, 190)
+    progressBg.BackgroundColor3 = THEME.Bg2
+    progressBg.BorderSizePixel = 0
+    progressBg.BackgroundTransparency = 1
+    progressBg.Parent = frame
+    Instance.new("UICorner", progressBg).CornerRadius = UDim.new(1, 0)
+
+    local progressFill = Instance.new("Frame")
+    progressFill.Size = UDim2.new(0, 0, 1, 0)
+    progressFill.BackgroundColor3 = THEME.Accent
+    progressFill.BorderSizePixel = 0
+    progressFill.Parent = progressBg
+    Instance.new("UICorner", progressFill).CornerRadius = UDim.new(1, 0)
+
+    local percentLabel = Instance.new("TextLabel")
+    percentLabel.Size = UDim2.new(1, -40, 0, 18)
+    percentLabel.Position = UDim2.new(0, 20, 0, 202)
+    percentLabel.BackgroundTransparency = 1
+    percentLabel.Text = "Загрузка... 0%"
+    percentLabel.TextColor3 = THEME.TextDim
+    percentLabel.Font = Enum.Font.GothamBold
+    percentLabel.TextSize = 11
+    percentLabel.TextTransparency = 1
+    percentLabel.Parent = frame
+
+    -- Анимация появления
+    task.spawn(function()
+        TweenService:Create(overlay, TweenInfo.new(0.3), {BackgroundTransparency = 0.4}):Play()
+        TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.05}):Play()
+        TweenService:Create(frameStroke, TweenInfo.new(0.5), {Transparency = 0.3}):Play()
+        TweenService:Create(glow, TweenInfo.new(0.5), {Transparency = 0.85}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.4), {BackgroundTransparency = 0.3}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+        task.wait(0.4)
+        TweenService:Create(title, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+        task.wait(0.15)
+        TweenService:Create(greeting, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+        task.wait(0.2)
+        TweenService:Create(progressBg, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(percentLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    end)
+
+    -- Пульсация иконки
+    task.spawn(function()
+        while frame.Parent do
+            TweenService:Create(icon, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 88, 0, 88), Position = UDim2.new(0.5, -44, 0, 16)}):Play()
+            task.wait(0.6)
+            if not frame.Parent then break end
+            TweenService:Create(icon, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 80, 0, 80), Position = UDim2.new(0.5, -40, 0, 20)}):Play()
+            task.wait(0.6)
+        end
+    end)
+
+    local function setProgress(pct)
+        pct = math.clamp(pct, 0, 100)
+        TweenService:Create(progressFill, TweenInfo.new(0.3), {Size = UDim2.new(pct/100, 0, 1, 0)}):Play()
+        percentLabel.Text = "Загрузка... " .. math.floor(pct) .. "%"
+    end
+
+    local function close()
+        TweenService:Create(frame, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(frameStroke, TweenInfo.new(0.4), {Transparency = 1}):Play()
+        TweenService:Create(glow, TweenInfo.new(0.4), {Transparency = 1}):Play()
+        TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(greeting, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+        TweenService:Create(progressBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(progressFill, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(percentLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        task.wait(0.5)
+        splashGui:Destroy()
+    end
+
+    return splashGui, setProgress, close
+end
+
+-- === ПАМЯТЬ ===
 local SAVE_FILE = "bizon_key.txt"
 
 local function hasFileAPI()
@@ -73,6 +240,7 @@ local function loadValidKeys()
     return keys
 end
 
+-- === UI КЛЮЧА ===
 local function showUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BizonKeySystem"
@@ -91,25 +259,25 @@ local function showUI()
     local Frame = Instance.new("Frame")
     Frame.Size = UDim2.new(0, 460, 0, 460)
     Frame.Position = UDim2.new(0.5, -230, 0.5, -230)
-    Frame.BackgroundColor3 = Color3.fromRGB(15, 12, 25)
+    Frame.BackgroundColor3 = THEME.Bg
     Frame.BorderSizePixel = 0
     Frame.Parent = ScreenGui
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 22)
 
     local stroke = Instance.new("UIStroke", Frame)
-    stroke.Color = Color3.fromRGB(168, 85, 247)
+    stroke.Color = THEME.Accent
     stroke.Thickness = 2
 
     local Header = Instance.new("Frame")
     Header.Size = UDim2.new(1, 0, 0, 70)
-    Header.BackgroundColor3 = Color3.fromRGB(28, 22, 45)
+    Header.BackgroundColor3 = THEME.Bg2
     Header.BorderSizePixel = 0
     Header.Parent = Frame
     Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 22)
     local HF = Instance.new("Frame")
     HF.Size = UDim2.new(1, 0, 0, 20)
     HF.Position = UDim2.new(0, 0, 1, -20)
-    HF.BackgroundColor3 = Color3.fromRGB(28, 22, 45)
+    HF.BackgroundColor3 = THEME.Bg2
     HF.BorderSizePixel = 0
     HF.Parent = Header
 
@@ -118,7 +286,7 @@ local function showUI()
     Title.Position = UDim2.new(0, 0, 0, 8)
     Title.BackgroundTransparency = 1
     Title.Text = AD_CONFIG.Title
-    Title.TextColor3 = Color3.fromRGB(168, 85, 247)
+    Title.TextColor3 = THEME.Accent
     Title.Font = Enum.Font.GothamBlack
     Title.TextSize = 22
     Title.Parent = Header
@@ -128,7 +296,7 @@ local function showUI()
     SubTitle.Position = UDim2.new(0, 0, 0, 44)
     SubTitle.BackgroundTransparency = 1
     SubTitle.Text = AD_CONFIG.SubTitle
-    SubTitle.TextColor3 = Color3.fromRGB(140, 130, 165)
+    SubTitle.TextColor3 = THEME.TextDim
     SubTitle.Font = Enum.Font.Gotham
     SubTitle.TextSize = 12
     SubTitle.Parent = Header
@@ -138,7 +306,7 @@ local function showUI()
     Promo.Position = UDim2.new(0, 20, 0, 85)
     Promo.BackgroundTransparency = 1
     Promo.Text = AD_CONFIG.PromoText
-    Promo.TextColor3 = Color3.fromRGB(235, 235, 245)
+    Promo.TextColor3 = THEME.Text
     Promo.Font = Enum.Font.GothamMedium
     Promo.TextSize = 14
     Promo.TextWrapped = true
@@ -150,7 +318,7 @@ local function showUI()
     Status.Position = UDim2.new(0, 20, 0, 155)
     Status.BackgroundTransparency = 1
     Status.Text = "⏳ Подожди " .. AD_CONFIG.WaitTime .. " сек..."
-    Status.TextColor3 = Color3.fromRGB(255, 200, 50)
+    Status.TextColor3 = THEME.Warning
     Status.Font = Enum.Font.GothamBold
     Status.TextSize = 13
     Status.TextXAlignment = Enum.TextXAlignment.Left
@@ -159,9 +327,9 @@ local function showUI()
     local SubBtn = Instance.new("TextButton")
     SubBtn.Size = UDim2.new(1, -40, 0, 44)
     SubBtn.Position = UDim2.new(0, 20, 0, 190)
-    SubBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 45)
+    SubBtn.BackgroundColor3 = THEME.Bg2
     SubBtn.Text = "🔒 Подожди..."
-    SubBtn.TextColor3 = Color3.fromRGB(140, 130, 165)
+    SubBtn.TextColor3 = THEME.TextDim
     SubBtn.Font = Enum.Font.GothamBold
     SubBtn.TextSize = 14
     SubBtn.BorderSizePixel = 0
@@ -182,7 +350,7 @@ local function showUI()
     orLabel.Position = UDim2.new(0, 0, 0, 244)
     orLabel.BackgroundTransparency = 1
     orLabel.Text = "или введи свой ключ"
-    orLabel.TextColor3 = Color3.fromRGB(140, 130, 165)
+    orLabel.TextColor3 = THEME.TextDim
     orLabel.Font = Enum.Font.Gotham
     orLabel.TextSize = 11
     orLabel.Parent = Frame
@@ -190,11 +358,11 @@ local function showUI()
     local KeyInput = Instance.new("TextBox")
     KeyInput.Size = UDim2.new(1, -40, 0, 44)
     KeyInput.Position = UDim2.new(0, 20, 0, 270)
-    KeyInput.BackgroundColor3 = Color3.fromRGB(28, 22, 45)
+    KeyInput.BackgroundColor3 = THEME.Bg2
     KeyInput.Text = ""
     KeyInput.PlaceholderText = "BISON-XXXX-XXXX"
     KeyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
-    KeyInput.TextColor3 = Color3.fromRGB(168, 85, 247)
+    KeyInput.TextColor3 = THEME.Accent
     KeyInput.Font = Enum.Font.GothamBold
     KeyInput.TextSize = 14
     KeyInput.BorderSizePixel = 0
@@ -212,9 +380,9 @@ local function showUI()
     local cb = Instance.new("TextButton")
     cb.Size = UDim2.new(0, 20, 0, 20)
     cb.Position = UDim2.new(0, 0, 0.5, -10)
-    cb.BackgroundColor3 = Color3.fromRGB(80, 240, 160)
+    cb.BackgroundColor3 = THEME.Success
     cb.Text = "✓"
-    cb.TextColor3 = Color3.fromRGB(15, 12, 25)
+    cb.TextColor3 = THEME.Bg
     cb.Font = Enum.Font.GothamBold
     cb.TextSize = 16
     cb.BorderSizePixel = 0
@@ -236,10 +404,10 @@ local function showUI()
     cb.MouseButton1Click:Connect(function()
         rememberState = not rememberState
         if rememberState then
-            cb.BackgroundColor3 = Color3.fromRGB(80, 240, 160)
+            cb.BackgroundColor3 = THEME.Success
             cb.Text = "✓"
         else
-            cb.BackgroundColor3 = Color3.fromRGB(28, 22, 45)
+            cb.BackgroundColor3 = THEME.Bg2
             cb.Text = ""
         end
     end)
@@ -247,9 +415,9 @@ local function showUI()
     local LoginBtn = Instance.new("TextButton")
     LoginBtn.Size = UDim2.new(1, -40, 0, 46)
     LoginBtn.Position = UDim2.new(0, 20, 1, -60)
-    LoginBtn.BackgroundColor3 = Color3.fromRGB(168, 85, 247)
+    LoginBtn.BackgroundColor3 = THEME.Accent
     LoginBtn.Text = "🔑 ВОЙТИ"
-    LoginBtn.TextColor3 = Color3.fromRGB(15, 12, 25)
+    LoginBtn.TextColor3 = THEME.Bg
     LoginBtn.Font = Enum.Font.GothamBold
     LoginBtn.TextSize = 15
     LoginBtn.BorderSizePixel = 0
@@ -262,7 +430,7 @@ local function showUI()
     StatusLabel.Position = UDim2.new(0, 20, 1, -84)
     StatusLabel.BackgroundTransparency = 1
     StatusLabel.Text = ""
-    StatusLabel.TextColor3 = Color3.fromRGB(240, 70, 100)
+    StatusLabel.TextColor3 = THEME.Danger
     StatusLabel.Font = Enum.Font.GothamBold
     StatusLabel.TextSize = 12
     StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -275,9 +443,9 @@ local function showUI()
             task.wait(1)
         end
         Status.Text = "✅ Готово! Забери ключ"
-        Status.TextColor3 = Color3.fromRGB(80, 240, 160)
+        Status.TextColor3 = THEME.Success
         SubBtn.Active = true
-        SubBtn.BackgroundColor3 = Color3.fromRGB(168, 85, 247)
+        SubBtn.BackgroundColor3 = THEME.Accent
         SubBtn.TextColor3 = Color3.new(1, 1, 1)
         SubBtn.Text = "🎁 ПОЛУЧИТЬ КЛЮЧ НА 1 ДЕНЬ"
 
@@ -288,19 +456,18 @@ local function showUI()
                     if setclipboard then setclipboard(AD_CONFIG.PromoURL) end
                 end)
                 SubBtn.Text = "✅ Ссылка скопирована!"
-                SubBtn.BackgroundColor3 = Color3.fromRGB(80, 240, 160)
+                SubBtn.BackgroundColor3 = THEME.Success
                 task.wait(1.5)
                 SubBtn.Text = "🔓 Я ПОДПИСАЛСЯ — ДАТЬ КЛЮЧ"
-                SubBtn.BackgroundColor3 = Color3.fromRGB(168, 85, 247)
-                SubBtn.TextColor3 = Color3.fromRGB(15, 12, 25)
+                SubBtn.BackgroundColor3 = THEME.Accent
+                SubBtn.TextColor3 = THEME.Bg
             elseif subPhase == 2 then
                 local newKey = generateKey()
-                local expiryTs = os.time() + 86400
-                saveKey(newKey, expiryTs)
+                saveKey(newKey, os.time() + 86400)
                 Status.Text = "🎁 Твой ключ: " .. newKey
-                Status.TextColor3 = Color3.fromRGB(80, 240, 160)
+                Status.TextColor3 = THEME.Success
                 SubBtn.Text = "✅ Ключ получен!"
-                SubBtn.BackgroundColor3 = Color3.fromRGB(80, 240, 160)
+                SubBtn.BackgroundColor3 = THEME.Success
                 task.wait(1.5)
                 ScreenGui:Destroy()
             end
@@ -311,43 +478,31 @@ local function showUI()
         local entered = KeyInput.Text:upper():gsub("%s", "")
         if entered == "" then
             StatusLabel.Text = "❌ Введи ключ"
-            StatusLabel.TextColor3 = Color3.fromRGB(240, 70, 100)
             return
         end
-
         StatusLabel.Text = "⏳ Проверка..."
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+        StatusLabel.TextColor3 = THEME.Warning
         LoginBtn.Text = "ПРОВЕРКА..."
-
         task.spawn(function()
             local validKeys = loadValidKeys()
             task.wait(0.3)
-
             local saved = loadSavedKey()
             local valid = false
-
-            if validKeys[entered] then
-                valid = true
-            elseif saved and saved.key == entered and os.time() < saved.expiry then
-                valid = true
-            end
-
+            if validKeys[entered] then valid = true
+            elseif saved and saved.key == entered and os.time() < saved.expiry then valid = true end
             if valid then
                 StatusLabel.Text = "✅ Ключ принят!"
-                StatusLabel.TextColor3 = Color3.fromRGB(80, 240, 160)
+                StatusLabel.TextColor3 = THEME.Success
                 LoginBtn.Text = "✅ OK"
-                LoginBtn.BackgroundColor3 = Color3.fromRGB(80, 240, 160)
-
+                LoginBtn.BackgroundColor3 = THEME.Success
                 if rememberState and hasFileAPI() then
-                    local exp = os.time() + 7 * 86400
-                    saveKey(entered, exp)
+                    saveKey(entered, os.time() + 7 * 86400)
                 end
-
                 task.wait(0.6)
                 ScreenGui:Destroy()
             else
                 StatusLabel.Text = "❌ Неверный ключ"
-                StatusLabel.TextColor3 = Color3.fromRGB(240, 70, 100)
+                StatusLabel.TextColor3 = THEME.Danger
                 LoginBtn.Text = "🔑 ВОЙТИ"
                 KeyInput.Text = ""
             end
@@ -355,62 +510,57 @@ local function showUI()
     end
 
     LoginBtn.MouseButton1Click:Connect(tryLogin)
-    KeyInput.FocusLost:Connect(function(enter)
-        if enter then tryLogin() end
-    end)
+    KeyInput.FocusLost:Connect(function(enter) if enter then tryLogin() end end)
 
-    while ScreenGui.Parent do
-        task.wait(0.1)
+    while ScreenGui.Parent do task.wait(0.1) end
+end
+
+-- === ЗАГРУЗКА МОДУЛЕЙ ===
+local MODULES = {"core", "ui1", "ui2", "ui3", "utilities", "teleport", "farm", "misc"}
+
+local function loadAllModulesWithProgress(setProgress)
+    for i, name in ipairs(MODULES) do
+        local pct = math.floor((i / #MODULES) * 100)
+        if setProgress then setProgress(pct) end
+        print("🐗 Загрузка " .. name .. "... (" .. pct .. "%)")
+        
+        local url = bustCache(BASE .. name .. ".lua")
+        local ok, err = pcall(function()
+            loadstring(game:HttpGet(url))()
+        end)
+        
+        if not ok then
+            warn("🐗 ❌ Ошибка " .. name .. ": " .. tostring(err))
+        else
+            print("🐗 ✅ " .. name .. " загружен")
+        end
+        task.wait(0.15)
     end
+    if setProgress then setProgress(100) end
 end
 
-local function loadModule(name)
-    local url = bustCache(BASE .. name .. ".lua")
-    print("🐗 Загрузка " .. name .. "...")
-    local ok, err = pcall(function()
-        loadstring(game:HttpGet(url))()
-    end)
-    if not ok then
-        warn("🐗 ❌ Ошибка " .. name .. ": " .. tostring(err))
-    else
-        print("🐗 ✅ " .. name .. " загружен")
-    end
-    task.wait(0.15)
-end
-
-local function loadAllModules()
-    loadModule("core")
-    loadModule("ui1")
-    loadModule("ui2")
-    loadModule("ui3")
-    loadModule("utilities")
-    loadModule("teleport")
-    loadModule("farm")
-    loadModule("misc")
-end
-
-print("🐗 Bizon Hub: старт (v2.8)")
+-- === ГЛАВНЫЙ ПОТОК ===
+print("🐗 Bizon Hub: старт (v3.2)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
-if saved and saved.key and os.time() < saved.expiry then
-    print("✅ Автовход: " .. saved.key)
-    task.spawn(function()
-        loadAllModules()
-        pcall(function()
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "🐗 Bizon Hub",
-                Text = "Автовход (v2.8)",
-                Duration = 3,
-            })
-        end)
-        print("🐗 Bizon Hub: готово (автовход)!")
-    end)
-else
+local needKey = not (saved and saved.key and os.time() < saved.expiry)
+
+if needKey then
+    -- Сначала окно ключа
     task.spawn(function()
         showUI()
         print("✅ Ключ подтверждён!")
-        loadAllModules()
+        task.wait(0.2)
+        
+        -- Потом splash
+        local splashGui, setProgress, closeSplash = showSplash()
+        
+        loadAllModulesWithProgress(setProgress)
+        
+        task.wait(0.8)
+        closeSplash()
+        
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
@@ -419,5 +569,25 @@ else
             })
         end)
         print("🐗 Bizon Hub: готово!")
+    end)
+else
+    -- Автовход — сразу splash
+    task.spawn(function()
+        print("✅ Автовход: " .. saved.key)
+        local splashGui, setProgress, closeSplash = showSplash()
+        
+        loadAllModulesWithProgress(setProgress)
+        
+        task.wait(0.8)
+        closeSplash()
+        
+        pcall(function()
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "🐗 Bizon Hub",
+                Text = "Автовход (v3.2)",
+                Duration = 3,
+            })
+        end)
+        print("🐗 Bizon Hub: готово (автовход)!")
     end)
 end
