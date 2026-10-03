@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v2.0 (FINAL + Watermark)
+-- 🐗 Bizon Hub Core v2.1 (FINAL + Watermark + Smoothing)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -45,10 +45,9 @@ Hub.Settings = {
 local T = Hub.Theme
 local S = Hub.Settings
 
--- Watermark настройки
-Hub.WatermarkEdition = "FREE"  -- "FREE" или "PREMIUM"
+Hub.WatermarkEdition = "FREE"
 
--- Удаляем старый GUI
+-- Удаляем старые GUI
 local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
@@ -64,7 +63,7 @@ ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
 -- ============================================
--- WATERMARK (FPS + Ping + Version)
+-- WATERMARK
 -- ============================================
 local WatermarkGui = Instance.new("ScreenGui")
 WatermarkGui.Name = "BizonWatermark"
@@ -111,7 +110,7 @@ local WMversion = Instance.new("TextLabel")
 WMversion.Size = UDim2.new(0, 30, 1, 0)
 WMversion.Position = UDim2.new(0, 120, 0, 0)
 WMversion.BackgroundTransparency = 1
-WMversion.Text = "v2.0"
+WMversion.Text = "v2.1"
 WMversion.TextColor3 = T.TextDim
 WMversion.Font = Enum.Font.GothamBold
 WMversion.TextSize = 9
@@ -182,40 +181,72 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- FPS update
+-- === СГЛАЖЕННЫЙ FPS (усреднение за 30 кадров) ===
+local fpsHistory = {}
+local FPS_SAMPLES = 30
+
 task.spawn(function()
+    local lastUpdate = tick()
+    local frames = 0
     while WMFrame.Parent and not Hub.IsPanicked do
-        local fps = math.floor(1 / RunService.RenderStepped:Wait())
-        if fps > 999 then fps = 999 end
-        local color = T.Success
-        if fps < 30 then color = T.Danger
-        elseif fps < 60 then color = Color3.fromRGB(255, 200, 0) end
-        WMfps.Text = "FPS: " .. tostring(fps)
-        WMfps.TextColor3 = color
+        RunService.RenderStepped:Wait()
+        frames = frames + 1
+        local now = tick()
+        if now - lastUpdate >= 0.5 then
+            local rawFps = frames / (now - lastUpdate)
+            frames = 0
+            lastUpdate = now
+
+            table.insert(fpsHistory, rawFps)
+            if #fpsHistory > FPS_SAMPLES then
+                table.remove(fpsHistory, 1)
+            end
+
+            local sum = 0
+            for _, v in pairs(fpsHistory) do sum = sum + v end
+            local avgFps = math.floor(sum / #fpsHistory)
+
+            local color = T.Success
+            if avgFps < 30 then color = T.Danger
+            elseif avgFps < 60 then color = Color3.fromRGB(255, 200, 0) end
+
+            WMfps.Text = "FPS: " .. tostring(avgFps)
+            WMfps.TextColor3 = color
+        end
     end
 end)
 
--- Ping update
+-- === СГЛАЖЕННЫЙ PING (усреднение за 10 замеров) ===
+local pingHistory = {}
+local PING_SAMPLES = 10
+
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
         local ok, ping = pcall(function()
             return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
         end)
         if ok and ping then
-            local p = math.floor(ping)
+            table.insert(pingHistory, ping)
+            if #pingHistory > PING_SAMPLES then
+                table.remove(pingHistory, 1)
+            end
+
+            local sum = 0
+            for _, v in pairs(pingHistory) do sum = sum + v end
+            local avgPing = math.floor(sum / #pingHistory)
+
             local color = T.Success
-            if p > 200 then color = T.Danger
-            elseif p > 100 then color = Color3.fromRGB(255, 200, 0) end
-            WMping.Text = "PING: " .. tostring(p)
+            if avgPing > 200 then color = T.Danger
+            elseif avgPing > 100 then color = Color3.fromRGB(255, 200, 0) end
+
+            WMping.Text = "PING: " .. tostring(avgPing)
             WMping.TextColor3 = color
-        else
-            WMping.Text = "PING: --"
         end
         task.wait(1)
     end
 end)
 
--- API для смены версии
+-- API смены версии
 Hub.Watermark = WMFrame
 function Hub.setEdition(edition)
     Hub.WatermarkEdition = edition
@@ -268,13 +299,14 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
+-- Медленная пульсация (2.5 сек вместо 1.8)
 task.spawn(function()
     while FloatBtn.Parent and not Hub.IsPanicked do
-        TweenService:Create(FBstroke, TweenInfo.new(1.8), {Transparency = 0.7}):Play()
-        task.wait(1.8)
+        TweenService:Create(FBstroke, TweenInfo.new(2.5), {Transparency = 0.7}):Play()
+        task.wait(2.5)
         if Hub.IsPanicked then break end
-        TweenService:Create(FBstroke, TweenInfo.new(1.8), {Transparency = 0.3}):Play()
-        task.wait(1.8)
+        TweenService:Create(FBstroke, TweenInfo.new(2.5), {Transparency = 0.3}):Play()
+        task.wait(2.5)
     end
 end)
 
@@ -293,7 +325,6 @@ MFstroke.Color = T.Stroke
 MFstroke.Thickness = 1.5
 Hub.MainFrame = MainFrame
 
--- HEADER
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 58)
 Header.BackgroundColor3 = T.Bg2
@@ -324,7 +355,7 @@ Version.Size = UDim2.new(0, 65, 0, 22)
 Version.Position = UDim2.new(0, 230, 0.5, -11)
 Version.BackgroundColor3 = T.Accent
 Version.BackgroundTransparency = 0.82
-Version.Text = "v2.0"
+Version.Text = "v2.1"
 Version.TextColor3 = T.Accent
 Version.Font = Enum.Font.GothamBold
 Version.TextSize = 11
@@ -362,7 +393,6 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- TAB BAR
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(0, 150, 1, -80)
 TabBar.Position = UDim2.new(0, 12, 0, 68)
@@ -449,7 +479,6 @@ function Hub.createTab(name, icon)
     return container
 end
 
--- UI HELPERS
 function Hub.createToggle(parent, name, default, callback, onRight)
     local state = default or false
     local container = Instance.new("Frame")
@@ -503,6 +532,15 @@ function Hub.createToggle(parent, name, default, callback, onRight)
         state = not state
         upd()
         if callback then callback(state) end
+    end)
+    container.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            state = not state
+            upd()
+            if callback then callback(state) end
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 and onRight then
+            onRight()
+        end
     end)
     return container
 end
@@ -644,7 +682,6 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     return container
 end
 
--- Menu toggle
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
@@ -669,4 +706,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core загружен (v2.0 + Watermark)")
+print("🐗 Core загружен (v2.1 + Watermark + Smoothing)")
