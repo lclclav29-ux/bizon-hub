@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Utilities v2.1 (Optimized)
+-- 🐗 Bizon Hub Utilities (Right-click settings)
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -14,64 +14,78 @@ local SpeedTab = Hub.createTab("Speed", "⚡")
 
 Hub.createLabel(SpeedTab, "СКОРОСТЬ")
 
-Hub.createToggle(SpeedTab, "Speed Hack", S.SpeedEnabled, function(state)
+-- Speed Hack с ПКМ-настройками
+local speedCard = Hub.createToggle(SpeedTab, "Speed Hack", S.SpeedEnabled, function(state)
     S.SpeedEnabled = state
     local ch = player.Character
     if ch and ch:FindFirstChild("Humanoid") then
         ch.Humanoid.WalkSpeed = state and S.SpeedValue or 16
     end
+end, function()  -- ПКМ
+    Hub.openSettings(speedCard, function(parent)
+        Hub.createSlider(parent, "Скорость", 16, 500, S.SpeedValue, function(v)
+            S.SpeedValue = v
+            if S.SpeedEnabled then
+                local ch = player.Character
+                if ch and ch:FindFirstChild("Humanoid") then
+                    ch.Humanoid.WalkSpeed = v
+                end
+            end
+        end)
+
+        Hub.createToggle(parent, "Плавное ускорение", S.SmoothSpeed, function(s)
+            S.SmoothSpeed = s
+        end)
+
+        Hub.createToggle(parent, "Ускорение в воздухе", S.SpeedInAir, function(s)
+            S.SpeedInAir = s
+        end)
+
+        Hub.createToggle(parent, "Активация по клавише", S.UseKeybind, function(s)
+            S.UseKeybind = s
+            if not s then
+                local ch = player.Character
+                if ch and ch:FindFirstChild("Humanoid") then
+                    ch.Humanoid.WalkSpeed = 16
+                end
+            end
+        end)
+
+        Hub.createKeybind(parent, "Клавиша", S.SpeedKey, function(k)
+            S.SpeedKey = k
+        end)
+    end)
 end)
-
-Hub.createSlider(SpeedTab, "Скорость", 16, 500, S.SpeedValue, function(v)
-    S.SpeedValue = v
-    if S.SpeedEnabled then
-        local ch = player.Character
-        if ch and ch:FindFirstChild("Humanoid") then
-            ch.Humanoid.WalkSpeed = v
-        end
-    end
-end)
-
-Hub.createLabel(SpeedTab, "ДОПОЛНИТЕЛЬНО")
-
-Hub.createToggle(SpeedTab, "Плавное ускорение", S.SmoothSpeed, function(s) S.SmoothSpeed = s end)
-Hub.createToggle(SpeedTab, "Ускорение в воздухе", S.SpeedInAir, function(s) S.SpeedInAir = s end)
-
-Hub.createToggle(SpeedTab, "Активация по клавише", S.UseKeybind, function(s)
-    S.UseKeybind = s
-    if not s then
-        local ch = player.Character
-        if ch and ch:FindFirstChild("Humanoid") then ch.Humanoid.WalkSpeed = 16 end
-    end
-end)
-
-Hub.createKeybind(SpeedTab, "Клавиша активации", S.SpeedKey, function(k) S.SpeedKey = k end)
 
 -- === JUMP TAB ===
 local JumpTab = Hub.createTab("Jump", "🦘")
 
 Hub.createLabel(JumpTab, "ПРЫЖОК")
 
-Hub.createToggle(JumpTab, "Jump Power", S.JumpEnabled, function(state)
+local jumpCard = Hub.createToggle(JumpTab, "Jump Power", S.JumpEnabled, function(state)
     S.JumpEnabled = state
     local ch = player.Character
     if ch and ch:FindFirstChild("Humanoid") then
         ch.Humanoid.UseJumpPower = true
         ch.Humanoid.JumpPower = state and S.JumpValue or 50
     end
+end, function()  -- ПКМ
+    Hub.openSettings(jumpCard, function(parent)
+        Hub.createSlider(parent, "Сила прыжка", 50, 500, S.JumpValue, function(v)
+            S.JumpValue = v
+            if S.JumpEnabled then
+                local ch = player.Character
+                if ch and ch:FindFirstChild("Humanoid") then
+                    ch.Humanoid.JumpPower = v
+                end
+            end
+        end)
+    end)
 end)
 
-Hub.createSlider(JumpTab, "Сила прыжка", 50, 500, S.JumpValue, function(v)
-    S.JumpValue = v
-    if S.JumpEnabled then
-        local ch = player.Character
-        if ch and ch:FindFirstChild("Humanoid") then
-            ch.Humanoid.JumpPower = v
-        end
-    end
+local infJumpCard = Hub.createToggle(JumpTab, "Infinite Jump", S.InfiniteJump, function(s)
+    S.InfiniteJump = s
 end)
-
-Hub.createToggle(JumpTab, "Infinite Jump", S.InfiniteJump, function(s) S.InfiniteJump = s end)
 
 -- === FLY TAB ===
 local FlyTab = Hub.createTab("Fly", "🕊")
@@ -129,16 +143,20 @@ local function stopFly()
     if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
 end
 
-Hub.createToggle(FlyTab, "Fly", S.FlyEnabled, function(state)
+local flyCard = Hub.createToggle(FlyTab, "Fly", S.FlyEnabled, function(state)
     S.FlyEnabled = state
     if state then startFly() else stopFly() end
+end, function()  -- ПКМ
+    Hub.openSettings(flyCard, function(parent)
+        Hub.createSlider(parent, "Скорость полёта", 10, 300, S.FlySpeed, function(v)
+            S.FlySpeed = v
+        end)
+    end)
 end)
-
-Hub.createSlider(FlyTab, "Скорость полёта", 10, 300, S.FlySpeed, function(v) S.FlySpeed = v end)
 
 Hub.createLabel(FlyTab, "WASD — движение · Space/Shift — вверх/вниз")
 
--- === HEARTBEAT (только когда нужно) ===
+-- === HEARTBEAT ===
 Hub.addConnection(RunService.Heartbeat:Connect(function()
     if Hub.IsPanicked then return end
     if not S.SmoothSpeed and not S.SpeedInAir then return end
@@ -207,4 +225,4 @@ Hub.addConnection(player.CharacterAdded:Connect(function()
     end
 end))
 
-print("🐗 Utilities (Speed + Jump + Fly) загружен")
+print("🐗 Utilities загружен (ПКМ настройки)")
