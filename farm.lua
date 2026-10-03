@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Farm — Auto Clicker
+-- 🐗 Bizon Hub Farm (Optimized Cache)
 local VirtualUser = game:GetService("VirtualUser")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -9,13 +9,11 @@ local T = Hub.Theme
 local S = Hub.Settings
 local player = game.Players.LocalPlayer
 
--- Настройки
 S.FarmTargetName = "Hitbox"
 S.FarmRange = 20
 S.FarmHitCooldown = 0.1
 S.FarmUseTool = true
 
--- === FARM TAB ===
 local FarmTab = Hub.createTab("Farm", "🌾")
 
 Hub.createLabel(FarmTab, "АВТО КЛИКЕР ГРУШ")
@@ -27,15 +25,26 @@ end)
 
 Hub.createLabel(FarmTab, "Цель: Hitbox · Радиус: 20")
 
--- === ПОИСК ЦЕЛИ ===
+-- === КЭШ ПОИСКА (0.5 сек) ===
+local targetCache = false
+local lastCheck = 0
+local CHECK_INTERVAL = 0.5
+
 local function hasTargetNearby()
+    local now = tick()
+    if now - lastCheck < CHECK_INTERVAL then
+        return targetCache
+    end
+    lastCheck = now
+
     local ch = player.Character
-    if not ch then return false end
+    if not ch then targetCache = false; return false end
     local rp = ch:FindFirstChild("HumanoidRootPart")
-    if not rp then return false end
+    if not rp then targetCache = false; return false end
 
     local searchRoot = Workspace:FindFirstChild("Map") or Workspace
     local targetName = S.FarmTargetName:lower()
+    local found = false
 
     for _, obj in pairs(searchRoot:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower():find(targetName) then
@@ -49,15 +58,18 @@ local function hasTargetNearby()
             if not isPlayerPart then
                 local d = (obj.Position - rp.Position).Magnitude
                 if d <= S.FarmRange then
-                    return true
+                    found = true
+                    break
                 end
             end
         end
     end
-    return false
+
+    targetCache = found
+    return found
 end
 
--- === ЦИКЛ КЛИКЕРА ===
+-- === ЦИКЛ ===
 task.spawn(function()
     while not Hub.IsPanicked do
         task.wait(S.FarmHitCooldown)
