@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v3.2 (Compact)
+-- 🐗 Bizon Hub Core v3.3 (Fixed)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -18,11 +18,15 @@ end
 
 Hub.Theme = {
     Bg = Color3.fromRGB(15, 12, 25),
+    Bg2 = Color3.fromRGB(20, 16, 32),
     Bg3 = Color3.fromRGB(28, 22, 45),
+    Bg4 = Color3.fromRGB(38, 30, 60),
     Accent = Color3.fromRGB(168, 85, 247),
+    Accent2 = Color3.fromRGB(126, 34, 206),
     AccentGlow = Color3.fromRGB(200, 130, 255),
     Text = Color3.fromRGB(240, 235, 255),
     TextDim = Color3.fromRGB(140, 130, 165),
+    TextDisabled = Color3.fromRGB(80, 75, 100),
     Success = Color3.fromRGB(80, 240, 160),
     Danger = Color3.fromRGB(240, 70, 100),
     Warning = Color3.fromRGB(255, 200, 50),
@@ -80,6 +84,7 @@ Hub.FloatBtn = FloatBtn
 
 -- MAIN FRAME
 local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 720, 0, 500)
 MainFrame.Position = UDim2.new(0.5, -360, 0.5, -250)
 MainFrame.BackgroundColor3 = T.Bg
@@ -95,6 +100,7 @@ Hub.MainFrame = MainFrame
 
 -- HEADER
 local Header = Instance.new("Frame")
+Header.Name = "Header"
 Header.Size = UDim2.new(1, 0, 0, 70)
 Header.BackgroundTransparency = 1
 Header.Parent = MainFrame
@@ -153,6 +159,7 @@ end))
 
 -- TAB BAR
 local TabBar = Instance.new("Frame")
+TabBar.Name = "TabBar"
 TabBar.Size = UDim2.new(1, -52, 0, 40)
 TabBar.Position = UDim2.new(0, 26, 0, 82)
 TabBar.BackgroundTransparency = 1
@@ -163,10 +170,14 @@ TabList.FillDirection = Enum.FillDirection.Horizontal
 TabList.Padding = UDim.new(0, 4)
 TabList.SortOrder = Enum.SortOrder.LayoutOrder
 
+-- CONTENT (создаётся ДО создания Tabs!)
 local Content = Instance.new("Frame")
+Content.Name = "Content"
 Content.Size = UDim2.new(1, -52, 1, -180)
 Content.Position = UDim2.new(0, 26, 0, 130)
+Content.BackgroundColor3 = T.Bg
 Content.BackgroundTransparency = 1
+Content.BorderSizePixel = 0
 Content.Parent = MainFrame
 
 local Tabs = {}
@@ -180,8 +191,10 @@ function Hub.switchTab(name)
         TweenService:Create(Tabs[Hub.CurrentTab].button, TweenInfo.new(0.2), {TextColor3 = T.TextDim, BackgroundTransparency = 1}):Play()
     end
     Hub.CurrentTab = name
-    Tabs[name].container.Visible = true
-    TweenService:Create(Tabs[name].button, TweenInfo.new(0.2), {TextColor3 = T.Accent, BackgroundTransparency = 0}):Play()
+    if Tabs[name] then
+        Tabs[name].container.Visible = true
+        TweenService:Create(Tabs[name].button, TweenInfo.new(0.2), {TextColor3 = T.Accent, BackgroundTransparency = 0}):Play()
+    end
 end
 
 function Hub.createTab(name, icon)
@@ -199,6 +212,7 @@ function Hub.createTab(name, icon)
     Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 8)
 
     local container = Instance.new("ScrollingFrame")
+    container.Name = name .. "Tab"
     container.Size = UDim2.new(1, 0, 1, 0)
     container.BackgroundTransparency = 1
     container.BorderSizePixel = 0
@@ -222,7 +236,7 @@ function Hub.createTab(name, icon)
     return container
 end
 
--- === UI HELPERS (в том же файле, после объявления) ===
+-- === TOGGLE ===
 function Hub.createToggle(parent, name, default, callback)
     local state = default or false
     local container = Instance.new("Frame")
@@ -291,6 +305,7 @@ function Hub.createToggle(parent, name, default, callback)
     return container
 end
 
+-- === SLIDER ===
 function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     local container = Instance.new("Frame")
     container.BackgroundColor3 = T.Bg3
@@ -367,6 +382,7 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     return container
 end
 
+-- === LABEL ===
 function Hub.createLabel(parent, text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.5, -4, 0, 24)
@@ -379,6 +395,7 @@ function Hub.createLabel(parent, text)
     return label
 end
 
+-- === KEYBIND ===
 function Hub.createKeybind(parent, name, defaultKey, callback)
     local container = Instance.new("Frame")
     container.BackgroundColor3 = T.Bg3
@@ -426,7 +443,7 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     return container
 end
 
--- TOGGLE MENU (в самом конце!)
+-- === TOGGLE MENU (в самом конце, после всех функций) ===
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
@@ -445,4 +462,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core v3.2 загружен (Compact)")
+print("🐗 Core v3.3 (Fixed) загружен")
