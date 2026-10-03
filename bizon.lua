@@ -1,20 +1,22 @@
--- 🐗 Bizon Hub v3.1 — Safe Mode
+-- 🐗 Bizon Hub v2.2 — Loader
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
-local CACHE = "?t=" .. tostring(os.time())
+local CACHE = "?nocache=" .. tostring(os.time()) .. "_" .. tostring(math.random(100000, 999999))
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
--- === НАСТРОЙКИ ===
+-- === НАСТРОЙКИ РЕКЛАМЫ ===
 local AD_CONFIG = {
     Title = "🐗 BIZON HUB",
-    PromoText = "📢 Подпишись на наш канал!",
+    SubTitle = "Премиум чит для Roblox",
+    PromoText = "📢 Подпишись на наш канал!\n\n🎁 Получи бесплатный доступ",
     PromoURL = "https://www.youtube.com/@HOBONI-f9t",
+    ButtonURL = "🔗 Открыть YouTube канал",
     WaitTime = 5,
 }
 
--- === СОХРАНЕНИЕ КЛЮЧА ===
+-- === ФАЙЛ ПАМЯТИ ===
 local SAVE_FILE = "bizon_key.txt"
 
 local function hasFileAPI()
@@ -125,7 +127,7 @@ local function showUI()
     SubTitle.Size = UDim2.new(1, 0, 0, 20)
     SubTitle.Position = UDim2.new(0, 0, 0, 44)
     SubTitle.BackgroundTransparency = 1
-    SubTitle.Text = "Премиум чит для Roblox"
+    SubTitle.Text = AD_CONFIG.SubTitle
     SubTitle.TextColor3 = Color3.fromRGB(140, 140, 165)
     SubTitle.Font = Enum.Font.Gotham
     SubTitle.TextSize = 12
@@ -135,7 +137,7 @@ local function showUI()
     Promo.Size = UDim2.new(1, -40, 0, 60)
     Promo.Position = UDim2.new(0, 20, 0, 85)
     Promo.BackgroundTransparency = 1
-    Promo.Text = AD_CONFIG.PromoText .. "\n\n🎁 Ключ на 1 день бесплатно"
+    Promo.Text = AD_CONFIG.PromoText
     Promo.TextColor3 = Color3.fromRGB(235, 235, 245)
     Promo.Font = Enum.Font.GothamMedium
     Promo.TextSize = 14
@@ -168,12 +170,12 @@ local function showUI()
     SubBtn.Parent = Frame
     Instance.new("UICorner", SubBtn).CornerRadius = UDim.new(0, 10)
 
-    local timerFrame = Instance.new("Frame")
-    timerFrame.Size = UDim2.new(1, -40, 0, 1)
-    timerFrame.Position = UDim2.new(0, 20, 0, 250)
-    timerFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 85)
-    timerFrame.BorderSizePixel = 0
-    timerFrame.Parent = Frame
+    local divider = Instance.new("Frame")
+    divider.Size = UDim2.new(1, -40, 0, 1)
+    divider.Position = UDim2.new(0, 20, 0, 250)
+    divider.BackgroundColor3 = Color3.fromRGB(60, 60, 85)
+    divider.BorderSizePixel = 0
+    divider.Parent = Frame
 
     local orLabel = Instance.new("TextLabel")
     orLabel.Size = UDim2.new(1, 0, 0, 20)
@@ -295,7 +297,7 @@ local function showUI()
                 SubBtn.TextColor3 = Color3.fromRGB(22, 22, 30)
             elseif subPhase == 2 then
                 local newKey = generateKey()
-                local expiryTs = os.time() + 86400  -- +1 день
+                local expiryTs = os.time() + 86400
                 saveKey(newKey, expiryTs)
 
                 Status.Text = "🎁 Твой ключ: " .. newKey
@@ -366,7 +368,7 @@ local function showUI()
     end
 end
 
--- === ЗАГРУЗКА ===
+-- === ЗАГРУЗКА МОДУЛЕЙ ===
 local function loadModule(name)
     local url = BASE .. name .. ".lua" .. CACHE
     local ok, err = pcall(function()
@@ -385,6 +387,7 @@ if saved and saved.key and os.time() < saved.expiry then
     task.spawn(function()
         loadModule("core")
         loadModule("utilities")
+        loadModule("teleport")
         loadModule("farm")
         loadModule("misc")
         pcall(function()
@@ -394,6 +397,7 @@ if saved and saved.key and os.time() < saved.expiry then
                 Duration = 3,
             })
         end)
+        print("🐗 Bizon Hub: готово (автовход)!")
     end)
 else
     task.spawn(function()
@@ -401,6 +405,7 @@ else
         print("✅ Ключ подтверждён!")
         loadModule("core")
         loadModule("utilities")
+        loadModule("teleport")
         loadModule("farm")
         loadModule("misc")
         pcall(function()
@@ -410,9 +415,6 @@ else
                 Duration = 4,
             })
         end)
+        print("🐗 Bizon Hub: готово!")
     end)
 end
-loadModule("core")
-loadModule("utilities")
-loadModule("farm")
-loadModule("misc")
