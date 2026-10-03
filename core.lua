@@ -730,5 +730,64 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
         Hub.toggleMenu()
     end
 end))
+function Hub.createLabel(parent, text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 22)
+    label.BackgroundTransparency = 1
+    label.Text = "— " .. text .. " —"
+    label.TextColor3 = T.TextDim
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 10
+    label.Parent = parent
+    return label
+end
 
+function Hub.createKeybind(parent, name, defaultKey, callback)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 44)
+    container.BackgroundColor3 = T.Bg3
+    container.BorderSizePixel = 0
+    container.Parent = parent
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.5, 0, 1, 0)
+    label.Position = UDim2.new(0, 16, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = T.Text
+    label.Font = Enum.Font.GothamMedium
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = container
+
+    local keyBtn = Instance.new("TextButton")
+    keyBtn.Size = UDim2.new(0, 100, 0, 28)
+    keyBtn.Position = UDim2.new(1, -116, 0.5, -14)
+    keyBtn.BackgroundColor3 = T.Bg
+    keyBtn.Text = defaultKey.Name
+    keyBtn.TextColor3 = T.Accent
+    keyBtn.Font = Enum.Font.GothamBold
+    keyBtn.TextSize = 12
+    keyBtn.BorderSizePixel = 0
+    keyBtn.AutoButtonColor = false
+    keyBtn.Parent = container
+    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 8)
+
+    local awaiting = false
+    keyBtn.MouseButton1Click:Connect(function()
+        awaiting = true
+        keyBtn.Text = "Нажми..."
+        keyBtn.TextColor3 = Color3.fromRGB(255, 200, 0)
+    end)
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if awaiting and not gp and input.UserInputType == Enum.UserInputType.Keyboard then
+            keyBtn.Text = input.KeyCode.Name
+            keyBtn.TextColor3 = T.Accent
+            awaiting = false
+            callback(input.KeyCode)
+        end
+    end)
+    return container
+end
 print("🐗 Core загружен (v2.2 + Large Watermark)")
