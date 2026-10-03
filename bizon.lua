@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v3.2 — Loader (Splash + Key)
+-- 🐗 Bizon Hub v3.3 — Loader (Fullscreen Splash)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -6,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
-local SESSION_ID = tostring(math.floor(tick() * 1000)) .. "_" .. tostring(math.random(1, 99999999))
+local SESSION_ID = tostring(os.time()) .. "_" .. tostring(math.random(1, 999999999)) .. "_" .. tostring(math.floor(tick() * 1000))
 
 local function bustCache(url)
     local sep = url:find("?") and "&" or "?"
@@ -34,87 +34,87 @@ local AD_CONFIG = {
     WaitTime = 5,
 }
 
--- === SPLASH SCREEN ===
+-- ============================================
+-- FULLSCREEN SPLASH SCREEN
+-- ============================================
 local function showSplash()
     local splashGui = Instance.new("ScreenGui")
     splashGui.Name = "BizonSplash"
     splashGui.ResetOnSpawn = false
     splashGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     splashGui.IgnoreGuiInset = true
+    splashGui.DisplayOrder = 999
     splashGui.Parent = player:WaitForChild("PlayerGui")
 
+    -- FULLSCREEN фон
     local overlay = Instance.new("Frame")
     overlay.Size = UDim2.new(1, 0, 1, 0)
-    overlay.BackgroundColor3 = Color3.new(0, 0, 0)
+    overlay.BackgroundColor3 = THEME.Bg
     overlay.BackgroundTransparency = 1
     overlay.BorderSizePixel = 0
     overlay.Parent = splashGui
 
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 420, 0, 240)
-    frame.Position = UDim2.new(0.5, -210, 0.5, -120)
-    frame.BackgroundColor3 = THEME.Bg
-    frame.BackgroundTransparency = 1
-    frame.BorderSizePixel = 0
-    frame.Parent = splashGui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 22)
+    local bgGrad = Instance.new("UIGradient", overlay)
+    bgGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 12, 25)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 18, 45)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 12, 25)),
+    })
+    bgGrad.Rotation = 45
 
-    local frameStroke = Instance.new("UIStroke", frame)
-    frameStroke.Color = THEME.Accent
-    frameStroke.Thickness = 2
-    frameStroke.Transparency = 1
-
-    local glow = Instance.new("UIStroke", frame)
-    glow.Color = THEME.AccentGlow
-    glow.Thickness = 6
-    glow.Transparency = 1
+    -- Центральный контейнер
+    local centerFrame = Instance.new("Frame")
+    centerFrame.Size = UDim2.new(0, 500, 0, 300)
+    centerFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+    centerFrame.BackgroundTransparency = 1
+    centerFrame.Parent = splashGui
 
     -- Иконка
     local icon = Instance.new("TextLabel")
-    icon.Size = UDim2.new(0, 80, 0, 80)
-    icon.Position = UDim2.new(0.5, -40, 0, 20)
+    icon.Size = UDim2.new(0, 120, 0, 120)
+    icon.Position = UDim2.new(0.5, -60, 0, 0)
     icon.BackgroundColor3 = THEME.Bg2
     icon.BackgroundTransparency = 1
     icon.Text = "🐗"
     icon.TextColor3 = THEME.Accent
     icon.Font = Enum.Font.GothamBold
-    icon.TextSize = 55
+    icon.TextSize = 90
     icon.TextTransparency = 1
-    icon.Parent = frame
-    Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 40)
+    icon.Parent = centerFrame
+    Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
 
     -- Название
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.Position = UDim2.new(0, 0, 0, 110)
+    title.Size = UDim2.new(1, 0, 0, 50)
+    title.Position = UDim2.new(0, 0, 0, 130)
     title.BackgroundTransparency = 1
     title.Text = "BIZON HUB"
     title.TextColor3 = THEME.Accent
     title.Font = Enum.Font.GothamBlack
-    title.TextSize = 24
+    title.TextSize = 42
     title.TextTransparency = 1
-    title.Parent = frame
+    title.Parent = centerFrame
 
     -- Приветствие
     local greeting = Instance.new("TextLabel")
-    greeting.Size = UDim2.new(1, -40, 0, 24)
-    greeting.Position = UDim2.new(0, 20, 0, 145)
+    greeting.Size = UDim2.new(1, 0, 0, 30)
+    greeting.Position = UDim2.new(0, 0, 0, 185)
     greeting.BackgroundTransparency = 1
     greeting.Text = "👋 Приветствуем в Bizon Hub!"
     greeting.TextColor3 = THEME.Text
     greeting.Font = Enum.Font.GothamBold
-    greeting.TextSize = 14
+    greeting.TextSize = 18
     greeting.TextTransparency = 1
-    greeting.Parent = frame
+    greeting.Parent = centerFrame
 
     -- Прогресс-бар
     local progressBg = Instance.new("Frame")
-    progressBg.Size = UDim2.new(1, -40, 0, 6)
-    progressBg.Position = UDim2.new(0, 20, 0, 190)
+    progressBg.Size = UDim2.new(0, 400, 0, 8)
+    progressBg.Position = UDim2.new(0.5, -200, 0, 240)
     progressBg.BackgroundColor3 = THEME.Bg2
     progressBg.BorderSizePixel = 0
     progressBg.BackgroundTransparency = 1
-    progressBg.Parent = frame
+    progressBg.Parent = centerFrame
     Instance.new("UICorner", progressBg).CornerRadius = UDim.new(1, 0)
 
     local progressFill = Instance.new("Frame")
@@ -124,26 +124,30 @@ local function showSplash()
     progressFill.Parent = progressBg
     Instance.new("UICorner", progressFill).CornerRadius = UDim.new(1, 0)
 
+    local fillGrad = Instance.new("UIGradient", progressFill)
+    fillGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.Accent),
+        ColorSequenceKeypoint.new(1, THEME.AccentGlow),
+    })
+
+    -- Процент
     local percentLabel = Instance.new("TextLabel")
-    percentLabel.Size = UDim2.new(1, -40, 0, 18)
-    percentLabel.Position = UDim2.new(0, 20, 0, 202)
+    percentLabel.Size = UDim2.new(0, 400, 0, 20)
+    percentLabel.Position = UDim2.new(0.5, -200, 0, 258)
     percentLabel.BackgroundTransparency = 1
     percentLabel.Text = "Загрузка... 0%"
     percentLabel.TextColor3 = THEME.TextDim
     percentLabel.Font = Enum.Font.GothamBold
-    percentLabel.TextSize = 11
+    percentLabel.TextSize = 13
     percentLabel.TextTransparency = 1
-    percentLabel.Parent = frame
+    percentLabel.Parent = centerFrame
 
     -- Анимация появления
     task.spawn(function()
-        TweenService:Create(overlay, TweenInfo.new(0.3), {BackgroundTransparency = 0.4}):Play()
-        TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.05}):Play()
-        TweenService:Create(frameStroke, TweenInfo.new(0.5), {Transparency = 0.3}):Play()
-        TweenService:Create(glow, TweenInfo.new(0.5), {Transparency = 0.85}):Play()
-        TweenService:Create(icon, TweenInfo.new(0.4), {BackgroundTransparency = 0.3}):Play()
+        TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.5), {BackgroundTransparency = 0.3}):Play()
         TweenService:Create(icon, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
-        task.wait(0.4)
+        task.wait(0.5)
         TweenService:Create(title, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
         task.wait(0.15)
         TweenService:Create(greeting, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
@@ -154,12 +158,12 @@ local function showSplash()
 
     -- Пульсация иконки
     task.spawn(function()
-        while frame.Parent do
-            TweenService:Create(icon, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 88, 0, 88), Position = UDim2.new(0.5, -44, 0, 16)}):Play()
-            task.wait(0.6)
-            if not frame.Parent then break end
-            TweenService:Create(icon, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 80, 0, 80), Position = UDim2.new(0.5, -40, 0, 20)}):Play()
-            task.wait(0.6)
+        while centerFrame.Parent do
+            TweenService:Create(icon, TweenInfo.new(0.8, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 130, 0, 130), Position = UDim2.new(0.5, -65, 0, -5)}):Play()
+            task.wait(0.8)
+            if not centerFrame.Parent then break end
+            TweenService:Create(icon, TweenInfo.new(0.8, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 120, 0, 120), Position = UDim2.new(0.5, -60, 0, 0)}):Play()
+            task.wait(0.8)
         end
     end)
 
@@ -170,24 +174,21 @@ local function showSplash()
     end
 
     local function close()
-        TweenService:Create(frame, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(frameStroke, TweenInfo.new(0.4), {Transparency = 1}):Play()
-        TweenService:Create(glow, TweenInfo.new(0.4), {Transparency = 1}):Play()
-        TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        TweenService:Create(greeting, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        TweenService:Create(icon, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-        TweenService:Create(progressBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(progressFill, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(percentLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
-        task.wait(0.5)
+        TweenService:Create(overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+        TweenService:Create(title, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TweenService:Create(greeting, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        TweenService:Create(progressBg, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(progressFill, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(percentLabel, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+        task.wait(0.6)
         splashGui:Destroy()
     end
 
     return splashGui, setProgress, close
 end
 
--- === ПАМЯТЬ ===
+-- === ПАМЯТЬ КЛЮЧА ===
 local SAVE_FILE = "bizon_key.txt"
 
 local function hasFileAPI()
@@ -241,12 +242,13 @@ local function loadValidKeys()
 end
 
 -- === UI КЛЮЧА ===
-local function showUI()
+local function showKeyUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BizonKeySystem"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.IgnoreGuiInset = true
+    ScreenGui.DisplayOrder = 1000
     ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
     local Overlay = Instance.new("Frame")
@@ -540,24 +542,20 @@ local function loadAllModulesWithProgress(setProgress)
 end
 
 -- === ГЛАВНЫЙ ПОТОК ===
-print("🐗 Bizon Hub: старт (v3.2)")
+print("🐗 Bizon Hub: старт (v3.3)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
 local needKey = not (saved and saved.key and os.time() < saved.expiry)
 
 if needKey then
-    -- Сначала окно ключа
     task.spawn(function()
-        showUI()
+        showKeyUI()
         print("✅ Ключ подтверждён!")
         task.wait(0.2)
         
-        -- Потом splash
         local splashGui, setProgress, closeSplash = showSplash()
-        
         loadAllModulesWithProgress(setProgress)
-        
         task.wait(0.8)
         closeSplash()
         
@@ -571,20 +569,17 @@ if needKey then
         print("🐗 Bizon Hub: готово!")
     end)
 else
-    -- Автовход — сразу splash
     task.spawn(function()
         print("✅ Автовход: " .. saved.key)
         local splashGui, setProgress, closeSplash = showSplash()
-        
         loadAllModulesWithProgress(setProgress)
-        
         task.wait(0.8)
         closeSplash()
         
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v3.2)",
+                Text = "Автовход (v3.3)",
                 Duration = 3,
             })
         end)
