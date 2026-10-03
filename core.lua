@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v2.0 — новый дизайн
+-- 🐗 Bizon Hub Core v2.0 (FINAL)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -15,7 +15,6 @@ function Hub.addConnection(conn)
     return conn
 end
 
--- Цвета темы (современная тёмная + оранжевый акцент)
 Hub.Theme = {
     Bg = Color3.fromRGB(22, 22, 30),
     Bg2 = Color3.fromRGB(30, 30, 42),
@@ -42,12 +41,13 @@ Hub.Settings = {
 }
 
 local T = Hub.Theme
+local S = Hub.Settings
 
 -- Удаляем старый GUI
 local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 
--- === ROOT ===
+-- ROOT
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -56,7 +56,7 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
--- === FLOAT BUTTON ===
+-- FLOAT BUTTON
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Size = UDim2.new(0, 130, 0, 46)
 FloatBtn.Position = UDim2.new(0, 20, 0, 100)
@@ -75,47 +75,36 @@ FBstroke.Color = T.Accent
 FBstroke.Thickness = 1.5
 FBstroke.Transparency = 0.3
 
-local FBgrad = Instance.new("UIGradient", FloatBtn)
-FBgrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, T.Bg2),
-    ColorSequenceKeypoint.new(1, T.Bg),
-})
-FBgrad.Rotation = 45
-
--- Drag
 local fbDrag, fbStart, fbStartPos
 Hub.addConnection(FloatBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
         fbDrag = true; fbStart = input.Position; fbStartPos = FloatBtn.Position
     end
 end))
 Hub.addConnection(UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        fbDrag = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then fbDrag = false end
 end))
 Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
-    if fbDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+    if fbDrag and input.UserInputType == Enum.UserInputType.MouseMovement then
         local d = input.Position - fbStart
         FloatBtn.Position = UDim2.new(fbStartPos.X.Scale, fbStartPos.X.Offset + d.X, fbStartPos.Y.Scale, fbStartPos.Y.Offset + d.Y)
     end
 end))
 
--- Pulse animation
 task.spawn(function()
     while FloatBtn.Parent and not Hub.IsPanicked do
-        TweenService:Create(FBstroke, TweenInfo.new(1.8, Enum.EasingStyle.Sine), {Transparency = 0.7}):Play()
+        TweenService:Create(FBstroke, TweenInfo.new(1.8), {Transparency = 0.7}):Play()
         task.wait(1.8)
         if Hub.IsPanicked then break end
-        TweenService:Create(FBstroke, TweenInfo.new(1.8, Enum.EasingStyle.Sine), {Transparency = 0.3}):Play()
+        TweenService:Create(FBstroke, TweenInfo.new(1.8), {Transparency = 0.3}):Play()
         task.wait(1.8)
     end
 end)
 
--- === MAIN FRAME ===
+-- MAIN FRAME
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 540, 0, 380)
-MainFrame.Position = UDim2.new(0.5, -270, 0.5, -190)
+MainFrame.Size = UDim2.new(0, 560, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -280, 0.5, -200)
 MainFrame.BackgroundColor3 = T.Bg
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
@@ -125,17 +114,9 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 22)
 local MFstroke = Instance.new("UIStroke", MainFrame)
 MFstroke.Color = T.Stroke
 MFstroke.Thickness = 1.5
-
-local MFgrad = Instance.new("UIGradient", MainFrame)
-MFgrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, T.Bg),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 26)),
-})
-MFgrad.Rotation = 90
-
 Hub.MainFrame = MainFrame
 
--- === HEADER ===
+-- HEADER
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 58)
 Header.BackgroundColor3 = T.Bg2
@@ -150,16 +131,9 @@ HeaderFix.BackgroundColor3 = T.Bg2
 HeaderFix.BorderSizePixel = 0
 HeaderFix.Parent = Header
 
-local HBgrad = Instance.new("UIGradient", Header)
-HBgrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, T.Bg3),
-    ColorSequenceKeypoint.new(1, T.Bg2),
-})
-HBgrad.Rotation = 0
-
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-TitleLabel.Position = UDim2.new(0, 22, 0, 0)
+TitleLabel.Position = UDim2.new(0, 24, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "🐗  BIZON HUB"
 TitleLabel.TextColor3 = T.Accent
@@ -170,7 +144,7 @@ TitleLabel.Parent = Header
 
 local Version = Instance.new("TextLabel")
 Version.Size = UDim2.new(0, 65, 0, 22)
-Version.Position = UDim2.new(0, 210, 0.5, -11)
+Version.Position = UDim2.new(0, 230, 0.5, -11)
 Version.BackgroundColor3 = T.Accent
 Version.BackgroundTransparency = 0.82
 Version.Text = "v2.0"
@@ -181,7 +155,6 @@ Version.BorderSizePixel = 0
 Version.Parent = Header
 Instance.new("UICorner", Version).CornerRadius = UDim.new(1, 0)
 
--- Close button
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 36, 0, 36)
 CloseBtn.Position = UDim2.new(1, -48, 0.5, -18)
@@ -194,37 +167,27 @@ CloseBtn.BorderSizePixel = 0
 CloseBtn.AutoButtonColor = false
 CloseBtn.Parent = Header
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
-
-CloseBtn.MouseEnter:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Danger, TextColor3 = Color3.new(1,1,1)}):Play()
-end)
-CloseBtn.MouseLeave:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Bg3, TextColor3 = T.TextDim}):Play()
-end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
--- Window drag
 local winDrag, winStart, winStartPos
 Hub.addConnection(Header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
         winDrag = true; winStart = input.Position; winStartPos = MainFrame.Position
     end
 end))
 Hub.addConnection(UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        winDrag = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then winDrag = false end
 end))
 Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
-    if winDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+    if winDrag and input.UserInputType == Enum.UserInputType.MouseMovement then
         local d = input.Position - winStart
         MainFrame.Position = UDim2.new(winStartPos.X.Scale, winStartPos.X.Offset + d.X, winStartPos.Y.Scale, winStartPos.Y.Offset + d.Y)
     end
 end))
 
--- === TAB BAR (вертикальные табы) ===
+-- TAB BAR
 local TabBar = Instance.new("Frame")
-TabBar.Size = UDim2.new(0, 145, 1, -80)
+TabBar.Size = UDim2.new(0, 150, 1, -80)
 TabBar.Position = UDim2.new(0, 12, 0, 68)
 TabBar.BackgroundColor3 = T.Bg2
 TabBar.BorderSizePixel = 0
@@ -241,10 +204,9 @@ TabPad.PaddingTop = UDim.new(0, 10)
 TabPad.PaddingLeft = UDim.new(0, 8)
 TabPad.PaddingRight = UDim.new(0, 8)
 
--- Content
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, -175, 1, -80)
-Content.Position = UDim2.new(0, 163, 0, 68)
+Content.Size = UDim2.new(1, -180, 1, -80)
+Content.Position = UDim2.new(0, 168, 0, 68)
 Content.BackgroundColor3 = T.Bg2
 Content.BorderSizePixel = 0
 Content.Parent = MainFrame
@@ -257,15 +219,11 @@ Hub.CurrentTab = nil
 function Hub.switchTab(name)
     if Hub.CurrentTab == name then return end
     if Hub.CurrentTab and Tabs[Hub.CurrentTab] then
-        TweenService:Create(Tabs[Hub.CurrentTab].button, TweenInfo.new(0.2), {
-            BackgroundColor3 = T.Bg2, TextColor3 = T.TextDim
-        }):Play()
+        TweenService:Create(Tabs[Hub.CurrentTab].button, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg2, TextColor3 = T.TextDim}):Play()
         Tabs[Hub.CurrentTab].container.Visible = false
     end
     Hub.CurrentTab = name
-    TweenService:Create(Tabs[name].button, TweenInfo.new(0.2), {
-        BackgroundColor3 = T.Accent, TextColor3 = T.Bg
-    }):Play()
+    TweenService:Create(Tabs[name].button, TweenInfo.new(0.2), {BackgroundColor3 = T.Accent, TextColor3 = T.Bg}):Play()
     Tabs[name].container.Visible = true
 end
 
@@ -282,7 +240,6 @@ function Hub.createTab(name, icon)
     tabBtn.AutoButtonColor = false
     tabBtn.Parent = TabBar
     Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 12)
-
     local Tpad = Instance.new("UIPadding", tabBtn)
     Tpad.PaddingLeft = UDim.new(0, 12)
 
@@ -300,7 +257,6 @@ function Hub.createTab(name, icon)
     local layout = Instance.new("UIListLayout", container)
     layout.Padding = UDim.new(0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-
     local pad = Instance.new("UIPadding", container)
     pad.PaddingTop = UDim.new(0, 8)
     pad.PaddingBottom = UDim.new(0, 8)
@@ -316,34 +272,7 @@ function Hub.createTab(name, icon)
     return container
 end
 
--- Menu toggle
-local menuOpen = false
-function Hub.toggleMenu()
-    menuOpen = not menuOpen
-    MainFrame.Visible = menuOpen
-    if menuOpen then
-        MainFrame.Size = UDim2.new(0, 540, 0, 0)
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 540, 0, 380)
-        }):Play()
-        if not Hub.CurrentTab and Tabs["Utilities"] then
-            Hub.switchTab("Utilities")
-        end
-    end
-end
-
-FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
-
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        Hub.toggleMenu()
-    end
-    if input.KeyCode == Enum.KeyCode.End then
-        if Hub.Panic then Hub.Panic() end
-    end
-end))
--- === UI HELPERS (ОБЩИЕ) ===
+-- === UI HELPERS ===
 function Hub.createToggle(parent, name, default, callback, onRight)
     local state = default or false
     local container = Instance.new("Frame")
@@ -363,18 +292,6 @@ function Hub.createToggle(parent, name, default, callback, onRight)
     label.TextSize = 14
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
-
-    if onRight then
-        local gear = Instance.new("TextLabel")
-        gear.Size = UDim2.new(0, 24, 0, 24)
-        gear.Position = UDim2.new(1, -90, 0.5, -12)
-        gear.BackgroundTransparency = 1
-        gear.Text = "⚙"
-        gear.TextColor3 = T.TextDim
-        gear.Font = Enum.Font.GothamBold
-        gear.TextSize = 16
-        gear.Parent = container
-    end
 
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 52, 0, 26)
@@ -409,15 +326,6 @@ function Hub.createToggle(parent, name, default, callback, onRight)
         state = not state
         upd()
         if callback then callback(state) end
-    end)
-    container.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            state = not state
-            upd()
-            if callback then callback(state) end
-        elseif input.UserInputType == Enum.UserInputType.MouseButton2 and onRight then
-            onRight()
-        end
     end)
     return container
 end
@@ -558,4 +466,30 @@ function Hub.createKeybind(parent, name, defaultKey, callback)
     end)
     return container
 end
+
+-- Menu toggle
+local menuOpen = false
+function Hub.toggleMenu()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+    if menuOpen then
+        MainFrame.Size = UDim2.new(0, 560, 0, 0)
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 560, 0, 400)
+        }):Play()
+        if not Hub.CurrentTab and Tabs["Speed"] then
+            Hub.switchTab("Speed")
+        end
+    end
+end
+
+FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
+
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        Hub.toggleMenu()
+    end
+end))
+
 print("🐗 Core загружен (v2.0)")
