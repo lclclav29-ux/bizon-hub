@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Misc (Optimized)
+-- 🐗 Bizon Hub Misc (with Skybox)
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
@@ -30,9 +30,194 @@ Hub.createToggle(MiscTab, "💡 Fullbright", S.Fullbright, function(state)
     end
 end)
 
+Hub.createToggle(MiscTab, "🌫 Убрать туман", false, function(state)
+    if state then
+        if not S.OriginalFogEnd then
+            S.OriginalFogEnd = Lighting.FogEnd
+            S.OriginalFogStart = Lighting.FogStart
+        end
+        Lighting.FogEnd = 100000
+        Lighting.FogStart = 100000
+    else
+        Lighting.FogEnd = S.OriginalFogEnd or 100000
+        Lighting.FogStart = S.OriginalFogStart or 0
+    end
+end)
+
+-- === CUSTOM SKYBOX ===
+Hub.createLabel(MiscTab, "НЕБО (SKYBOX)")
+
+-- Список небес
+local SKYBOXES = {
+    {name = "❌ Выключено",           id = nil},
+    {name = "☀ Дневное",              id = "rbxassetid://159454299"},
+    {name = "🌅 Закат",               id = "rbxassetid://159454272"},
+    {name = "🌌 Космос",              id = "rbxassetid://159454279"},
+    {name = "🌃 Ночное",              id = "rbxassetid://159454264"},
+    {name = "🌈 Розовое",             id = "rbxassetid://5159901416"},
+    {name = "⚡ Гроза",               id = "rbxassetid://159454288"},
+    {name = "❄ Зимнее",              id = "rbxassetid://159454294"},
+    {name = "🔥 Огненное",            id = "rbxassetid://5159901288"},
+    {name = "🌊 Океан",              id = "rbxassetid://5159901529"},
+}
+
+local currentSkybox = nil
+
+-- Функция установки skybox
+local function setSkybox(id)
+    -- Удаляем старый
+    if currentSkybox then
+        currentSkybox:Destroy()
+        currentSkybox = nil
+    end
+
+    -- Если "выключено" — просто удаляем
+    if not id then
+        print("🐗 Skybox выключен")
+        return
+    end
+
+    -- Создаём новый
+    local sky = Instance.new("Sky")
+    sky.SkyboxBk = id
+    sky.SkyboxDn = id
+    sky.SkyboxFt = id
+    sky.SkyboxLf = id
+    sky.SkyboxRt = id
+    sky.SkyboxUp = id
+    sky.Parent = Lighting
+    currentSkybox = sky
+    print("🐗 Skybox установлен: " .. id)
+end
+
+-- Выпадающее меню (Dropdown)
+local dropdownContainer = Instance.new("Frame")
+dropdownContainer.Size = UDim2.new(1, 0, 0, 44)
+dropdownContainer.BackgroundColor3 = T.Bg3
+dropdownContainer.BorderSizePixel = 0
+dropdownContainer.Parent = MiscTab
+Instance.new("UICorner", dropdownContainer).CornerRadius = UDim.new(0, 12)
+
+local ddLabel = Instance.new("TextLabel")
+ddLabel.Size = UDim2.new(1, -140, 1, 0)
+ddLabel.Position = UDim2.new(0, 16, 0, 0)
+ddLabel.BackgroundTransparency = 1
+ddLabel.Text = "Skybox"
+ddLabel.TextColor3 = T.Text
+ddLabel.Font = Enum.Font.GothamMedium
+ddLabel.TextSize = 13
+ddLabel.TextXAlignment = Enum.TextXAlignment.Left
+ddLabel.Parent = dropdownContainer
+
+local ddBtn = Instance.new("TextButton")
+ddBtn.Size = UDim2.new(0, 120, 0, 30)
+ddBtn.Position = UDim2.new(1, -130, 0.5, -15)
+ddBtn.BackgroundColor3 = T.Bg
+ddBtn.Text = "❌ Выключено ▾"
+ddBtn.TextColor3 = T.Accent
+ddBtn.Font = Enum.Font.GothamBold
+ddBtn.TextSize = 12
+ddBtn.BorderSizePixel = 0
+ddBtn.AutoButtonColor = false
+ddBtn.Parent = dropdownContainer
+Instance.new("UICorner", ddBtn).CornerRadius = UDim.new(0, 8)
+
+-- Список (появляется при клике)
+local ddList = Instance.new("Frame")
+ddList.Size = UDim2.new(1, 0, 0, 0)
+ddList.Position = UDim2.new(0, 0, 1, 6)
+ddList.BackgroundColor3 = T.Bg2
+ddList.BorderSizePixel = 0
+ddList.Visible = false
+ddList.ClipsDescendants = true
+ddList.Parent = MiscTab
+Instance.new("UICorner", ddList).CornerRadius = UDim.new(0, 12)
+
+local ddListStroke = Instance.new("UIStroke", ddList)
+ddListStroke.Color = T.Stroke
+ddListStroke.Thickness = 1
+
+local ddListLayout = Instance.new("UIListLayout", ddList)
+ddListLayout.Padding = UDim.new(0, 2)
+ddListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local ddListPad = Instance.new("UIPadding", ddList)
+ddListPad.PaddingTop = UDim.new(0, 6)
+ddListPad.PaddingBottom = UDim.new(0, 6)
+ddListPad.PaddingLeft = UDim.new(0, 6)
+ddListPad.PaddingRight = UDim.new(0, 6)
+
+-- Создаём кнопки для каждого неба
+local dropdownOpen = false
+local listHeight = 0
+
+for _, sky in pairs(SKYBOXES) do
+    local optBtn = Instance.new("TextButton")
+    optBtn.Size = UDim2.new(1, 0, 0, 32)
+    optBtn.BackgroundColor3 = T.Bg3
+    optBtn.Text = sky.name
+    optBtn.TextColor3 = T.Text
+    optBtn.Font = Enum.Font.GothamMedium
+    optBtn.TextSize = 12
+    optBtn.BorderSizePixel = 0
+    optBtn.AutoButtonColor = false
+    optBtn.TextXAlignment = Enum.TextXAlignment.Left
+    optBtn.Parent = ddList
+    Instance.new("UICorner", optBtn).CornerRadius = UDim.new(0, 8)
+
+    local optPad = Instance.new("UIPadding", optBtn)
+    optPad.PaddingLeft = UDim.new(0, 10)
+
+    listHeight = listHeight + 34
+
+    optBtn.MouseEnter:Connect(function()
+        optBtn.BackgroundColor3 = T.Accent
+        optBtn.TextColor3 = T.Bg
+    end)
+    optBtn.MouseLeave:Connect(function()
+        optBtn.BackgroundColor3 = T.Bg3
+        optBtn.TextColor3 = T.Text
+    end)
+    optBtn.MouseButton1Click:Connect(function()
+        setSkybox(sky.id)
+        ddBtn.Text = sky.name .. " ▾"
+        -- Закрываем список
+        dropdownOpen = false
+        ddList.Visible = false
+        ddList.Size = UDim2.new(1, 0, 0, 0)
+    end)
+end
+
+-- Открытие/закрытие
+ddBtn.MouseButton1Click:Connect(function()
+    dropdownOpen = not dropdownOpen
+    if dropdownOpen then
+        ddList.Visible = true
+        ddList.Size = UDim2.new(1, 0, 0, 0)
+        for i = 0, listHeight, 8 do
+            ddList.Size = UDim2.new(1, 0, 0, i)
+            task.wait()
+        end
+        ddList.Size = UDim2.new(1, 0, 0, listHeight)
+    else
+        ddList.Size = UDim2.new(1, 0, 0, listHeight)
+        for i = listHeight, 0, -8 do
+            ddList.Size = UDim2.new(1, 0, 0, i)
+            task.wait()
+        end
+        ddList.Visible = false
+    end
+end)
+
+-- Заглушка под выпадающий список (чтобы следующий элемент не наложился)
+local ddSpacer = Instance.new("Frame")
+ddSpacer.Size = UDim2.new(1, 0, 0, 44)
+ddSpacer.BackgroundTransparency = 1
+ddSpacer.Parent = MiscTab
+
+-- === ОПАСНАЯ ЗОНА ===
 Hub.createLabel(MiscTab, "ОПАСНАЯ ЗОНА")
 
--- PANIC
 local panicContainer = Instance.new("Frame")
 panicContainer.Size = UDim2.new(1, 0, 0, 60)
 panicContainer.BackgroundColor3 = T.Bg3
@@ -74,6 +259,7 @@ panicBtn.MouseButton1Click:Connect(function()
         Lighting.Ambient = Color3.fromRGB(70, 70, 70)
         Lighting.Brightness = 1
         Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        if currentSkybox then currentSkybox:Destroy() end
     end)
     for _, c in pairs(Hub.Connections) do pcall(function() c:Disconnect() end) end
     Hub.Connections = {}
@@ -85,7 +271,7 @@ panicBtn.MouseButton1Click:Connect(function()
     print("🐗 Bizon Hub: PANIC")
 end)
 
--- === NOCLIP (раз в 10 кадров) ===
+-- === NOCLIP ===
 local noclipCounter = 0
 Hub.addConnection(RunService.Heartbeat:Connect(function()
     if Hub.IsPanicked then return end
@@ -104,4 +290,4 @@ Hub.addConnection(RunService.Heartbeat:Connect(function()
     end
 end))
 
-print("🐗 Misc модуль загружен")
+print("🐗 Misc модуль загружен (Skybox + Fog)")
