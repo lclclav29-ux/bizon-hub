@@ -5,7 +5,6 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
--- === ФОРС-ОБХОД КЭША ===
 local SESSION_ID = tostring(math.floor(tick() * 1000)) .. "_" .. tostring(math.random(1, 99999999))
 
 local function bustCache(url)
@@ -13,7 +12,6 @@ local function bustCache(url)
     return url .. sep .. "s=" .. SESSION_ID .. "&r=" .. tostring(math.random(1, 999999999))
 end
 
--- === НАСТРОЙКИ РЕКЛАМЫ ===
 local AD_CONFIG = {
     Title = "🐗 BIZON HUB",
     SubTitle = "Премиум чит для Roblox",
@@ -23,7 +21,6 @@ local AD_CONFIG = {
     WaitTime = 5,
 }
 
--- === ФАЙЛ ПАМЯТИ ===
 local SAVE_FILE = "bizon_key.txt"
 
 local function hasFileAPI()
@@ -32,10 +29,9 @@ end
 
 local function saveKey(key, expiryTs)
     if not hasFileAPI() then return false end
-    local ok = pcall(function()
+    return pcall(function()
         writefile(SAVE_FILE, tostring(key) .. "|" .. tostring(expiryTs or 0))
     end)
-    return ok
 end
 
 local function loadSavedKey()
@@ -49,7 +45,6 @@ local function loadSavedKey()
     return { key = k, expiry = tonumber(e) or 0 }
 end
 
--- === ГЕНЕРАЦИЯ AUTO-КЛЮЧА ===
 local function generateKey()
     local chars = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
     local function seg()
@@ -63,7 +58,6 @@ local function generateKey()
     return "AUTO-" .. seg() .. "-" .. seg()
 end
 
--- === ЗАГРУЗКА КЛЮЧЕЙ ===
 local function loadValidKeys()
     local ok, data = pcall(function()
         return game:HttpGet(bustCache(BASE .. "keys.txt"), true)
@@ -79,7 +73,6 @@ local function loadValidKeys()
     return keys
 end
 
--- === UI КЛЮЧА ===
 local function showUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BizonKeySystem"
@@ -371,7 +364,6 @@ local function showUI()
     end
 end
 
--- === ЗАГРУЗКА МОДУЛЕЙ ===
 local function loadModule(name)
     local url = bustCache(BASE .. name .. ".lua")
     print("🐗 Загрузка " .. name .. "...")
@@ -386,7 +378,6 @@ local function loadModule(name)
     task.wait(0.15)
 end
 
--- === ГЛАВНЫЙ ПОТОК ===
 print("🐗 Bizon Hub: старт (v2.7)")
 print("🔑 Session: " .. SESSION_ID)
 
