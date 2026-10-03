@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v2.2 (Large Watermark Right Top)
+-- 🐗 Bizon Hub Core v2.3 (FULL)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -92,7 +92,6 @@ WMgrad.Color = ColorSequence.new({
 })
 WMgrad.Rotation = 45
 
--- Иконка 🐗
 local WMicon = Instance.new("TextLabel")
 WMicon.Size = UDim2.new(0, 50, 1, 0)
 WMicon.Position = UDim2.new(0, 12, 0, 0)
@@ -103,7 +102,6 @@ WMicon.Font = Enum.Font.GothamBold
 WMicon.TextSize = 30
 WMicon.Parent = WMFrame
 
--- Название BIZON HUB
 local WMtitle = Instance.new("TextLabel")
 WMtitle.Size = UDim2.new(0, 180, 0, 32)
 WMtitle.Position = UDim2.new(0, 62, 0, 6)
@@ -111,23 +109,21 @@ WMtitle.BackgroundTransparency = 1
 WMtitle.Text = "BIZON HUB"
 WMtitle.TextColor3 = T.Accent
 WMtitle.Font = Enum.Font.GothamBlack
-WMtitle.TextSize = 24
+WMtitle.TextSize = 22
 WMtitle.TextXAlignment = Enum.TextXAlignment.Left
 WMtitle.Parent = WMFrame
 
--- Версия под названием
 local WMversion = Instance.new("TextLabel")
 WMversion.Size = UDim2.new(0, 180, 0, 18)
 WMversion.Position = UDim2.new(0, 62, 0, 36)
 WMversion.BackgroundTransparency = 1
-WMversion.Text = "version v2.2"
+WMversion.Text = "version v2.3"
 WMversion.TextColor3 = T.TextDim
 WMversion.Font = Enum.Font.GothamMedium
-WMversion.TextSize = 12
+WMversion.TextSize = 11
 WMversion.TextXAlignment = Enum.TextXAlignment.Left
 WMversion.Parent = WMFrame
 
--- Разделитель 1
 local WMsep1 = Instance.new("Frame")
 WMsep1.Size = UDim2.new(0, 2, 0, 32)
 WMsep1.Position = UDim2.new(0, 250, 0.5, -16)
@@ -135,7 +131,6 @@ WMsep1.BackgroundColor3 = T.Stroke
 WMsep1.BorderSizePixel = 0
 WMsep1.Parent = WMFrame
 
--- FREE / PREMIUM
 local WMedition = Instance.new("TextLabel")
 WMedition.Size = UDim2.new(0, 100, 0, 22)
 WMedition.Position = UDim2.new(0, 262, 0, 10)
@@ -158,7 +153,6 @@ WMeditionLabel.TextSize = 10
 WMeditionLabel.TextXAlignment = Enum.TextXAlignment.Left
 WMeditionLabel.Parent = WMFrame
 
--- Разделитель 2
 local WMsep2 = Instance.new("Frame")
 WMsep2.Size = UDim2.new(0, 2, 0, 32)
 WMsep2.Position = UDim2.new(0, 366, 0.5, -16)
@@ -166,7 +160,6 @@ WMsep2.BackgroundColor3 = T.Stroke
 WMsep2.BorderSizePixel = 0
 WMsep2.Parent = WMFrame
 
--- FPS
 local WMfps = Instance.new("TextLabel")
 WMfps.Size = UDim2.new(0, 90, 0, 22)
 WMfps.Position = UDim2.new(0, 376, 0, 10)
@@ -178,7 +171,6 @@ WMfps.TextSize = 15
 WMfps.TextXAlignment = Enum.TextXAlignment.Left
 WMfps.Parent = WMFrame
 
--- PING под FPS
 local WMping = Instance.new("TextLabel")
 WMping.Size = UDim2.new(0, 90, 0, 18)
 WMping.Position = UDim2.new(0, 376, 0, 32)
@@ -190,7 +182,6 @@ WMping.TextSize = 12
 WMping.TextXAlignment = Enum.TextXAlignment.Left
 WMping.Parent = WMFrame
 
--- Drag watermark
 local wmDrag, wmStart, wmStartPos
 Hub.addConnection(WMFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -207,10 +198,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- Сглаженный FPS
 local fpsHistory = {}
-local FPS_SAMPLES = 30
-
 task.spawn(function()
     local lastUpdate = tick()
     local frames = 0
@@ -220,32 +208,22 @@ task.spawn(function()
         local now = tick()
         if now - lastUpdate >= 0.5 then
             local rawFps = frames / (now - lastUpdate)
-            frames = 0
-            lastUpdate = now
-
+            frames = 0; lastUpdate = now
             table.insert(fpsHistory, rawFps)
-            if #fpsHistory > FPS_SAMPLES then
-                table.remove(fpsHistory, 1)
-            end
-
+            if #fpsHistory > 30 then table.remove(fpsHistory, 1) end
             local sum = 0
             for _, v in pairs(fpsHistory) do sum = sum + v end
             local avgFps = math.floor(sum / #fpsHistory)
-
             local color = T.Success
             if avgFps < 30 then color = T.Danger
             elseif avgFps < 60 then color = Color3.fromRGB(255, 200, 0) end
-
             WMfps.Text = "FPS: " .. tostring(avgFps)
             WMfps.TextColor3 = color
         end
     end
 end)
 
--- Сглаженный PING
 local pingHistory = {}
-local PING_SAMPLES = 10
-
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
         local ok, ping = pcall(function()
@@ -253,18 +231,13 @@ task.spawn(function()
         end)
         if ok and ping then
             table.insert(pingHistory, ping)
-            if #pingHistory > PING_SAMPLES then
-                table.remove(pingHistory, 1)
-            end
-
+            if #pingHistory > 10 then table.remove(pingHistory, 1) end
             local sum = 0
             for _, v in pairs(pingHistory) do sum = sum + v end
             local avgPing = math.floor(sum / #pingHistory)
-
             local color = T.Success
             if avgPing > 200 then color = T.Danger
             elseif avgPing > 100 then color = Color3.fromRGB(255, 200, 0) end
-
             WMping.Text = "PING: " .. tostring(avgPing)
             WMping.TextColor3 = color
         end
@@ -272,7 +245,6 @@ task.spawn(function()
     end
 end)
 
--- API смены версии
 Hub.Watermark = WMFrame
 function Hub.setEdition(edition)
     Hub.WatermarkEdition = edition
@@ -380,7 +352,7 @@ Version.Size = UDim2.new(0, 65, 0, 22)
 Version.Position = UDim2.new(0, 230, 0.5, -11)
 Version.BackgroundColor3 = T.Accent
 Version.BackgroundTransparency = 0.82
-Version.Text = "v2.2"
+Version.Text = "v2.3"
 Version.TextColor3 = T.Accent
 Version.Font = Enum.Font.GothamBold
 Version.TextSize = 11
@@ -730,64 +702,5 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
         Hub.toggleMenu()
     end
 end))
-function Hub.createLabel(parent, text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 22)
-    label.BackgroundTransparency = 1
-    label.Text = "— " .. text .. " —"
-    label.TextColor3 = T.TextDim
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 10
-    label.Parent = parent
-    return label
-end
 
-function Hub.createKeybind(parent, name, defaultKey, callback)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 44)
-    container.BackgroundColor3 = T.Bg3
-    container.BorderSizePixel = 0
-    container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, 0, 1, 0)
-    label.Position = UDim2.new(0, 16, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = T.Text
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 13
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local keyBtn = Instance.new("TextButton")
-    keyBtn.Size = UDim2.new(0, 100, 0, 28)
-    keyBtn.Position = UDim2.new(1, -116, 0.5, -14)
-    keyBtn.BackgroundColor3 = T.Bg
-    keyBtn.Text = defaultKey.Name
-    keyBtn.TextColor3 = T.Accent
-    keyBtn.Font = Enum.Font.GothamBold
-    keyBtn.TextSize = 12
-    keyBtn.BorderSizePixel = 0
-    keyBtn.AutoButtonColor = false
-    keyBtn.Parent = container
-    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 8)
-
-    local awaiting = false
-    keyBtn.MouseButton1Click:Connect(function()
-        awaiting = true
-        keyBtn.Text = "Нажми..."
-        keyBtn.TextColor3 = Color3.fromRGB(255, 200, 0)
-    end)
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if awaiting and not gp and input.UserInputType == Enum.UserInputType.Keyboard then
-            keyBtn.Text = input.KeyCode.Name
-            keyBtn.TextColor3 = T.Accent
-            awaiting = false
-            callback(input.KeyCode)
-        end
-    end)
-    return container
-end
-print("🐗 Core загружен (v2.2 + Large Watermark)")
+print("🐗 Core загружен (v2.3 FULL)")
