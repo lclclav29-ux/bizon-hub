@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v4.0 (Base)
+-- 🐗 Bizon Hub Core v4.1 (Base + Watermark)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -50,6 +50,7 @@ if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
 if oldWM then oldWM:Destroy() end
 
+-- ROOT
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -57,6 +58,181 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
+
+-- ============================================
+-- WATERMARK
+-- ============================================
+local WatermarkGui = Instance.new("ScreenGui")
+WatermarkGui.Name = "BizonWatermark"
+WatermarkGui.ResetOnSpawn = false
+WatermarkGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+WatermarkGui.IgnoreGuiInset = true
+WatermarkGui.Parent = player:WaitForChild("PlayerGui")
+
+local WMFrame = Instance.new("Frame")
+WMFrame.Size = UDim2.new(0, 320, 0, 40)
+WMFrame.Position = UDim2.new(1, -340, 0, 20)
+WMFrame.BackgroundColor3 = T.Bg
+WMFrame.BackgroundTransparency = 0.15
+WMFrame.BorderSizePixel = 0
+WMFrame.Parent = WatermarkGui
+Instance.new("UICorner", WMFrame).CornerRadius = UDim.new(0, 12)
+
+local WMstroke = Instance.new("UIStroke", WMFrame)
+WMstroke.Color = T.Accent
+WMstroke.Thickness = 1.5
+WMstroke.Transparency = 0.3
+
+local WMglow = Instance.new("UIStroke", WMFrame)
+WMglow.Color = T.AccentGlow
+WMglow.Thickness = 6
+WMglow.Transparency = 0.85
+
+local WMicon = Instance.new("TextLabel")
+WMicon.Size = UDim2.new(0, 36, 1, 0)
+WMicon.Position = UDim2.new(0, 8, 0, 0)
+WMicon.BackgroundTransparency = 1
+WMicon.Text = "🐗"
+WMicon.TextColor3 = T.Accent
+WMicon.Font = Enum.Font.GothamBold
+WMicon.TextSize = 20
+WMicon.Parent = WMFrame
+
+local WMtitle = Instance.new("TextLabel")
+WMtitle.Size = UDim2.new(0, 120, 1, 0)
+WMtitle.Position = UDim2.new(0, 42, 0, 0)
+WMtitle.BackgroundTransparency = 1
+WMtitle.Text = "BIZON HUB"
+WMtitle.TextColor3 = T.Accent
+WMtitle.Font = Enum.Font.GothamBlack
+WMtitle.TextSize = 13
+WMtitle.TextXAlignment = Enum.TextXAlignment.Left
+WMtitle.Parent = WMFrame
+
+local WMsep1 = Instance.new("Frame")
+WMsep1.Size = UDim2.new(0, 1, 0, 20)
+WMsep1.Position = UDim2.new(0, 168, 0.5, -10)
+WMsep1.BackgroundColor3 = T.Stroke
+WMsep1.BorderSizePixel = 0
+WMsep1.Parent = WMFrame
+
+local WMfps = Instance.new("TextLabel")
+WMfps.Size = UDim2.new(0, 58, 1, 0)
+WMfps.Position = UDim2.new(0, 176, 0, 0)
+WMfps.BackgroundTransparency = 1
+WMfps.Text = "FPS: --"
+WMfps.TextColor3 = T.Text
+WMfps.Font = Enum.Font.GothamBold
+WMfps.TextSize = 11
+WMfps.TextXAlignment = Enum.TextXAlignment.Left
+WMfps.Parent = WMFrame
+
+local WMping = Instance.new("TextLabel")
+WMping.Size = UDim2.new(0, 58, 1, 0)
+WMping.Position = UDim2.new(0, 240, 0, 0)
+WMping.BackgroundTransparency = 1
+WMping.Text = "PING: --"
+WMping.TextColor3 = T.Text
+WMping.Font = Enum.Font.GothamBold
+WMping.TextSize = 11
+WMping.TextXAlignment = Enum.TextXAlignment.Left
+WMping.Parent = WMFrame
+
+local WMver = Instance.new("TextLabel")
+WMver.Size = UDim2.new(0, 30, 1, 0)
+WMver.Position = UDim2.new(1, -34, 0, 0)
+WMver.BackgroundTransparency = 1
+WMver.Text = "4.1"
+WMver.TextColor3 = T.TextDim
+WMver.Font = Enum.Font.GothamBold
+WMver.TextSize = 10
+WMver.Parent = WMFrame
+
+-- Drag watermark
+local wmDrag, wmStart, wmStartPos
+Hub.addConnection(WMFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        wmDrag = true; wmStart = input.Position; wmStartPos = WMFrame.Position
+    end
+end))
+Hub.addConnection(UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then wmDrag = false end
+end))
+Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
+    if wmDrag and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local d = input.Position - wmStart
+        WMFrame.Position = UDim2.new(wmStartPos.X.Scale, wmStartPos.X.Offset + d.X, wmStartPos.Y.Scale, wmStartPos.Y.Offset + d.Y)
+    end
+end))
+
+-- Пульсация watermark
+task.spawn(function()
+    while WMFrame.Parent and not Hub.IsPanicked do
+        TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.95, Thickness = 10}):Play()
+        task.wait(2)
+        if Hub.IsPanicked then break end
+        TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.75, Thickness = 6}):Play()
+        task.wait(2)
+    end
+end)
+
+-- FPS (сглаженный)
+local fpsHistory = {}
+task.spawn(function()
+    local lastUpdate = tick()
+    local frames = 0
+    while WMFrame.Parent and not Hub.IsPanicked do
+        RunService.RenderStepped:Wait()
+        frames = frames + 1
+        local now = tick()
+        if now - lastUpdate >= 0.5 then
+            local rawFps = frames / (now - lastUpdate)
+            frames = 0; lastUpdate = now
+            table.insert(fpsHistory, rawFps)
+            if #fpsHistory > 30 then table.remove(fpsHistory, 1) end
+            local sum = 0
+            for _, v in pairs(fpsHistory) do sum = sum + v end
+            local avgFps = math.floor(sum / #fpsHistory)
+            local color = T.Success
+            if avgFps < 30 then color = T.Danger
+            elseif avgFps < 60 then color = T.Warning end
+            WMfps.Text = "FPS: " .. tostring(avgFps)
+            WMfps.TextColor3 = color
+        end
+    end
+end)
+
+-- Ping (сглаженный)
+local pingHistory = {}
+task.spawn(function()
+    while WMFrame.Parent and not Hub.IsPanicked do
+        local ok, ping = pcall(function()
+            return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+        end)
+        if ok and ping then
+            table.insert(pingHistory, ping)
+            if #pingHistory > 10 then table.remove(pingHistory, 1) end
+            local sum = 0
+            for _, v in pairs(pingHistory) do sum = sum + v end
+            local avgPing = math.floor(sum / #pingHistory)
+            local color = T.Success
+            if avgPing > 200 then color = T.Danger
+            elseif avgPing > 100 then color = T.Warning end
+            WMping.Text = "PING: " .. tostring(avgPing)
+            WMping.TextColor3 = color
+        end
+        task.wait(1)
+    end
+end)
+
+Hub.Watermark = WMFrame
+function Hub.setEdition(edition)
+    if edition == "PREMIUM" then
+        WMtitle.TextColor3 = Color3.fromRGB(255, 200, 50)
+        WMicon.TextColor3 = Color3.fromRGB(255, 200, 50)
+        WMstroke.Color = Color3.fromRGB(255, 200, 50)
+    end
+end
 
 -- FLOAT BTN
 local FloatBtn = Instance.new("TextButton")
@@ -208,8 +384,9 @@ function Hub.createTab(name, icon)
     container.Visible = false
     container.Parent = Content
 
+    -- ⚠️ ВАЖНО: 2 колонки
     local layout = Instance.new("UIGridLayout", container)
-    layout.CellSize = UDim2.new(0.5, -4, 0, 56)
+    layout.CellSize = UDim2.new(0.5, -4, 0, 56)  -- 0.5 = половина ширины → 2 колонки
     layout.CellPadding = UDim2.new(0, 8, 0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
 
@@ -263,23 +440,11 @@ function Hub.openSettings(sourceContainer, settingsFn)
     for _, child in pairs(SPContent:GetChildren()) do
         if not child:IsA("UIListLayout") then child:Destroy() end
     end
-
-    if not sourceContainer then
-        warn("🐗 openSettings: sourceContainer = nil")
-        return
-    end
-
+    if not sourceContainer then return end
     settingsFn(SPContent)
-
     task.wait(0.05)
-
     local ok, pos = pcall(function() return sourceContainer.AbsolutePosition end)
-    if not ok or not pos then
-        warn("🐗 openSettings: AbsolutePosition недоступен")
-        SettingsPanel.Visible = false
-        return
-    end
-
+    if not ok or not pos then SettingsPanel.Visible = false; return end
     local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
     SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 10, 0, pos.Y)
     SettingsPanel.Size = UDim2.new(0, 260, 0, 0)
@@ -325,4 +490,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core v4.0 (Base) загружен")
+print("🐗 Core v4.1 (Base + Watermark) загружен")
