@@ -1,21 +1,36 @@
--- 🐗 Bizon Hub UI-2 (Slider + Label)
-local UserInputService = game:GetService("UserInputService")
+-- 🐗 Bizon Hub UI-2 (Slider + Label — Aesthetic)
+local UserInputService = game:UseInputService or game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
 local T = Hub.Theme
 
+-- SLIDER
 function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     local container = Instance.new("Frame")
     container.BackgroundColor3 = T.Bg3
-    container.BackgroundTransparency = 0.4
+    container.BackgroundTransparency = 0.35
     container.BorderSizePixel = 0
     container.Parent = parent
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 14)
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
 
+    local grad = Instance.new("UIGradient", container)
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, T.Bg4),
+        ColorSequenceKeypoint.new(1, T.Bg3),
+    })
+    grad.Rotation = 45
+
+    local stroke = Instance.new("UIStroke", container)
+    stroke.Color = T.Stroke
+    stroke.Thickness = 1
+    stroke.Transparency = 0.5
+
+    -- Название
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -90, 0, 22)
-    label.Position = UDim2.new(0, 18, 0, 8)
+    label.Size = UDim2.new(1, -90, 0, 18)
+    label.Position = UDim2.new(0, 16, 0, 8)
     label.BackgroundTransparency = 1
     label.Text = name
     label.TextColor3 = T.Text
@@ -24,9 +39,10 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
 
+    -- Значение
     local valueLabel = Instance.new("TextLabel")
-    valueLabel.Size = UDim2.new(0, 55, 0, 22)
-    valueLabel.Position = UDim2.new(1, -72, 0, 8)
+    valueLabel.Size = UDim2.new(0, 50, 0, 18)
+    valueLabel.Position = UDim2.new(1, -66, 0, 8)
     valueLabel.BackgroundColor3 = T.Accent
     valueLabel.BackgroundTransparency = 0.75
     valueLabel.Text = tostring(default)
@@ -37,9 +53,10 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     valueLabel.Parent = container
     Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
 
+    -- Slider
     local sliderBg = Instance.new("Frame")
-    sliderBg.Size = UDim2.new(1, -36, 0, 6)
-    sliderBg.Position = UDim2.new(0, 18, 1, -18)
+    sliderBg.Size = UDim2.new(1, -32, 0, 5)
+    sliderBg.Position = UDim2.new(0, 16, 1, -14)
     sliderBg.BackgroundColor3 = T.Bg
     sliderBg.BorderSizePixel = 0
     sliderBg.Parent = container
@@ -52,20 +69,31 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     fill.Parent = sliderBg
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
 
+    local fillGrad = Instance.new("UIGradient", fill)
+    fillGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, T.Accent),
+        ColorSequenceKeypoint.new(1, T.AccentGlow),
+    })
+
+    -- Кружок
     local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 16, 0, 16)
-    knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -8, 0.5, -8)
+    knob.Size = UDim2.new(0, 14, 0, 14)
+    knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -7, 0.5, -7)
     knob.BackgroundColor3 = Color3.new(1,1,1)
     knob.BorderSizePixel = 0
     knob.Parent = sliderBg
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+    local knobStroke = Instance.new("UIStroke", knob)
+    knobStroke.Color = T.AccentGlow
+    knobStroke.Thickness = 2
 
     local sliding = false
     local function upd(input)
         local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
         local v = math.floor(minVal + (maxVal - minVal) * relX)
         fill.Size = UDim2.new(relX, 0, 1, 0)
-        knob.Position = UDim2.new(relX, -8, 0.5, -8)
+        knob.Position = UDim2.new(relX, -7, 0.5, -7)
         valueLabel.Text = tostring(v)
         callback(v)
     end
@@ -78,12 +106,24 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     UserInputService.InputChanged:Connect(function(input)
         if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
     end)
+
+    -- Hover
+    container.MouseEnter:Connect(function()
+        TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.15}):Play()
+        TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.55}):Play()
+    end)
+    container.MouseLeave:Connect(function()
+        TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.35}):Play()
+        TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Stroke, Transparency = 0.5}):Play()
+    end)
+
     return container
 end
 
+-- LABEL (заголовок раздела на 2 колонки)
 function Hub.createLabel(parent, text)
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, -4, 0, 28)
+    label.Size = UDim2.new(1, 0, 0, 26)
     label.BackgroundTransparency = 1
     label.Text = "— " .. string.upper(text) .. " —"
     label.TextColor3 = T.TextDim
