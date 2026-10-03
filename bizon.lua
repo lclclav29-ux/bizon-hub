@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v2.1 — Ad Gate Loader
+-- 🐗 Bizon Hub v2.2 — Simple Key System + Ad Gate
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 local CACHE = "?t=" .. tostring(os.time())
 
@@ -6,30 +6,46 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
--- НАСТРОЙКИ РЕКЛАМЫ
+-- === НАСТРОЙКИ РЕКЛАМЫ ===
 local AD_CONFIG = {
     Title = "🐗 BIZON HUB",
     SubTitle = "Премиум чит для Roblox",
-    PromoText = "📢 Подпишись на наш канал!\n\n🎁 Получи бесплатный доступ\nна 24 часа",
-    PromoURL = "https://www.youtube.com/@bizonhub",  -- ← ссылка на твой канал (можно менять)
-    ButtonURL = "🔗 Открыть ссылку",                 -- ← текст кнопки
-    WaitTime = 5,                                    -- ← секунд до разблокировки
+    PromoText = "📢 Подпишись на наш канал!\n\n🎁 Получи бесплатный доступ",
+    PromoURL = "https://www.youtube.com/@HOBONI-f9t",
+    ButtonURL = "🔗 Открыть YouTube канал",
+    WaitTime = 5,
 }
 
--- Загрузка списка ключей
+-- === ЗАГРУЗКА КЛЮЧЕЙ ИЗ keys.txt ===
 local function loadValidKeys()
     local ok, data = pcall(function()
         return game:HttpGet(BASE .. "keys.txt" .. CACHE, true)
     end)
-    if not ok or not data then return {} end
+    if not ok or not data then
+        warn("🐗 Не удалось загрузить keys.txt")
+        return {}
+    end
     local keys = {}
     for line in data:gmatch("[^\r\n]+") do
         local trimmed = line:match("^%s*(.-)%s*$")
-        if trimmed and #trimmed > 0 then
-            keys[trimmed:upper()] = true
+        if trimmed and #trimmed > 0 and not trimmed:match("^#") then
+            -- Поддержка формата "KEY" или "KEY|YYYY-MM-DD"
+            local key, expiry = trimmed:match("^([^|]+)|?(.*)$")
+            if key then
+                keys[key:upper():gsub("%s", "")] = expiry ~= "" and expiry or nil
+            end
         end
     end
     return keys
+end
+
+-- === ПРОВЕРКА СРОКА ===
+local function isExpired(expiryStr)
+    if not expiryStr or expiryStr == "" then return false end
+    local y, m, d = expiryStr:match("(%d+)-(%d+)-(%d+)")
+    if not y then return false end
+    local expiryTime = os.time({year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 23, min = 59})
+    return os.time() > expiryTime
 end
 
 -- === AD GATE + KEY INPUT ===
@@ -41,7 +57,6 @@ local function showAdGate()
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
-    -- Overlay
     local Overlay = Instance.new("Frame")
     Overlay.Size = UDim2.new(1, 0, 1, 0)
     Overlay.BackgroundColor3 = Color3.new(0, 0, 0)
@@ -49,7 +64,6 @@ local function showAdGate()
     Overlay.BorderSizePixel = 0
     Overlay.Parent = ScreenGui
 
-    -- Главное окно
     local Frame = Instance.new("Frame")
     Frame.Size = UDim2.new(0, 460, 0, 420)
     Frame.Position = UDim2.new(0.5, -230, 0.5, -210)
@@ -62,7 +76,6 @@ local function showAdGate()
     stroke.Color = Color3.fromRGB(255, 145, 30)
     stroke.Thickness = 2
 
-    -- Header
     local Header = Instance.new("Frame")
     Header.Size = UDim2.new(1, 0, 0, 70)
     Header.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
@@ -97,7 +110,6 @@ local function showAdGate()
     SubTitle.TextSize = 12
     SubTitle.Parent = Header
 
-    -- Промо-текст
     local Promo = Instance.new("TextLabel")
     Promo.Size = UDim2.new(1, -40, 0, 100)
     Promo.Position = UDim2.new(0, 20, 0, 90)
@@ -110,7 +122,6 @@ local function showAdGate()
     Promo.TextYAlignment = Enum.TextYAlignment.Top
     Promo.Parent = Frame
 
-    -- Кнопка "Открыть ссылку"
     local PromoBtn = Instance.new("TextButton")
     PromoBtn.Size = UDim2.new(1, -40, 0, 40)
     PromoBtn.Position = UDim2.new(0, 20, 0, 200)
@@ -126,13 +137,12 @@ local function showAdGate()
 
     PromoBtn.MouseButton1Click:Connect(function()
         pcall(function()
-            game:GetService("GuiService"):OpenBrowserWindow(AD_CONFIG.PromoURL)
+            if setclipboard then setclipboard(AD_CONFIG.PromoURL) end
         end)
-        PromoBtn.Text = "✅ Ссылка открыта"
+        PromoBtn.Text = "✅ Ссылка скопирована!"
         PromoBtn.BackgroundColor3 = Color3.fromRGB(50, 220, 130)
     end)
 
-    -- Таймер + кнопка "Получить доступ"
     local timerLabel = Instance.new("TextLabel")
     timerLabel.Size = UDim2.new(1, -40, 0, 26)
     timerLabel.Position = UDim2.new(0, 20, 0, 252)
@@ -143,13 +153,12 @@ local function showAdGate()
     timerLabel.TextSize = 13
     timerLabel.Parent = Frame
 
-    -- Поле для ключа (скрыто)
     local KeyInput = Instance.new("TextBox")
     KeyInput.Size = UDim2.new(1, -40, 0, 44)
     KeyInput.Position = UDim2.new(0, 20, 0, 288)
     KeyInput.BackgroundColor3 = Color3.fromRGB(42, 42, 58)
     KeyInput.Text = ""
-    KeyInput.PlaceholderText = "Введи ключ доступа"
+    KeyInput.PlaceholderText = "BISON-XXXX-XXXX"
     KeyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
     KeyInput.TextColor3 = Color3.fromRGB(255, 145, 30)
     KeyInput.Font = Enum.Font.GothamBold
@@ -160,7 +169,6 @@ local function showAdGate()
     KeyInput.Parent = Frame
     Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 10)
 
-    -- Главная кнопка
     local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(1, -40, 0, 46)
     Btn.Position = UDim2.new(0, 20, 1, -60)
@@ -175,7 +183,6 @@ local function showAdGate()
     Btn.Parent = Frame
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 10)
 
-    -- Статус
     local Status = Instance.new("TextLabel")
     Status.Size = UDim2.new(1, -40, 0, 22)
     Status.Position = UDim2.new(0, 20, 1, -84)
@@ -187,47 +194,29 @@ local function showAdGate()
     Status.TextXAlignment = Enum.TextXAlignment.Left
     Status.Parent = Frame
 
-    -- ФАЗА 1: Таймер
-    local waitTime = AD_CONFIG.WaitTime
     task.spawn(function()
-        for i = waitTime, 1, -1 do
+        for i = AD_CONFIG.WaitTime, 1, -1 do
             timerLabel.Text = "⏳ Подожди " .. i .. " секунд..."
             task.wait(1)
         end
         timerLabel.Text = "✅ Доступ разблокирован"
         timerLabel.TextColor3 = Color3.fromRGB(50, 220, 130)
-
-        -- Активируем кнопку
         Btn.Active = true
         Btn.BackgroundColor3 = Color3.fromRGB(255, 145, 30)
         Btn.TextColor3 = Color3.fromRGB(22, 22, 30)
         Btn.Text = "🔓 ПОЛУЧИТЬ ДОСТУП"
-
-        Btn.MouseEnter:Connect(function()
-            if Btn.Active then
-                TweenService:Create(Btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 195, 80)}):Play()
-            end
-        end)
-        Btn.MouseLeave:Connect(function()
-            if Btn.Active then
-                TweenService:Create(Btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 145, 30)}):Play()
-            end
-        end)
     end)
 
-    -- ФАЗА 2: Клик "Получить доступ" → показать поле ключа
     local phase = 1
     Btn.MouseButton1Click:Connect(function()
         if not Btn.Active then return end
         if phase == 1 then
             phase = 2
-            -- Показываем поле ключа
             KeyInput.Visible = true
             Btn.Text = "✅ ПОДТВЕРДИТЬ КЛЮЧ"
             timerLabel.Text = "Введи ключ и нажми кнопку"
             timerLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
         elseif phase == 2 then
-            -- Проверка ключа
             local entered = KeyInput.Text:upper():gsub("%s", "")
             if entered == "" then
                 Status.Text = "❌ Введи ключ"
@@ -237,11 +226,19 @@ local function showAdGate()
             Status.Text = "⏳ Проверка..."
             Status.TextColor3 = Color3.fromRGB(255, 200, 0)
             Btn.Text = "ПРОВЕРКА..."
-
             task.spawn(function()
                 local validKeys = loadValidKeys()
                 task.wait(0.3)
-                if validKeys[entered] then
+                local expiry = validKeys[entered]
+                if expiry ~= nil or validKeys[entered] == nil and rawget(validKeys, entered) then
+                    -- Проверка срока
+                    if expiry and isExpired(expiry) then
+                        Status.Text = "❌ Ключ истёк (" .. expiry .. ")"
+                        Status.TextColor3 = Color3.fromRGB(255, 70, 70)
+                        Btn.Text = "✅ ПОДТВЕРДИТЬ КЛЮЧ"
+                        KeyInput.Text = ""
+                        return
+                    end
                     Status.Text = "✅ Ключ принят!"
                     Status.TextColor3 = Color3.fromRGB(50, 220, 130)
                     Btn.Text = "✅ OK"
@@ -258,20 +255,12 @@ local function showAdGate()
         end
     end)
 
-    -- Enter для ввода
-    KeyInput.FocusLost:Connect(function(enterPressed)
-        if enterPressed and phase == 2 then
-            Btn:Fire("MouseButton1Click")  -- эмулируем нажатие
-        end
-    end)
-
-    -- Ждём пока GUI закроется
     while ScreenGui.Parent do
         task.wait(0.1)
     end
 end
 
--- Загрузка модулей
+-- === ЗАГРУЗКА МОДУЛЕЙ ===
 local function loadModule(name)
     local url = BASE .. name .. ".lua" .. CACHE
     local ok, err = pcall(function()
@@ -283,11 +272,11 @@ local function loadModule(name)
     task.wait(0.1)
 end
 
-print("🐗 Bizon Hub: запуск Ad Gate...")
+print("🐗 Bizon Hub: запуск...")
 
 task.spawn(function()
     showAdGate()
-    print("✅ Доступ подтверждён! Загрузка модулей...")
+    print("✅ Ключ подтверждён! Загрузка модулей...")
     loadModule("core")
     loadModule("utilities")
     loadModule("farm")
@@ -295,7 +284,7 @@ task.spawn(function()
     pcall(function()
         game.StarterGui:SetCore("SendNotification", {
             Title = "🐗 Bizon Hub",
-            Text = "Загружен!",
+            Text = "Загружен! Нажми 'BIZON HUB'",
             Duration = 4,
         })
     end)
