@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v5.4 (Fixed)
+-- 🐗 Bizon Hub Core v5.5 FINAL
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -21,9 +21,7 @@ Hub.Theme = {
     Bg2 = Color3.fromRGB(22, 18, 38),
     Bg3 = Color3.fromRGB(32, 26, 52),
     Bg4 = Color3.fromRGB(42, 34, 68),
-    Bg5 = Color3.fromRGB(52, 42, 84),
     Accent = Color3.fromRGB(168, 85, 247),
-    Accent2 = Color3.fromRGB(126, 34, 206),
     AccentGlow = Color3.fromRGB(200, 130, 255),
     Text = Color3.fromRGB(245, 240, 255),
     TextDim = Color3.fromRGB(150, 140, 175),
@@ -42,8 +40,6 @@ Hub.Settings = {
     JumpEnabled=false, JumpValue=100, InfiniteJump=false,
     FlyEnabled=false, FlySpeed=50,
     Noclip=false, Fullbright=false,
-    AutoFarmEnabled=false, FarmTargetName="Hitbox",
-    FarmRange=20, FarmHitCooldown=0.1, FarmUseTool=true,
 }
 
 local T = Hub.Theme
@@ -164,7 +160,7 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 40, 1, 0)
 WMver.Position = UDim2.new(1, -44, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "v5.4"
+WMver.Text = "v5.5"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
@@ -246,7 +242,7 @@ end)
 Hub.Watermark = WMFrame
 
 -- ============================================
--- TOOLTIP SYSTEM
+-- TOOLTIP
 -- ============================================
 local TooltipGui = Instance.new("ScreenGui")
 TooltipGui.Name = "BizonTooltip"
@@ -285,7 +281,7 @@ TTpadding.PaddingRight = UDim.new(0, 14)
 local TTTitle = Instance.new("TextLabel")
 TTTitle.Size = UDim2.new(1, 0, 0, 18)
 TTTitle.BackgroundTransparency = 1
-TTTitle.Text = "Заголовок"
+TTTitle.Text = ""
 TTTitle.TextColor3 = T.Accent
 TTTitle.Font = Enum.Font.GothamBold
 TTTitle.TextSize = 13
@@ -296,7 +292,7 @@ local TTDesc = Instance.new("TextLabel")
 TTDesc.Size = UDim2.new(1, 0, 0, 30)
 TTDesc.Position = UDim2.new(0, 0, 0, 22)
 TTDesc.BackgroundTransparency = 1
-TTDesc.Text = "Описание"
+TTDesc.Text = ""
 TTDesc.TextColor3 = T.Text
 TTDesc.Font = Enum.Font.Gotham
 TTDesc.TextSize = 11
@@ -345,8 +341,6 @@ function Hub.attachTooltip(element, title, description)
         if not tooltipActive then Tooltip.Visible = false end
     end)
 end
-
-Hub.Tooltip = Tooltip
 
 -- ============================================
 -- FLOAT BUTTON
@@ -506,7 +500,7 @@ local LogoSub = Instance.new("TextLabel")
 LogoSub.Size = UDim2.new(1, -60, 0, 16)
 LogoSub.Position = UDim2.new(0, 56, 0, 28)
 LogoSub.BackgroundTransparency = 1
-LogoSub.Text = "v5.4 • Premium"
+LogoSub.Text = "v5.5 • Premium"
 LogoSub.TextColor3 = T.TextDim2
 LogoSub.Font = Enum.Font.GothamMedium
 LogoSub.TextSize = 10
@@ -557,7 +551,7 @@ local ContentSub = Instance.new("TextLabel")
 ContentSub.Size = UDim2.new(1, -120, 0, 18)
 ContentSub.Position = UDim2.new(0, 0, 0, 34)
 ContentSub.BackgroundTransparency = 1
-ContentSub.Text = "Настройки скорости персонажа"
+ContentSub.Text = ""
 ContentSub.TextColor3 = T.TextDim
 ContentSub.Font = Enum.Font.GothamMedium
 ContentSub.TextSize = 11
@@ -604,13 +598,13 @@ end))
 Hub.Tabs = {}
 Hub.CurrentTab = nil
 Hub.TabInfo = {
-    Speed = "Настройки скорости персонажа",
+    Speed = "Настройки скорости",
     Jump = "Настройки прыжка",
     Fly = "Полёт в любую сторону",
-    Teleport = "Быстрый телепорт и сохранение точек",
+    Teleport = "Быстрый телепорт",
     Worlds = "Телепорт в любой мир",
-    Auto = "Автоматизация всех действий",
-    Misc = "Прочие функции и Skybox",
+    Auto = "Автоматизация",
+    Misc = "Прочее",
 }
 
 function Hub.switchTab(name)
@@ -622,12 +616,6 @@ function Hub.switchTab(name)
         if oldBtn:FindFirstChild("Indicator") then
             TweenService:Create(oldBtn.Indicator, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
         end
-        if oldBtn:FindFirstChild("IconLbl") then
-            TweenService:Create(oldBtn.IconLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
-        end
-        if oldBtn:FindFirstChild("NameLbl") then
-            TweenService:Create(oldBtn.NameLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
-        end
     end
     Hub.CurrentTab = name
     if Hub.Tabs[name] then
@@ -636,12 +624,6 @@ function Hub.switchTab(name)
         TweenService:Create(newBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Accent, BackgroundTransparency = 0.85}):Play()
         if newBtn:FindFirstChild("Indicator") then
             TweenService:Create(newBtn.Indicator, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
-        end
-        if newBtn:FindFirstChild("IconLbl") then
-            TweenService:Create(newBtn.IconLbl, TweenInfo.new(0.25), {TextColor3 = T.Text}):Play()
-        end
-        if newBtn:FindFirstChild("NameLbl") then
-            TweenService:Create(newBtn.NameLbl, TweenInfo.new(0.25), {TextColor3 = T.Text}):Play()
         end
     end
     ContentTitle.Text = name
@@ -745,97 +727,4 @@ SettingsPanel.BackgroundColor3 = T.Bg2
 SettingsPanel.BackgroundTransparency = 0.05
 SettingsPanel.BorderSizePixel = 0
 SettingsPanel.Visible = false
-SettingsPanel.ZIndex = 50
-SettingsPanel.Parent = ScreenGui
-Instance.new("UICorner", SettingsPanel).CornerRadius = UDim.new(0, 16)
-
-local SPstroke = Instance.new("UIStroke", SettingsPanel)
-SPstroke.Color = T.Accent
-SPstroke.Thickness = 1.5
-SPstroke.Transparency = 0.3
-
-local SPContent = Instance.new("ScrollingFrame")
-SPContent.Size = UDim2.new(1, -16, 1, -16)
-SPContent.Position = UDim2.new(0, 8, 0, 8)
-SPContent.BackgroundTransparency = 1
-SPContent.BorderSizePixel = 0
-SPContent.ScrollBarThickness = 4
-SPContent.ScrollBarImageColor3 = T.Accent
-SPContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-SPContent.Parent = SettingsPanel
-
-local SPLayout = Instance.new("UIListLayout", SPContent)
-SPLayout.Padding = UDim.new(0, 8)
-
-SPLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    SPContent.CanvasSize = UDim2.new(0, 0, 0, SPLayout.AbsoluteContentSize.Y + 12)
-    SettingsPanel.Size = UDim2.new(0, 320, 0, math.clamp(SPLayout.AbsoluteContentSize.Y + 20, 60, 500))
-end)
-
-Hub.SettingsPanel = SettingsPanel
-Hub.SettingsPanelContent = SPContent
-
-function Hub.openSettings(sourceContainer, settingsFn)
-    for _, child in pairs(SPContent:GetChildren()) do
-        if not child:IsA("UIListLayout") then child:Destroy() end
-    end
-    if not sourceContainer then return end
-    settingsFn(SPContent)
-    task.wait(0.05)
-    local ok, pos = pcall(function() return sourceContainer.AbsolutePosition end)
-    if not ok or not pos then SettingsPanel.Visible = false; return end
-    local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
-    SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 12, 0, pos.Y)
-    SettingsPanel.Size = UDim2.new(0, 320, 0, 0)
-    SettingsPanel.Visible = true
-end
-
-function Hub.closeSettings()
-    SettingsPanel.Visible = false
-    for _, child in pairs(SPContent:GetChildren()) do
-        if not child:IsA("UIListLayout") then child:Destroy() end
-    end
-end
-
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 and SettingsPanel.Visible then
-        local mousePos = UserInputService:GetMouseLocation()
-        local panelPos = SettingsPanel.AbsolutePosition
-        local panelSize = SettingsPanel.AbsoluteSize
-        if not (mousePos.X >= panelPos.X and mousePos.X <= panelPos.X + panelSize.X 
-                and mousePos.Y >= panelPos.Y and mousePos.Y <= panelPos.Y + panelSize.Y) then
-            Hub.closeSettings()
-        end
-    end
-end))
-
-local menuOpen = false
-function Hub.toggleMenu()
-    menuOpen = not menuOpen
-    MainFrame.Visible = menuOpen
-    if not menuOpen then Hub.closeSettings() end
-    if menuOpen then
-        MainFrame.Size = UDim2.new(0, 900, 0, 0)
-        MainFrame.BackgroundTransparency = 1
-        TweenService:Create(MainFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 900, 0, 600),
-            BackgroundTransparency = 0.05,
-        }):Play()
-        if not Hub.CurrentTab and Hub.Tabs["Speed"] then
-            Hub.switchTab("Speed")
-        end
-    end
-end
-
-FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
-
--- ⚠️ ВАЖНО: InputBegan (не InputBegin!)
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        Hub.toggleMenu()
-    end
-end))
-
-print("🐗 Core v5.4 загружен")
+SettingsPanel
