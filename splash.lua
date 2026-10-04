@@ -3,6 +3,7 @@ local TweenService = game:GetService("TweenService")
 local player = game.Players.LocalPlayer
 
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
+local AVATAR_ID = "rbxassetid://10511856020"
 
 local THEME = {
     Bg = Color3.fromRGB(15, 12, 25),
@@ -76,6 +77,9 @@ local function loadValidKeys()
     return keys
 end
 
+-- ============================================
+-- KEY UI
+-- ============================================
 local function showKeyUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BizonKeySystem"
@@ -100,6 +104,7 @@ local function showKeyUI()
     Frame.Parent = ScreenGui
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 22)
 
+    -- Неоновая обводка (3 слоя)
     local s1 = Instance.new("UIStroke", Frame)
     s1.Color = THEME.Accent
     s1.Thickness = 2
@@ -144,15 +149,26 @@ local function showKeyUI()
         ScreenGui:Destroy()
     end)
 
-    -- Заголовок
+    -- АВАТАРКА в заголовке
+    local TitleImg = Instance.new("ImageLabel")
+    TitleImg.Size = UDim2.new(0, 36, 0, 36)
+    TitleImg.Position = UDim2.new(0.5, -90, 0, 25)
+    TitleImg.BackgroundColor3 = THEME.Bg2
+    TitleImg.BackgroundTransparency = 0.3
+    TitleImg.Image = AVATAR_ID
+    TitleImg.BorderSizePixel = 0
+    TitleImg.Parent = Frame
+    Instance.new("UICorner", TitleImg).CornerRadius = UDim.new(0, 8)
+
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.Position = UDim2.new(0, 0, 0, 30)
+    Title.Size = UDim2.new(1, -100, 0, 36)
+    Title.Position = UDim2.new(0, 95, 0, 25)
     Title.BackgroundTransparency = 1
     Title.Text = AD_CONFIG.Title
     Title.TextColor3 = THEME.Accent
     Title.Font = Enum.Font.GothamBlack
-    Title.TextSize = 22
+    Title.TextSize = 20
+    Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = Frame
 
     local SubTitle = Instance.new("TextLabel")
@@ -386,7 +402,9 @@ local function showKeyUI()
     while ScreenGui.Parent do task.wait(0.1) end
 end
 
--- ===== SPLASH =====
+-- ============================================
+-- SPLASH SCREEN
+-- ============================================
 local function showSplash()
     local splashGui = Instance.new("ScreenGui")
     splashGui.Name = "BizonSplash"
@@ -417,18 +435,17 @@ local function showSplash()
     centerFrame.BackgroundTransparency = 1
     centerFrame.Parent = splashGui
 
-    local icon = Instance.new("TextLabel")
+    -- АВАТАРКА в splash
+    local icon = Instance.new("ImageLabel")
     icon.Size = UDim2.new(0, 120, 0, 120)
     icon.Position = UDim2.new(0.5, -60, 0, 0)
     icon.BackgroundColor3 = THEME.Bg2
     icon.BackgroundTransparency = 1
-    icon.Text = "🐗"
-    icon.TextColor3 = THEME.Accent
-    icon.Font = Enum.Font.GothamBold
-    icon.TextSize = 90
-    icon.TextTransparency = 1
+    icon.Image = AVATAR_ID
+    icon.BorderSizePixel = 0
+    icon.ImageTransparency = 1
     icon.Parent = centerFrame
-    Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
+    Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 30)
 
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 50)
@@ -468,6 +485,12 @@ local function showSplash()
     progressFill.Parent = progressBg
     Instance.new("UICorner", progressFill).CornerRadius = UDim.new(1, 0)
 
+    local fillGrad = Instance.new("UIGradient", progressFill)
+    fillGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, THEME.Accent),
+        ColorSequenceKeypoint.new(1, THEME.AccentGlow),
+    })
+
     local percentLabel = Instance.new("TextLabel")
     percentLabel.Size = UDim2.new(0, 400, 0, 20)
     percentLabel.Position = UDim2.new(0.5, -200, 0, 258)
@@ -479,9 +502,10 @@ local function showSplash()
     percentLabel.TextTransparency = 1
     percentLabel.Parent = centerFrame
 
+    -- Анимация появления
     task.spawn(function()
         TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(icon, TweenInfo.new(0.5), {BackgroundTransparency = 0.3, TextTransparency = 0}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.5), {BackgroundTransparency = 0.3, ImageTransparency = 0}):Play()
         task.wait(0.5)
         TweenService:Create(title, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
         task.wait(0.15)
@@ -489,6 +513,23 @@ local function showSplash()
         task.wait(0.2)
         TweenService:Create(progressBg, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
         TweenService:Create(percentLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    end)
+
+    -- Пульсация аватарки
+    task.spawn(function()
+        while centerFrame.Parent do
+            TweenService:Create(icon, TweenInfo.new(0.8, Enum.EasingStyle.Sine), {
+                Size = UDim2.new(0, 130, 0, 130),
+                Position = UDim2.new(0.5, -65, 0, -5)
+            }):Play()
+            task.wait(0.8)
+            if not centerFrame.Parent then break end
+            TweenService:Create(icon, TweenInfo.new(0.8, Enum.EasingStyle.Sine), {
+                Size = UDim2.new(0, 120, 0, 120),
+                Position = UDim2.new(0.5, -60, 0, 0)
+            }):Play()
+            task.wait(0.8)
+        end
     end)
 
     local function setProgress(pct)
@@ -499,7 +540,7 @@ local function showSplash()
 
     local function close()
         TweenService:Create(overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(icon, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+        TweenService:Create(icon, TweenInfo.new(0.4), {ImageTransparency = 1, BackgroundTransparency = 1}):Play()
         TweenService:Create(title, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
         TweenService:Create(greeting, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
         TweenService:Create(progressBg, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
