@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v5.2 (B Letter)
+-- 🐗 Bizon Hub Core v5.3 (with Tooltips)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -52,6 +52,8 @@ local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
 if oldWM then oldWM:Destroy() end
+local oldTT = player.PlayerGui:FindFirstChild("BizonTooltip")
+if oldTT then oldTT:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
@@ -60,38 +62,6 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
-
--- === ФУНКЦИЯ: создать стилизованную B ===
-local function makeB(parent, size, textSize)
-    local frame = Instance.new("Frame")
-    frame.Size = size
-    frame.BackgroundColor3 = T.Bg
-    frame.BorderSizePixel = 0
-    frame.Parent = parent
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(1, 0)
-    
-    local stroke = Instance.new("UIStroke", frame)
-    stroke.Color = T.Accent
-    stroke.Thickness = 1.5
-    
-    local letter = Instance.new("TextLabel")
-    letter.Size = UDim2.new(1, 0, 1, 0)
-    letter.BackgroundTransparency = 1
-    letter.Text = "B"
-    letter.TextColor3 = Color3.fromRGB(255, 255, 255)
-    letter.Font = Enum.Font.GothamBlack
-    letter.TextSize = textSize
-    letter.Parent = frame
-    
-    local grad = Instance.new("UIGradient", letter)
-    grad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
-    })
-    grad.Rotation = 90
-    
-    return frame, letter, stroke
-end
 
 -- ============================================
 -- WATERMARK
@@ -194,7 +164,7 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 40, 1, 0)
 WMver.Position = UDim2.new(1, -44, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "v5.2"
+WMver.Text = "v5.3"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
@@ -275,7 +245,112 @@ end)
 
 Hub.Watermark = WMFrame
 
--- ============ FLOAT BUTTON ============
+-- ============================================
+-- TOOLTIP SYSTEM
+-- ============================================
+local TooltipGui = Instance.new("ScreenGui")
+TooltipGui.Name = "BizonTooltip"
+TooltipGui.ResetOnSpawn = false
+TooltipGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+TooltipGui.IgnoreGuiInset = true
+TooltipGui.DisplayOrder = 9999
+TooltipGui.Parent = player:WaitForChild("PlayerGui")
+
+local Tooltip = Instance.new("Frame")
+Tooltip.Size = UDim2.new(0, 260, 0, 60)
+Tooltip.BackgroundColor3 = T.Bg2
+Tooltip.BackgroundTransparency = 0.05
+Tooltip.BorderSizePixel = 0
+Tooltip.Visible = false
+Tooltip.ZIndex = 100
+Tooltip.Parent = TooltipGui
+Instance.new("UICorner", Tooltip).CornerRadius = UDim.new(0, 10)
+
+local TTstroke = Instance.new("UIStroke", Tooltip)
+TTstroke.Color = T.Accent
+TTstroke.Thickness = 1.5
+TTstroke.Transparency = 0.3
+
+local TTglow = Instance.new("UIStroke", Tooltip)
+TTglow.Color = T.AccentGlow
+TTglow.Thickness = 4
+TTglow.Transparency = 0.8
+
+local TTpadding = Instance.new("UIPadding", Tooltip)
+TTpadding.PaddingTop = UDim.new(0, 10)
+TTpadding.PaddingBottom = UDim.new(0, 10)
+TTpadding.PaddingLeft = UDim.new(0, 14)
+TTpadding.PaddingRight = UDim.new(0, 14)
+
+local TTTitle = Instance.new("TextLabel")
+TTTitle.Size = UDim2.new(1, 0, 0, 18)
+TTTitle.BackgroundTransparency = 1
+TTTitle.Text = "Заголовок"
+TTTitle.TextColor3 = T.Accent
+TTTitle.Font = Enum.Font.GothamBold
+TTTitle.TextSize = 13
+TTTitle.TextXAlignment = Enum.TextXAlignment.Left
+TTTitle.Parent = Tooltip
+
+local TTDesc = Instance.new("TextLabel")
+TTDesc.Size = UDim2.new(1, 0, 0, 30)
+TTDesc.Position = UDim2.new(0, 0, 0, 22)
+TTDesc.BackgroundTransparency = 1
+TTDesc.Text = "Описание"
+TTDesc.TextColor3 = T.Text
+TTDesc.Font = Enum.Font.Gotham
+TTDesc.TextSize = 11
+TTDesc.TextXAlignment = Enum.TextXAlignment.Left
+TTDesc.TextYAlignment = Enum.TextYAlignment.Top
+TTDesc.TextWrapped = true
+TTDesc.Parent = Tooltip
+
+function Hub.showTooltip(title, description)
+    TTTitle.Text = title
+    TTDesc.Text = description or ""
+    local descHeight = math.max(16, math.ceil(#(description or "") / 32) * 16)
+    TTDesc.Size = UDim2.new(1, 0, 0, descHeight)
+    Tooltip.Size = UDim2.new(0, 260, 0, 22 + descHeight + 10)
+end
+
+local tooltipActive = false
+
+Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and tooltipActive then
+        local mousePos = UserInputService:GetMouseLocation()
+        local vp = workspace.CurrentCamera.ViewportSize
+        local x = mousePos.X + 15
+        local y = mousePos.Y + 15
+        local w = 260
+        local h = Tooltip.AbsoluteSize.Y
+        if x + w > vp.X then x = mousePos.X - w - 15 end
+        if y + h > vp.Y then y = mousePos.Y - h - 15 end
+        Tooltip.Position = UDim2.new(0, x, 0, y)
+    end
+end))
+
+function Hub.attachTooltip(element, title, description)
+    if not title then return end
+    element.MouseEnter:Connect(function()
+        tooltipActive = true
+        Hub.showTooltip(title, description or "")
+        Tooltip.Visible = true
+        Tooltip.BackgroundTransparency = 0.3
+        TweenService:Create(Tooltip, TweenInfo.new(0.2), {BackgroundTransparency = 0.05}):Play()
+    end)
+    element.MouseLeave:Connect(function()
+        tooltipActive = false
+        TweenService:Create(Tooltip, TweenInfo.new(0.15), {BackgroundTransparency = 0.5}):Play()
+        task.wait(0.15)
+        if not tooltipActive then Tooltip.Visible = false end
+    end)
+end
+
+Hub.Tooltip = Tooltip
+
+-- ============================================
+-- FLOAT BUTTON
+-- ============================================
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Size = UDim2.new(0, 60, 0, 60)
 FloatBtn.Position = UDim2.new(0, 20, 0.5, -30)
@@ -340,7 +415,9 @@ end))
 
 Hub.FloatBtn = FloatBtn
 
--- ============ MAIN FRAME ============
+-- ============================================
+-- MAIN FRAME
+-- ============================================
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 900, 0, 600)
 MainFrame.Position = UDim2.new(0.5, -450, 0.5, -300)
@@ -363,7 +440,7 @@ MFglow.Transparency = 0.9
 
 Hub.MainFrame = MainFrame
 
--- ============ SIDEBAR ============
+-- SIDEBAR
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 200, 1, 0)
 Sidebar.BackgroundColor3 = T.Bg2
@@ -429,7 +506,7 @@ local LogoSub = Instance.new("TextLabel")
 LogoSub.Size = UDim2.new(1, -60, 0, 16)
 LogoSub.Position = UDim2.new(0, 56, 0, 28)
 LogoSub.BackgroundTransparency = 1
-LogoSub.Text = "v5.2 • Premium"
+LogoSub.Text = "v5.3 • Premium"
 LogoSub.TextColor3 = T.TextDim2
 LogoSub.Font = Enum.Font.GothamMedium
 LogoSub.TextSize = 10
@@ -537,14 +614,10 @@ Hub.TabInfo = {
 
 function Hub.switchTab(name)
     if Hub.CurrentTab == name then return end
-    
     if Hub.CurrentTab and Hub.Tabs[Hub.CurrentTab] then
         Hub.Tabs[Hub.CurrentTab].container.Visible = false
         local oldBtn = Hub.Tabs[Hub.CurrentTab].button
-        TweenService:Create(oldBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = T.Bg3,
-            BackgroundTransparency = 1,
-        }):Play()
+        TweenService:Create(oldBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg3, BackgroundTransparency = 1}):Play()
         if oldBtn:FindFirstChild("Indicator") then
             TweenService:Create(oldBtn.Indicator, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
         end
@@ -555,16 +628,11 @@ function Hub.switchTab(name)
             TweenService:Create(oldBtn.NameLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
         end
     end
-    
     Hub.CurrentTab = name
-    
     if Hub.Tabs[name] then
         Hub.Tabs[name].container.Visible = true
         local newBtn = Hub.Tabs[name].button
-        TweenService:Create(newBtn, TweenInfo.new(0.25), {
-            BackgroundColor3 = T.Accent,
-            BackgroundTransparency = 0.85,
-        }):Play()
+        TweenService:Create(newBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Accent, BackgroundTransparency = 0.85}):Play()
         if newBtn:FindFirstChild("Indicator") then
             TweenService:Create(newBtn.Indicator, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
         end
@@ -575,7 +643,6 @@ function Hub.switchTab(name)
             TweenService:Create(newBtn.NameLbl, TweenInfo.new(0.25), {TextColor3 = T.Text}):Play()
         end
     end
-    
     ContentTitle.Text = name
     ContentSub.Text = Hub.TabInfo[name] or ""
 end
@@ -650,14 +717,8 @@ function Hub.createTab(name, icon)
         container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
     end)
     
-    Hub.Tabs[name] = {
-        button = tabBtn,
-        container = container,
-    }
-    
-    tabBtn.MouseButton1Click:Connect(function()
-        Hub.switchTab(name)
-    end)
+    Hub.Tabs[name] = {button = tabBtn, container = container}
+    tabBtn.MouseButton1Click:Connect(function() Hub.switchTab(name) end)
     
     tabBtn.MouseEnter:Connect(function()
         if Hub.CurrentTab ~= name then
@@ -673,7 +734,6 @@ function Hub.createTab(name, icon)
             TweenService:Create(NameLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
         end
     end)
-    
     return container
 end
 
@@ -769,11 +829,11 @@ end
 
 FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
 
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+Hub.addConnection(UserInputService.InputBegin:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.RightControl then
         Hub.toggleMenu()
     end
 end))
 
-print("🐗 Core v5.2 загружен (буква B)")
+print("🐗 Core v5.3 загружен (с тултипами)")
