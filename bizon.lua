@@ -1,5 +1,5 @@
 -- ============================================
--- BIZON HUB — Recode 1.0
+-- BIZON HUB — Recode 1.0 — Loader
 -- ============================================
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
@@ -15,7 +15,6 @@ end
 
 print("[Bizon Hub] Recode 1.0 — старт")
 
--- Load splash
 local ok, splash = pcall(function()
     return loadstring(get(BASE .. "splash.lua"))()
 end)
@@ -25,7 +24,6 @@ if not ok or not splash then
     return
 end
 
--- Key check
 local saved = splash.loadSavedKey()
 local needKey = not (saved and saved.key and os.time() < saved.expiry)
 
@@ -35,10 +33,8 @@ if needKey then
     task.wait(0.3)
 end
 
--- Splash screen
 local setProgress, closeSplash = splash.showSplash()
 
--- Modules
 local MODULES = {"core", "ui1", "ui2", "ui2b", "ui3", "utilities", "teleport", "auto", "misc"}
 
 for i, name in ipairs(MODULES) do
