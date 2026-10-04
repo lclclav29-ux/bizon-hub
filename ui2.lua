@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub UI-2 (Slider + Label)
+-- 🐗 Bizon Hub UI-2 (Slider)
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
@@ -118,4 +118,43 @@ function Hub.createSlider(parent, name, minVal, maxVal, default, callback)
     knob.Size = UDim2.new(0, 12, 0, 12)
     knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -6, 0.5, -6)
     knob.BackgroundColor3 = Color3.new(1,1,1)
-    knob
+    knob.BorderSizePixel = 0
+    knob.Parent = sliderBg
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+    local knobStroke = Instance.new("UIStroke", knob)
+    knobStroke.Color = T.AccentGlow
+    knobStroke.Thickness = 2
+
+    local sliding = false
+    local function upd(input)
+        local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+        local v = math.floor(minVal + (maxVal - minVal) * relX)
+        fill.Size = UDim2.new(relX, 0, 1, 0)
+        knob.Position = UDim2.new(relX, -6, 0.5, -6)
+        valueLabel.Text = tostring(v)
+        callback(v)
+    end
+    sliderBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; upd(input) end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
+    end)
+
+    container.MouseEnter:Connect(function()
+        TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.15}):Play()
+        TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.55}):Play()
+    end)
+    container.MouseLeave:Connect(function()
+        TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.35}):Play()
+        TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Stroke, Transparency = 0.5}):Play()
+    end)
+
+    return container
+end
+
+print("🐗 UI-2 загружен (Slider)")
