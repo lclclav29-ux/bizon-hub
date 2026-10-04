@@ -14,12 +14,9 @@ local AutoTab = Hub.createTab("Auto", "⚙️")
 local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
 if remotes then remotes = remotes:FindFirstChild("Remotes") end
 
--- Настройки (delay в секундах)
+-- Настройки
 local Settings = {
-    -- Auto Clicker
     Clicker = {enabled = false, delay = 0.1},
-    
-    -- Remotes
     Rebirth = {enabled = false, delay = 3},
     EquipBestPets = {enabled = false, delay = 30},
     EquipBestArtifacts = {enabled = false, delay = 30},
@@ -35,7 +32,7 @@ local Settings = {
     AutoHatch = {enabled = false, delay = 5},
 }
 
--- === ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ ===
+-- === КАРТОЧКА ===
 local function createAutoToggle(name, key)
     local config = Settings[key]
     if not config then return end
@@ -195,16 +192,11 @@ local function createAutoToggle(name, key)
 end
 
 -- === СОЗДАНИЕ ФУНКЦИЙ ===
+-- БЕЗ currentRow / colCount !!!
 Hub.createLabel(AutoTab, "Кликер")
-AutoTab.currentRow = nil
-AutoTab.colCount = 0
-
 createAutoToggle("👊 Auto Clicker", "Clicker")
 
 Hub.createLabel(AutoTab, "Основное")
-AutoTab.currentRow = nil
-AutoTab.colCount = 0
-
 createAutoToggle("🔄 Auto Rebirth", "Rebirth")
 createAutoToggle("🐾 Auto Equip Best Pets", "EquipBestPets")
 createAutoToggle("🏺 Auto Equip Best Artifacts", "EquipBestArtifacts")
@@ -212,24 +204,18 @@ createAutoToggle("🎁 Auto Summon", "AutoSummon")
 createAutoToggle("🐣 Auto Hatch", "AutoHatch")
 
 Hub.createLabel(AutoTab, "Клейм награды")
-AutoTab.currentRow = nil
-AutoTab.colCount = 0
-
 createAutoToggle("💰 Claim Offline Earnings", "ClaimOffline")
 createAutoToggle("📅 Claim Daily Reward", "ClaimDaily")
 createAutoToggle("👥 Claim Group Reward", "ClaimGroup")
 createAutoToggle("⏰ Claim Playtime Reward", "ClaimPlaytime")
 
 Hub.createLabel(AutoTab, "События")
-AutoTab.currentRow = nil
-AutoTab.colCount = 0
-
 createAutoToggle("💪 Hero Tiles Evolve", "HeroTiles")
 createAutoToggle("🏋 Request Train", "RequestTrain")
 createAutoToggle("📦 Auto Open Crate", "OpenCrate")
 createAutoToggle("⚡ Use Boost", "UseBoost")
 
--- === ФУНКЦИЯ AUTO CLICKER ===
+-- === AUTO CLICKER ===
 local function hasTargetNearby()
     local ch = player.Character
     if not ch then return false end
@@ -237,10 +223,8 @@ local function hasTargetNearby()
     if not rp then return false end
     
     local map = Workspace:FindFirstChild("Map") or Workspace
-    local targetName = "hitbox"  -- ищем Hitbox
-    
     for _, obj in pairs(map:GetChildren()) do
-        if obj.Name:lower():find(targetName) then
+        if obj.Name:lower():find("hitbox") then
             local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
             if part then
                 local d = (part.Position - rp.Position).Magnitude
@@ -251,7 +235,7 @@ local function hasTargetNearby()
     return false
 end
 
--- === АВТО-ЦИКЛ ===
+-- === ЦИКЛ ===
 local lastRun = {}
 for key, _ in pairs(Settings) do
     lastRun[key] = 0
@@ -290,14 +274,11 @@ task.spawn(function()
                 lastRun[key] = now
                 
                 if key == "Clicker" then
-                    -- Auto Clicker
                     if hasTargetNearby() then
                         local ch = player.Character
                         if ch then
                             local tool = ch:FindFirstChildWhichIsA("Tool")
-                            if tool then
-                                pcall(function() tool:Activate() end)
-                            end
+                            if tool then pcall(function() tool:Activate() end) end
                         end
                         pcall(function()
                             VirtualUser:Button1Down(Vector2.new(0, 0))
