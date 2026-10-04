@@ -1,5 +1,7 @@
 -- 🐗 Bizon Hub Auto
 local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local Workspace = game:GetService("Workspace")
 
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
@@ -11,10 +13,13 @@ local AutoTab = Hub.createTab("Auto", "⚙️")
 -- Получаем remotes
 local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
 if remotes then remotes = remotes:FindFirstChild("Remotes") end
-if not remotes then warn("🐗 Remotes не найдены!") return end
 
 -- Настройки (delay в секундах)
 local Settings = {
+    -- Auto Clicker
+    Clicker = {enabled = false, delay = 0.1},
+    
+    -- Remotes
     Rebirth = {enabled = false, delay = 3},
     EquipBestPets = {enabled = false, delay = 30},
     EquipBestArtifacts = {enabled = false, delay = 30},
@@ -55,7 +60,6 @@ local function createAutoToggle(name, key)
     stroke.Thickness = 1
     stroke.Transparency = 0.5
     
-    -- Название
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -220, 1, 0)
     label.Position = UDim2.new(0, 16, 0, 0)
@@ -67,7 +71,6 @@ local function createAutoToggle(name, key)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
     
-    -- Плашка со значением задержки
     local delayLbl = Instance.new("TextLabel")
     delayLbl.Size = UDim2.new(0, 62, 0, 26)
     delayLbl.Position = UDim2.new(1, -180, 0.5, -13)
@@ -81,7 +84,6 @@ local function createAutoToggle(name, key)
     delayLbl.Parent = container
     Instance.new("UICorner", delayLbl).CornerRadius = UDim.new(1, 0)
     
-    -- Минус
     local minusBtn = Instance.new("TextButton")
     minusBtn.Size = UDim2.new(0, 26, 0, 26)
     minusBtn.Position = UDim2.new(1, -112, 0.5, -13)
@@ -95,7 +97,6 @@ local function createAutoToggle(name, key)
     minusBtn.Parent = container
     Instance.new("UICorner", minusBtn).CornerRadius = UDim.new(0, 6)
     
-    -- Плюс
     local plusBtn = Instance.new("TextButton")
     plusBtn.Size = UDim2.new(0, 26, 0, 26)
     plusBtn.Position = UDim2.new(1, -82, 0.5, -13)
@@ -109,7 +110,6 @@ local function createAutoToggle(name, key)
     plusBtn.Parent = container
     Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
     
-    -- Toggle
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 46, 0, 26)
     toggleBtn.Position = UDim2.new(1, -50, 0.5, -13)
@@ -159,15 +159,22 @@ local function createAutoToggle(name, key)
     end)
     
     minusBtn.MouseButton1Click:Connect(function()
-        config.delay = math.max(0.1, config.delay - 1)
-        delayLbl.Text = config.delay .. "s"
+        if config.delay > 1 then
+            config.delay = config.delay - 1
+        else
+            config.delay = math.max(0.05, config.delay - 0.05)
+        end
+        delayLbl.Text = string.format("%.2f", config.delay):gsub("%.?0+$", "") .. "s"
     end)
     plusBtn.MouseButton1Click:Connect(function()
-        config.delay = config.delay + 1
-        delayLbl.Text = config.delay .. "s"
+        if config.delay < 1 then
+            config.delay = config.delay + 0.05
+        else
+            config.delay = config.delay + 1
+        end
+        delayLbl.Text = string.format("%.2f", config.delay):gsub("%.?0+$", "") .. "s"
     end)
     
-    -- Hover на плюс/минус
     for _, btn in pairs({minusBtn, plusBtn}) do
         btn.MouseEnter:Connect(function()
             TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = T.Bg4}):Play()
@@ -177,7 +184,6 @@ local function createAutoToggle(name, key)
         end)
     end
     
-    -- Hover на карточку
     container.MouseEnter:Connect(function()
         TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.15}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.55}):Play()
@@ -188,7 +194,13 @@ local function createAutoToggle(name, key)
     end)
 end
 
--- === СОЗДАНИЕ ВСЕХ ФУНКЦИЙ ===
+-- === СОЗДАНИЕ ФУНКЦИЙ ===
+Hub.createLabel(AutoTab, "Кликер")
+AutoTab.currentRow = nil
+AutoTab.colCount = 0
+
+createAutoToggle("👊 Auto Clicker", "Clicker")
+
 Hub.createLabel(AutoTab, "Основное")
 AutoTab.currentRow = nil
 AutoTab.colCount = 0
@@ -217,6 +229,28 @@ createAutoToggle("🏋 Request Train", "RequestTrain")
 createAutoToggle("📦 Auto Open Crate", "OpenCrate")
 createAutoToggle("⚡ Use Boost", "UseBoost")
 
+-- === ФУНКЦИЯ AUTO CLICKER ===
+local function hasTargetNearby()
+    local ch = player.Character
+    if not ch then return false end
+    local rp = ch:FindFirstChild("HumanoidRootPart")
+    if not rp then return false end
+    
+    local map = Workspace:FindFirstChild("Map") or Workspace
+    local targetName = "hitbox"  -- ищем Hitbox
+    
+    for _, obj in pairs(map:GetChildren()) do
+        if obj.Name:lower():find(targetName) then
+            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+            if part then
+                local d = (part.Position - rp.Position).Magnitude
+                if d <= 30 then return true end
+            end
+        end
+    end
+    return false
+end
+
 -- === АВТО-ЦИКЛ ===
 local lastRun = {}
 for key, _ in pairs(Settings) do
@@ -224,6 +258,7 @@ for key, _ in pairs(Settings) do
 end
 
 local function fire(name, ...)
+    if not remotes then return false end
     local ev = remotes:FindFirstChild(name)
     if not ev then return false end
     local args = {...}
@@ -247,14 +282,31 @@ end
 
 task.spawn(function()
     while not Hub.IsPanicked do
-        task.wait(0.2)
+        task.wait(0.05)
         local now = tick()
         
         for key, config in pairs(Settings) do
             if config.enabled and (now - lastRun[key] >= config.delay) then
                 lastRun[key] = now
                 
-                if key == "Rebirth" then fire("RequestRebirth")
+                if key == "Clicker" then
+                    -- Auto Clicker
+                    if hasTargetNearby() then
+                        local ch = player.Character
+                        if ch then
+                            local tool = ch:FindFirstChildWhichIsA("Tool")
+                            if tool then
+                                pcall(function() tool:Activate() end)
+                            end
+                        end
+                        pcall(function()
+                            VirtualUser:Button1Down(Vector2.new(0, 0))
+                            task.wait(0.05)
+                            VirtualUser:Button1Up(Vector2.new(0, 0))
+                        end)
+                    end
+                    
+                elseif key == "Rebirth" then fire("RequestRebirth")
                 elseif key == "EquipBestPets" then fire("EquipBestPets")
                 elseif key == "EquipBestArtifacts" then fire("EquipBestArtifacts")
                 elseif key == "ClaimOffline" then fire("ClaimOfflineEarnings")
@@ -273,4 +325,4 @@ task.spawn(function()
     end
 end)
 
-print("🐗 Auto модуль загружен (13 функций)")
+print("🐗 Auto модуль загружен (14 функций)")
