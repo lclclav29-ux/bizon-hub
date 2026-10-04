@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Auto
+-- 🐗 Bizon Hub Auto (with Tooltips)
 local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
@@ -10,7 +10,6 @@ local player = game.Players.LocalPlayer
 
 local AutoTab = Hub.createTab("Auto", "⚙️")
 
--- Получаем remotes
 local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
 if remotes then remotes = remotes:FindFirstChild("Remotes") end
 
@@ -32,10 +31,29 @@ local Settings = {
     AutoHatch = {enabled = false, delay = 5},
 }
 
+-- ОПИСАНИЯ ДЛЯ ТУЛТИПОВ
+local TOOLTIPS = {
+    Clicker = "Автоматически кликает по Hitbox когда рядом есть цель",
+    Rebirth = "Автоматически делает ребёрс когда возможно",
+    EquipBestPets = "Экипирует лучших питомцев из инвентаря",
+    EquipBestArtifacts = "Экипирует лучшие артефакты",
+    OpenCrate = "Автоматически открывает ящики (если есть ключи)",
+    ClaimOffline = "Забирает оффлайн доход при входе в игру",
+    ClaimDaily = "Забирает ежедневную награду",
+    ClaimGroup = "Забирает награду за вступление в группу",
+    ClaimPlaytime = "Забирает награду за время в игре",
+    HeroTiles = "Эволюционирует героя через Hero Tiles",
+    RequestTrain = "Автоматически тренирует героя",
+    AutoSummon = "Автоматически призывает новых питомцев",
+    UseBoost = "Использует бусты когда они есть",
+    AutoHatch = "Автоматически вылупляет яйца питомцев",
+}
+
 -- === КАРТОЧКА ===
 local function createAutoToggle(name, key)
     local config = Settings[key]
     if not config then return end
+    local tooltipText = TOOLTIPS[key] or ""
     
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, 0, 0, 56)
@@ -134,17 +152,11 @@ local function createAutoToggle(name, key)
         if config.enabled then
             TweenService:Create(toggleBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Accent}):Play()
             TweenService:Create(toggleStroke, TweenInfo.new(0.25), {Color = T.AccentGlow, Transparency = 0.3}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.25), {
-                Position = UDim2.new(1, -23, 0.5, -10),
-                BackgroundColor3 = Color3.new(1,1,1),
-            }):Play()
+            TweenService:Create(knob, TweenInfo.new(0.25), {Position = UDim2.new(1, -23, 0.5, -10), BackgroundColor3 = Color3.new(1,1,1)}):Play()
         else
             TweenService:Create(toggleBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Bg}):Play()
             TweenService:Create(toggleStroke, TweenInfo.new(0.25), {Color = T.Stroke, Transparency = 0.5}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.25), {
-                Position = UDim2.new(0, 3, 0.5, -10),
-                BackgroundColor3 = T.TextDim,
-            }):Play()
+            TweenService:Create(knob, TweenInfo.new(0.25), {Position = UDim2.new(0, 3, 0.5, -10), BackgroundColor3 = T.TextDim}):Play()
         end
     end
     updToggle()
@@ -189,10 +201,14 @@ local function createAutoToggle(name, key)
         TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.35}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Stroke, Transparency = 0.5}):Play()
     end)
+    
+    -- ТУЛТИП
+    if Hub.attachTooltip then
+        Hub.attachTooltip(container, name, tooltipText)
+    end
 end
 
--- === СОЗДАНИЕ ФУНКЦИЙ ===
--- БЕЗ currentRow / colCount !!!
+-- СОЗДАНИЕ
 Hub.createLabel(AutoTab, "Кликер")
 createAutoToggle("👊 Auto Clicker", "Clicker")
 
@@ -221,7 +237,6 @@ local function hasTargetNearby()
     if not ch then return false end
     local rp = ch:FindFirstChild("HumanoidRootPart")
     if not rp then return false end
-    
     local map = Workspace:FindFirstChild("Map") or Workspace
     for _, obj in pairs(map:GetChildren()) do
         if obj.Name:lower():find("hitbox") then
@@ -268,11 +283,9 @@ task.spawn(function()
     while not Hub.IsPanicked do
         task.wait(0.05)
         local now = tick()
-        
         for key, config in pairs(Settings) do
             if config.enabled and (now - lastRun[key] >= config.delay) then
                 lastRun[key] = now
-                
                 if key == "Clicker" then
                     if hasTargetNearby() then
                         local ch = player.Character
@@ -286,7 +299,6 @@ task.spawn(function()
                             VirtualUser:Button1Up(Vector2.new(0, 0))
                         end)
                     end
-                    
                 elseif key == "Rebirth" then fire("RequestRebirth")
                 elseif key == "EquipBestPets" then fire("EquipBestPets")
                 elseif key == "EquipBestArtifacts" then fire("EquipBestArtifacts")
@@ -306,4 +318,4 @@ task.spawn(function()
     end
 end)
 
-print("🐗 Auto модуль загружен (14 функций)")
+print("🐗 Auto модуль загружен (14 функций + тултипы)")
