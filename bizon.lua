@@ -12,7 +12,7 @@ local function bustCache(url)
     return url .. sep .. "s=" .. SESSION_ID .. "&r=" .. tostring(math.random(1, 999999999))
 end
 
--- Экспортируем тему и конфиг для keyui.lua
+-- Экспортируем тему и конфиг
 _G.BizonTheme = {
     Bg = Color3.fromRGB(15, 12, 25),
     Bg2 = Color3.fromRGB(28, 22, 45),
@@ -34,11 +34,8 @@ _G.BizonAdConfig = {
 }
 
 local THEME = _G.BizonTheme
-local AD_CONFIG = _G.BizonAdConfig
 
--- ============================================
 -- SPLASH
--- ============================================
 local function showSplash()
     local splashGui = Instance.new("ScreenGui")
     splashGui.Name = "BizonSplash"
@@ -164,7 +161,7 @@ local function showSplash()
     return setProgress, close
 end
 
--- === ПАМЯТЬ ===
+-- ПАМЯТЬ
 local SAVE_FILE = "bizon_key.txt"
 
 local function hasFileAPI()
@@ -182,7 +179,7 @@ local function loadSavedKey()
     return { key = k, expiry = tonumber(e) or 0 }
 end
 
--- === KEY UI (загружаем из keyui.lua) ===
+-- KEY UI из keyui.lua
 local function loadKeyUI()
     local ok, err = pcall(function()
         local code = game:HttpGet(bustCache(BASE .. "keyui.lua"), true)
@@ -197,7 +194,7 @@ local function loadKeyUI()
     end
 end
 
--- === ЗАГРУЗКА МОДУЛЕЙ ===
+-- МОДУЛИ
 local MODULES = {"core", "ui1", "ui2", "ui2b", "ui3", "utilities", "teleport", "auto", "misc"}
 
 local function loadAllModulesWithProgress(setProgress)
@@ -221,7 +218,7 @@ local function loadAllModulesWithProgress(setProgress)
     if setProgress then setProgress(100) end
 end
 
--- === ГЛАВНЫЙ ПОТОК ===
+-- ГЛАВНЫЙ ПОТОК
 print("🐗 Bizon Hub: старт (v4.1)")
 print("🔑 Session: " .. SESSION_ID)
 
