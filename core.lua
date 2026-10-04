@@ -724,4 +724,56 @@ function Hub.openSettings(sourceContainer, settingsFn)
     local ok, pos = pcall(function() return sourceContainer.AbsolutePosition end)
     if not ok or not pos then SettingsPanel.Visible = false; return end
     local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
-    SettingsPanel.Position = UDim2.new(0, pos.X +
+    SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 12, 0, pos.Y)
+    SettingsPanel.Size = UDim2.new(0, 320, 0, 0)
+    SettingsPanel.Visible = true
+end
+
+function Hub.closeSettings()
+    SettingsPanel.Visible = false
+    for _, child in pairs(SPContent:GetChildren()) do
+        if not child:IsA("UIListLayout") then child:Destroy() end
+    end
+end
+
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and SettingsPanel.Visible then
+        local mousePos = UserInputService:GetMouseLocation()
+        local panelPos = SettingsPanel.AbsolutePosition
+        local panelSize = SettingsPanel.AbsoluteSize
+        if not (mousePos.X >= panelPos.X and mousePos.X <= panelPos.X + panelSize.X 
+                and mousePos.Y >= panelPos.Y and mousePos.Y <= panelPos.Y + panelSize.Y) then
+            Hub.closeSettings()
+        end
+    end
+end))
+
+local menuOpen = false
+function Hub.toggleMenu()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+    if not menuOpen then Hub.closeSettings() end
+    if menuOpen then
+        MainFrame.Size = UDim2.new(0, 900, 0, 0)
+        MainFrame.BackgroundTransparency = 1
+        TweenService:Create(MainFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 900, 0, 600),
+            BackgroundTransparency = 0.05,
+        }):Play()
+        if not Hub.CurrentTab and Hub.Tabs["Speed"] then
+            Hub.switchTab("Speed")
+        end
+    end
+end
+
+FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
+
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        Hub.toggleMenu()
+    end
+end))
+
+print("🐗 Core v5.2 загружен (буква B)")
