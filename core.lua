@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v5.3 (with Tooltips)
+-- 🐗 Bizon Hub Core v5.4 (Fixed)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -164,7 +164,7 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 40, 1, 0)
 WMver.Position = UDim2.new(1, -44, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "v5.3"
+WMver.Text = "v5.4"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
@@ -506,7 +506,7 @@ local LogoSub = Instance.new("TextLabel")
 LogoSub.Size = UDim2.new(1, -60, 0, 16)
 LogoSub.Position = UDim2.new(0, 56, 0, 28)
 LogoSub.BackgroundTransparency = 1
-LogoSub.Text = "v5.3 • Premium"
+LogoSub.Text = "v5.4 • Premium"
 LogoSub.TextColor3 = T.TextDim2
 LogoSub.Font = Enum.Font.GothamMedium
 LogoSub.TextSize = 10
@@ -608,6 +608,7 @@ Hub.TabInfo = {
     Jump = "Настройки прыжка",
     Fly = "Полёт в любую сторону",
     Teleport = "Быстрый телепорт и сохранение точек",
+    Worlds = "Телепорт в любой мир",
     Auto = "Автоматизация всех действий",
     Misc = "Прочие функции и Skybox",
 }
@@ -829,11 +830,12 @@ end
 
 FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
 
-Hub.addConnection(UserInputService.InputBegin:Connect(function(input, gp)
+-- ⚠️ ВАЖНО: InputBegan (не InputBegin!)
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.RightControl then
         Hub.toggleMenu()
     end
 end))
 
-print("🐗 Core v5.3 загружен (с тултипами)")
+print("🐗 Core v5.4 загружен")
