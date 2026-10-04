@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Teleport v7 (with Worlds)
+-- 🐗 Bizon Hub Teleport v8 (with Offset)
 local TweenService = game:GetService("TweenService")
 
 local Hub = _G.BizonHub
@@ -40,25 +40,64 @@ local function resetRow()
     end
 end
 
-local function teleportTo(pos)
+-- ⭐ ТП С ОТСТУПОМ
+local function teleportTo(pos, offsetX, offsetZ)
     local ch = player.Character
     if not ch then return false end
     local hrp = ch:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
-    hrp.CFrame = CFrame.new(pos + Vector3.new(0, 5, 0))
+    
+    offsetX = offsetX or 50    -- отступ вправо от центра
+    offsetZ = offsetZ or 50    -- отступ вперёд от центра
+    local offsetY = 5          -- отступ вверх (чтобы не застрять в полу)
+    
+    local newPos = Vector3.new(pos.X + offsetX, pos.Y + offsetY, pos.Z + offsetZ)
+    hrp.CFrame = CFrame.new(newPos)
     return true
 end
 
-local function getLiveCoord(mapName)
+-- ⭐ Ищем Spawn внутри карты (а не Leaderboard!)
+local function getSpawnOrCenter(mapName)
     local ok, result = pcall(function()
         local map = workspace:FindFirstChild(mapName)
-        if map then
-            local p = map:FindFirstChildWhichIsA("BasePart", true)
-            if p then return p.Position end
+        if not map then return nil end
+        
+        -- 1. Ищем Spawn / SpawnLocation
+        local spawn = map:FindFirstChild("Spawn") or map:FindFirstChild("SpawnLocation")
+        if spawn and spawn:IsA("BasePart") then
+            return {part = spawn, offset = false}
         end
+        
+        -- 2. Ищем Floor (пол - обычно центр карты)
+        local floor = map:FindFirstChild("Floor")
+        if floor and floor:IsA("BasePart") then
+            return {part = floor, offset = true}
+        end
+        
+        -- 3. Ищем все части, КРОМЕ Leaderboard
+        for _, obj in ipairs(map:GetChildren()) do
+            if obj:IsA("BasePart") and not obj.Name:lower():find("leaderboard") then
+                return {part = obj, offset = true}
+            end
+        end
+        
+        -- 4. Ищем внутри вложенных объектов
+        for _, obj in ipairs(map:GetChildren()) do
+            if obj:IsA("Model") or obj:IsA("Folder") then
+                if not obj.Name:lower():find("leaderboard") then
+                    local p = obj:FindFirstChildWhichIsA("BasePart", true)
+                    if p then
+                        return {part = p, offset = true}
+                    end
+                end
+            end
+        end
+        
         return nil
     end)
-    return ok and result or nil
+    
+    if not ok or not result then return nil, false end
+    return result.part and result.part.Position, result.offset
 end
 
 local function createCard(parent, label, callback)
@@ -115,7 +154,7 @@ Hub.createLabel(TpTab, "Быстрый телепорт")
 resetRow()
 
 createCard(getRow(), "🏠 Спавн", function(lbl)
-    if teleportTo(Vector3.new(0, 10, 0)) then
+    if teleportTo(Vector3.new(0, 10, 0), 0, 0) then
         lbl.Text = "✅ Спавн"
         task.wait(0.6)
         lbl.Text = "🏠 Спавн"
@@ -123,14 +162,14 @@ createCard(getRow(), "🏠 Спавн", function(lbl)
 end)
 
 createCard(getRow(), "🌀 Мир 1 (Портал)", function(lbl)
-    if teleportTo(Vector3.new(2333, 15, 49)) then
+    if teleportTo(Vector3.new(2333, 15, 49), 0, 0) then
         lbl.Text = "✅ Мир 1"
         task.wait(0.6)
         lbl.Text = "🌀 Мир 1 (Портал)"
     end
 end)
 
--- ========== МИРЫ 1-7 ==========
+-- ========== ВСЕ МИРЫ ==========
 Hub.createLabel(TpTab, "Все миры")
 resetRow()
 
@@ -146,18 +185,24 @@ local WORLDS = {
 
 for _, world in ipairs(WORLDS) do
     createCard(getRow(), world.name, function(lbl)
-        local pos = getLiveCoord(world.mapName)
+        local pos, needOffset = getSpawnOrCenter(world.mapName)
         if not pos then
             lbl.Text = "❌ Не найдено"
             task.wait(1)
             lbl.Text = world.name
             return
         end
-        if teleportTo(pos) then
-            lbl.Text = "✅ Телепорт"
-            task.wait(0.6)
-            lbl.Text = world.name
+        
+        -- Если нашли Spawn — ТП прямо, если центр — со смещением
+        if needOffset then
+            teleportTo(pos, 50, 50)
+        else
+            teleportTo(pos, 0, 0)
         end
+        
+        lbl.Text = "✅ Телепорт"
+        task.wait(0.6)
+        lbl.Text = world.name
     end)
 end
 
@@ -173,23 +218,27 @@ local ZONES = {
     {name = "🏟 Hero Arena",  mapName = "HeroTilesArena"},
     {name = "💀 Survival",    mapName = "SurvivalArena"},
     {name = "🔥 Meteor",      mapName = "MeteorShower"},
-    {name = "🏠 MapTest",     mapName = "MapTest"},
 }
 
 for _, zone in ipairs(ZONES) do
     createCard(getRow(), zone.name, function(lbl)
-        local pos = getLiveCoord(zone.mapName)
+        local pos, needOffset = getSpawnOrCenter(zone.mapName)
         if not pos then
             lbl.Text = "❌ Не найдено"
             task.wait(1)
             lbl.Text = zone.name
             return
         end
-        if teleportTo(pos) then
-            lbl.Text = "✅ Телепорт"
-            task.wait(0.6)
-            lbl.Text = zone.name
+        
+        if needOffset then
+            teleportTo(pos, 30, 30)
+        else
+            teleportTo(pos, 0, 0)
         end
+        
+        lbl.Text = "✅ Телепорт"
+        task.wait(0.6)
+        lbl.Text = zone.name
     end)
 end
 
@@ -217,7 +266,7 @@ createCard(getRow(), "📍 Вернуться", function(lbl)
         lbl.Text = "📍 Вернуться"
         return
     end
-    teleportTo(savedPos)
+    teleportTo(savedPos, 0, 0)
 end)
 
-print("🐗 Teleport v7 загружен (7 миров + 8 зон)")
+print("🐗 Teleport v8 загружен (с отступом от Leaderboard)")
