@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v3.6 — Loader (Neon Key UI)
+-- 🐗 Bizon Hub v3.7 — Loader (Split UI)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -233,7 +233,7 @@ local function loadValidKeys()
 end
 
 -- ============================================
--- KEY UI (с крестиком + неоновой обводкой)
+-- KEY UI
 -- ============================================
 local function showKeyUI()
     local ScreenGui = Instance.new("ScreenGui")
@@ -259,7 +259,6 @@ local function showKeyUI()
     Frame.Parent = ScreenGui
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 22)
 
-    -- НЕОНОВАЯ СТАТИЧЕСКАЯ ОБВОДКА (3 слоя)
     local stroke1 = Instance.new("UIStroke", Frame)
     stroke1.Color = THEME.Accent
     stroke1.Thickness = 2
@@ -275,7 +274,6 @@ local function showKeyUI()
     stroke3.Thickness = 8
     stroke3.Transparency = 0.85
 
-    -- КРЕСТИК
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0, 32, 0, 32)
     CloseBtn.Position = UDim2.new(1, -42, 0, 10)
@@ -291,7 +289,7 @@ local function showKeyUI()
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
 
     local closeStroke = Instance.new("UIStroke", CloseBtn)
-    closeStroke.Color = THEME.Stroke or Color3.fromRGB(60, 50, 90)
+    closeStroke.Color = Color3.fromRGB(60, 50, 90)
     closeStroke.Thickness = 1
     closeStroke.Transparency = 0.5
 
@@ -301,13 +299,12 @@ local function showKeyUI()
     end)
     CloseBtn.MouseLeave:Connect(function()
         TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = THEME.Bg2, BackgroundTransparency = 0.3, TextColor3 = THEME.TextDim}):Play()
-        TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = THEME.Stroke or Color3.fromRGB(60, 50, 90), Transparency = 0.5}):Play()
+        TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(60, 50, 90), Transparency = 0.5}):Play()
     end)
     CloseBtn.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
     end)
 
-    -- ЗАГОЛОВОК
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, 0, 0, 40)
     Title.Position = UDim2.new(0, 0, 0, 30)
@@ -550,7 +547,7 @@ local function showKeyUI()
 end
 
 -- === ЗАГРУЗКА МОДУЛЕЙ ===
-local MODULES = {"core", "ui1", "ui2", "ui3", "utilities", "teleport", "rebirth", "farm", "misc"}
+local MODULES = {"core", "ui1", "ui2", "ui2b", "ui3", "utilities", "teleport", "rebirth", "farm", "misc"}
 
 local function loadAllModulesWithProgress(setProgress)
     for i, name in ipairs(MODULES) do
@@ -574,7 +571,7 @@ local function loadAllModulesWithProgress(setProgress)
 end
 
 -- === ГЛАВНЫЙ ПОТОК ===
-print("🐗 Bizon Hub: старт (v3.6)")
+print("🐗 Bizon Hub: старт (v3.7)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
@@ -611,7 +608,7 @@ else
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v3.6)",
+                Text = "Автовход (v3.7)",
                 Duration = 3,
             })
         end)
