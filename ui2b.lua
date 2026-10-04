@@ -12,7 +12,9 @@ end
 
 function Hub.createLabel(parent, text)
     local tabName = findTabByParent(parent)
-    if tabName and Hub.Tabs[tabName] then
+    
+    -- Сбрасываем ТОЛЬКО в таблице вкладки (не в ScrollingFrame!)
+    if tabName and Hub.Tabs[tabName] and type(Hub.Tabs[tabName]) == "table" then
         Hub.Tabs[tabName].currentRow = nil
         Hub.Tabs[tabName].colCount = 0
     end
