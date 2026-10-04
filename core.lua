@@ -18,9 +18,6 @@ function Hub.addConnection(conn)
     return conn
 end
 
--- ============================================
--- THEME — Clean Dark Purple
--- ============================================
 Hub.Theme = {
     Bg = Color3.fromRGB(10, 10, 18),
     Bg2 = Color3.fromRGB(18, 18, 30),
@@ -40,28 +37,19 @@ Hub.Theme = {
 
 Hub.Settings = {
     SpeedEnabled=false, SpeedValue=50, SmoothSpeed=false,
-    UseKeybind=false, SpeedKey=Enum.KeyCode.LeftShift,
     SpeedInAir=false,
     JumpEnabled=false, JumpValue=100, InfiniteJump=false,
     FlyEnabled=false, FlySpeed=50,
     Noclip=false, Fullbright=false,
-    AutoFarmEnabled=false, FarmTargetName="Hitbox",
-    FarmRange=20, FarmHitCooldown=0.1, FarmUseTool=true,
 }
 
 local T = Hub.Theme
 
--- ============================================
--- CLEANUP
--- ============================================
-for _, name in ipairs({"BizonHub", "BizonWatermark", "BizonTooltip", "BizonSplash", "BizonKeySystem"}) do
+for _, name in ipairs({"BizonHub", "BizonWatermark", "BizonTooltip"}) do
     local old = player.PlayerGui:FindFirstChild(name)
     if old then old:Destroy() end
 end
 
--- ============================================
--- ROOT GUI
--- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -116,8 +104,8 @@ WMiconLetter.TextSize = 18
 WMiconLetter.Parent = WMicon
 
 local WMtitle = Instance.new("TextLabel")
-WMtitle.Size = UDim2.new(0, 120, 1, 0)
-WMtitle.Position = UDim2.new(0, 42, 0, 0)
+WMtitle.Size = UDim2.new(0, 120, 0, 20)
+WMtitle.Position = UDim2.new(0, 42, 0, 6)
 WMtitle.BackgroundTransparency = 1
 WMtitle.Text = "BIZON HUB"
 WMtitle.TextColor3 = T.Text
@@ -127,7 +115,7 @@ WMtitle.TextXAlignment = Enum.TextXAlignment.Left
 WMtitle.Parent = WMFrame
 
 local WMver = Instance.new("TextLabel")
-WMver.Size = UDim2.new(0, 40, 0, 14)
+WMver.Size = UDim2.new(0, 120, 0, 14)
 WMver.Position = UDim2.new(0, 42, 0, 22)
 WMver.BackgroundTransparency = 1
 WMver.Text = "Recode 1.0"
@@ -166,7 +154,6 @@ WMping.TextSize = 10
 WMping.TextXAlignment = Enum.TextXAlignment.Left
 WMping.Parent = WMFrame
 
--- Drag watermark
 local wmDrag, wmStart, wmStartPos
 Hub.addConnection(WMFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -183,7 +170,6 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- FPS
 local fpsHistory = {}
 task.spawn(function()
     local lastUpdate = tick()
@@ -209,7 +195,6 @@ task.spawn(function()
     end
 end)
 
--- Ping
 local pingHistory = {}
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
@@ -469,7 +454,6 @@ HeaderSub.TextSize = 9
 HeaderSub.TextXAlignment = Enum.TextXAlignment.Left
 HeaderSub.Parent = Header
 
--- Close button
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 32, 0, 32)
 CloseBtn.Position = UDim2.new(1, -44, 0.5, -16)
@@ -491,7 +475,6 @@ CloseBtn.MouseLeave:Connect(function()
 end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
--- Window drag
 local winDrag, winStart, winStartPos
 Hub.addConnection(Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -508,9 +491,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- ============================================
--- TABS (Sidebar)
--- ============================================
+-- SIDEBAR
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 180, 1, -80)
 Sidebar.Position = UDim2.new(0, 12, 0, 68)
@@ -529,7 +510,6 @@ TabPad.PaddingTop = UDim.new(0, 10)
 TabPad.PaddingLeft = UDim.new(0, 8)
 TabPad.PaddingRight = UDim.new(0, 8)
 
--- Content
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -212, 1, -80)
 Content.Position = UDim2.new(0, 200, 0, 68)
@@ -539,7 +519,6 @@ Content.BorderSizePixel = 0
 Content.Parent = MainFrame
 Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 14)
 
--- Content header
 local ContentHeader = Instance.new("Frame")
 ContentHeader.Size = UDim2.new(1, 0, 0, 50)
 ContentHeader.BackgroundTransparency = 1
@@ -567,9 +546,7 @@ ContentSub.TextSize = 10
 ContentSub.TextXAlignment = Enum.TextXAlignment.Left
 ContentSub.Parent = ContentHeader
 
--- ============================================
--- TAB SYSTEM
--- ============================================
+-- TABS
 Hub.Tabs = {}
 Hub.CurrentTab = nil
 Hub.TabInfo = {
@@ -607,10 +584,10 @@ function Hub.createTab(name, icon)
     tabBtn.Size = UDim2.new(1, 0, 0, 40)
     tabBtn.BackgroundColor3 = T.Bg3
     tabBtn.BackgroundTransparency = 0.3
-    tabBtn.Text = icon and (icon .. "  " .. name) or name
+    tabBtn.Text = name
     tabBtn.TextColor3 = T.TextDim
     tabBtn.Font = Enum.Font.GothamBold
-    tabBtn.TextSize = 13
+    tabBtn.TextSize = 14
     tabBtn.TextXAlignment = Enum.TextXAlignment.Left
     tabBtn.BorderSizePixel = 0
     tabBtn.AutoButtonColor = false
@@ -618,7 +595,7 @@ function Hub.createTab(name, icon)
     Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 10)
     
     local Tpad = Instance.new("UIPadding", tabBtn)
-    Tpad.PaddingLeft = UDim.new(0, 14)
+    Tpad.PaddingLeft = UDim.new(0, 16)
     
     local Indicator = Instance.new("Frame")
     Indicator.Name = "Indicator"
@@ -657,10 +634,7 @@ function Hub.createTab(name, icon)
     end)
     
     Hub.Tabs[name] = {button = tabBtn, container = container}
-    
-    tabBtn.MouseButton1Click:Connect(function()
-        Hub.switchTab(name)
-    end)
+    tabBtn.MouseButton1Click:Connect(function() Hub.switchTab(name) end)
     
     tabBtn.MouseEnter:Connect(function()
         if Hub.CurrentTab ~= name then
@@ -678,9 +652,7 @@ function Hub.createTab(name, icon)
     return container
 end
 
--- ============================================
 -- SETTINGS PANEL
--- ============================================
 local SettingsPanel = Instance.new("Frame")
 SettingsPanel.Size = UDim2.new(0, 300, 0, 0)
 SettingsPanel.BackgroundColor3 = T.Bg2
@@ -752,9 +724,6 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
--- ============================================
--- MENU TOGGLE
--- ============================================
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
