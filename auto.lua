@@ -1,7 +1,5 @@
 -- 🐗 Bizon Hub Auto
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 
 local Hub = _G.BizonHub
 if not Hub then warn("🐗 Загрузи core.lua!") return end
@@ -15,7 +13,7 @@ local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
 if remotes then remotes = remotes:FindFirstChild("Remotes") end
 if not remotes then warn("🐗 Remotes не найдены!") return end
 
--- Настройки
+-- Настройки (delay в секундах)
 local Settings = {
     Rebirth = {enabled = false, delay = 3},
     EquipBestPets = {enabled = false, delay = 30},
@@ -32,14 +30,13 @@ local Settings = {
     AutoHatch = {enabled = false, delay = 5},
 }
 
--- === СОЗДАНИЕ ПЕРЕКЛЮЧАТЕЛЯ С DELAY ===
-local function createAutoToggle(name, key, callback)
+-- === ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ ===
+local function createAutoToggle(name, key)
     local config = Settings[key]
     if not config then return end
     
-    -- Карточка с настройками (1 строка)
     local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 52)
+    container.Size = UDim2.new(1, 0, 0, 56)
     container.BackgroundColor3 = T.Bg3
     container.BackgroundTransparency = 0.35
     container.BorderSizePixel = 0
@@ -58,41 +55,41 @@ local function createAutoToggle(name, key, callback)
     stroke.Thickness = 1
     stroke.Transparency = 0.5
     
-    -- Имя
+    -- Название
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -200, 1, 0)
-    label.Position = UDim2.new(0, 14, 0, 0)
+    label.Size = UDim2.new(1, -220, 1, 0)
+    label.Position = UDim2.new(0, 16, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = name
     label.TextColor3 = T.Text
     label.Font = Enum.Font.GothamMedium
-    label.TextSize = 12
+    label.TextSize = 13
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = container
     
-    -- Слайдер задержки
+    -- Плашка со значением задержки
     local delayLbl = Instance.new("TextLabel")
-    delayLbl.Size = UDim2.new(0, 60, 0, 22)
-    delayLbl.Position = UDim2.new(1, -170, 0.5, -11)
+    delayLbl.Size = UDim2.new(0, 62, 0, 26)
+    delayLbl.Position = UDim2.new(1, -180, 0.5, -13)
     delayLbl.BackgroundColor3 = T.Accent
     delayLbl.BackgroundTransparency = 0.8
-    delayLbl.Text = config.delay .. "с"
+    delayLbl.Text = config.delay .. "s"
     delayLbl.TextColor3 = T.Accent
     delayLbl.Font = Enum.Font.GothamBold
-    delayLbl.TextSize = 10
+    delayLbl.TextSize = 11
     delayLbl.BorderSizePixel = 0
     delayLbl.Parent = container
     Instance.new("UICorner", delayLbl).CornerRadius = UDim.new(1, 0)
     
     -- Минус
     local minusBtn = Instance.new("TextButton")
-    minusBtn.Size = UDim2.new(0, 24, 0, 24)
-    minusBtn.Position = UDim2.new(1, -104, 0.5, -12)
+    minusBtn.Size = UDim2.new(0, 26, 0, 26)
+    minusBtn.Position = UDim2.new(1, -112, 0.5, -13)
     minusBtn.BackgroundColor3 = T.Bg
     minusBtn.Text = "−"
     minusBtn.TextColor3 = T.Text
     minusBtn.Font = Enum.Font.GothamBold
-    minusBtn.TextSize = 14
+    minusBtn.TextSize = 16
     minusBtn.BorderSizePixel = 0
     minusBtn.AutoButtonColor = false
     minusBtn.Parent = container
@@ -100,13 +97,13 @@ local function createAutoToggle(name, key, callback)
     
     -- Плюс
     local plusBtn = Instance.new("TextButton")
-    plusBtn.Size = UDim2.new(0, 24, 0, 24)
-    plusBtn.Position = UDim2.new(1, -76, 0.5, -12)
+    plusBtn.Size = UDim2.new(0, 26, 0, 26)
+    plusBtn.Position = UDim2.new(1, -82, 0.5, -13)
     plusBtn.BackgroundColor3 = T.Bg
     plusBtn.Text = "+"
     plusBtn.TextColor3 = T.Text
     plusBtn.Font = Enum.Font.GothamBold
-    plusBtn.TextSize = 14
+    plusBtn.TextSize = 16
     plusBtn.BorderSizePixel = 0
     plusBtn.AutoButtonColor = false
     plusBtn.Parent = container
@@ -114,8 +111,8 @@ local function createAutoToggle(name, key, callback)
     
     -- Toggle
     local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 44, 0, 24)
-    toggleBtn.Position = UDim2.new(1, -48, 0.5, -12)
+    toggleBtn.Size = UDim2.new(0, 46, 0, 26)
+    toggleBtn.Position = UDim2.new(1, -50, 0.5, -13)
     toggleBtn.BackgroundColor3 = T.Bg
     toggleBtn.Text = ""
     toggleBtn.BorderSizePixel = 0
@@ -129,8 +126,8 @@ local function createAutoToggle(name, key, callback)
     toggleStroke.Transparency = 0.5
     
     local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 18, 0, 18)
-    knob.Position = UDim2.new(0, 3, 0.5, -9)
+    knob.Size = UDim2.new(0, 20, 0, 20)
+    knob.Position = UDim2.new(0, 3, 0.5, -10)
     knob.BackgroundColor3 = T.TextDim
     knob.BorderSizePixel = 0
     knob.Parent = toggleBtn
@@ -141,14 +138,14 @@ local function createAutoToggle(name, key, callback)
             TweenService:Create(toggleBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Accent}):Play()
             TweenService:Create(toggleStroke, TweenInfo.new(0.25), {Color = T.AccentGlow, Transparency = 0.3}):Play()
             TweenService:Create(knob, TweenInfo.new(0.25), {
-                Position = UDim2.new(1, -21, 0.5, -9),
+                Position = UDim2.new(1, -23, 0.5, -10),
                 BackgroundColor3 = Color3.new(1,1,1),
             }):Play()
         else
             TweenService:Create(toggleBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Bg}):Play()
             TweenService:Create(toggleStroke, TweenInfo.new(0.25), {Color = T.Stroke, Transparency = 0.5}):Play()
             TweenService:Create(knob, TweenInfo.new(0.25), {
-                Position = UDim2.new(0, 3, 0.5, -9),
+                Position = UDim2.new(0, 3, 0.5, -10),
                 BackgroundColor3 = T.TextDim,
             }):Play()
         end
@@ -161,16 +158,26 @@ local function createAutoToggle(name, key, callback)
         print("🐗 " .. name .. ": " .. (config.enabled and "ВКЛ" or "ВЫКЛ"))
     end)
     
-    -- Кнопки изменения задержки
     minusBtn.MouseButton1Click:Connect(function()
         config.delay = math.max(0.1, config.delay - 1)
-        delayLbl.Text = config.delay .. "с"
+        delayLbl.Text = config.delay .. "s"
     end)
     plusBtn.MouseButton1Click:Connect(function()
         config.delay = config.delay + 1
-        delayLbl.Text = config.delay .. "с"
+        delayLbl.Text = config.delay .. "s"
     end)
     
+    -- Hover на плюс/минус
+    for _, btn in pairs({minusBtn, plusBtn}) do
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = T.Bg4}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = T.Bg}):Play()
+        end)
+    end
+    
+    -- Hover на карточку
     container.MouseEnter:Connect(function()
         TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.15}):Play()
         TweenService:Create(stroke, TweenInfo.new(0.2), {Color = T.Accent, Transparency = 0.55}):Play()
@@ -181,15 +188,16 @@ local function createAutoToggle(name, key, callback)
     end)
 end
 
--- === ЗАГОЛОВОК ===
+-- === СОЗДАНИЕ ВСЕХ ФУНКЦИЙ ===
 Hub.createLabel(AutoTab, "Основное")
 AutoTab.currentRow = nil
 AutoTab.colCount = 0
 
--- Функции в 1 колонку (с задержкой)
 createAutoToggle("🔄 Auto Rebirth", "Rebirth")
 createAutoToggle("🐾 Auto Equip Best Pets", "EquipBestPets")
 createAutoToggle("🏺 Auto Equip Best Artifacts", "EquipBestArtifacts")
+createAutoToggle("🎁 Auto Summon", "AutoSummon")
+createAutoToggle("🐣 Auto Hatch", "AutoHatch")
 
 Hub.createLabel(AutoTab, "Клейм награды")
 AutoTab.currentRow = nil
@@ -207,9 +215,7 @@ AutoTab.colCount = 0
 createAutoToggle("💪 Hero Tiles Evolve", "HeroTiles")
 createAutoToggle("🏋 Request Train", "RequestTrain")
 createAutoToggle("📦 Auto Open Crate", "OpenCrate")
-createAutoToggle("🎁 Auto Summon", "AutoSummon")
 createAutoToggle("⚡ Use Boost", "UseBoost")
-createAutoToggle("🐣 Auto Hatch", "AutoHatch")
 
 -- === АВТО-ЦИКЛ ===
 local lastRun = {}
