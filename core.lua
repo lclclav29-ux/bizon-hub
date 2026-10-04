@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v5.1 (with Avatar)
+-- 🐗 Bizon Hub Core v5.2 (B Letter)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -10,9 +10,6 @@ _G.BizonHub = _G.BizonHub or {}
 local Hub = _G.BizonHub
 Hub.Connections = Hub.Connections or {}
 Hub.IsPanicked = false
-
--- ID АВАТАРКИ
-local AVATAR_ID = "rbxassetid://10511856020"
 
 function Hub.addConnection(conn)
     table.insert(Hub.Connections, conn)
@@ -64,6 +61,38 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
+-- === ФУНКЦИЯ: создать стилизованную B ===
+local function makeB(parent, size, textSize)
+    local frame = Instance.new("Frame")
+    frame.Size = size
+    frame.BackgroundColor3 = T.Bg
+    frame.BorderSizePixel = 0
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(1, 0)
+    
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = T.Accent
+    stroke.Thickness = 1.5
+    
+    local letter = Instance.new("TextLabel")
+    letter.Size = UDim2.new(1, 0, 1, 0)
+    letter.BackgroundTransparency = 1
+    letter.Text = "B"
+    letter.TextColor3 = Color3.fromRGB(255, 255, 255)
+    letter.Font = Enum.Font.GothamBlack
+    letter.TextSize = textSize
+    letter.Parent = frame
+    
+    local grad = Instance.new("UIGradient", letter)
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
+    })
+    grad.Rotation = 90
+    
+    return frame, letter, stroke
+end
+
 -- ============================================
 -- WATERMARK
 -- ============================================
@@ -93,16 +122,33 @@ WMglow.Color = T.AccentGlow
 WMglow.Thickness = 6
 WMglow.Transparency = 0.85
 
--- АВАТАРКА
-local WMicon = Instance.new("ImageLabel")
-WMicon.Size = UDim2.new(0, 32, 0, 32)
-WMicon.Position = UDim2.new(0, 6, 0.5, -16)
-WMicon.BackgroundColor3 = T.Bg3
-WMicon.BackgroundTransparency = 0.3
-WMicon.Image = AVATAR_ID
-WMicon.BorderSizePixel = 0
-WMicon.Parent = WMFrame
-Instance.new("UICorner", WMicon).CornerRadius = UDim.new(0, 8)
+local WMiconFrame = Instance.new("Frame")
+WMiconFrame.Size = UDim2.new(0, 32, 0, 32)
+WMiconFrame.Position = UDim2.new(0, 6, 0.5, -16)
+WMiconFrame.BackgroundColor3 = T.Bg
+WMiconFrame.BorderSizePixel = 0
+WMiconFrame.Parent = WMFrame
+Instance.new("UICorner", WMiconFrame).CornerRadius = UDim.new(1, 0)
+
+local WMiconStroke = Instance.new("UIStroke", WMiconFrame)
+WMiconStroke.Color = T.Accent
+WMiconStroke.Thickness = 1.5
+
+local WMiconLetter = Instance.new("TextLabel")
+WMiconLetter.Size = UDim2.new(1, 0, 1, 0)
+WMiconLetter.BackgroundTransparency = 1
+WMiconLetter.Text = "B"
+WMiconLetter.TextColor3 = Color3.fromRGB(255, 255, 255)
+WMiconLetter.Font = Enum.Font.GothamBlack
+WMiconLetter.TextSize = 20
+WMiconLetter.Parent = WMiconFrame
+
+local WMiconGrad = Instance.new("UIGradient", WMiconLetter)
+WMiconGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
+})
+WMiconGrad.Rotation = 90
 
 local WMtitle = Instance.new("TextLabel")
 WMtitle.Size = UDim2.new(0, 130, 1, 0)
@@ -148,7 +194,7 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 40, 1, 0)
 WMver.Position = UDim2.new(1, -44, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "v5.1"
+WMver.Text = "v5.2"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
@@ -241,13 +287,21 @@ FloatBtn.AutoButtonColor = false
 FloatBtn.Parent = ScreenGui
 Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
 
-local FBimg = Instance.new("ImageLabel")
-FBimg.Size = UDim2.new(1, -8, 1, -8)
-FBimg.Position = UDim2.new(0, 4, 0, 4)
-FBimg.BackgroundTransparency = 1
-FBimg.Image = AVATAR_ID
-FBimg.Parent = FloatBtn
-Instance.new("UICorner", FBimg).CornerRadius = UDim.new(1, 0)
+local FBletter = Instance.new("TextLabel")
+FBletter.Size = UDim2.new(1, 0, 1, 0)
+FBletter.BackgroundTransparency = 1
+FBletter.Text = "B"
+FBletter.TextColor3 = Color3.fromRGB(255, 255, 255)
+FBletter.Font = Enum.Font.GothamBlack
+FBletter.TextSize = 34
+FBletter.Parent = FloatBtn
+
+local FBgrad = Instance.new("UIGradient", FBletter)
+FBgrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
+})
+FBgrad.Rotation = 90
 
 local FBstroke = Instance.new("UIStroke", FloatBtn)
 FBstroke.Color = T.Accent
@@ -332,16 +386,33 @@ LogoBox.Position = UDim2.new(0, 12, 0, 16)
 LogoBox.BackgroundTransparency = 1
 LogoBox.Parent = Sidebar
 
--- АВАТАРКА в сайдбаре
-local LogoIcon = Instance.new("ImageLabel")
+local LogoIcon = Instance.new("Frame")
 LogoIcon.Size = UDim2.new(0, 44, 1, 0)
 LogoIcon.Position = UDim2.new(0, 4, 0, 0)
-LogoIcon.BackgroundColor3 = T.Bg3
-LogoIcon.BackgroundTransparency = 0.3
-LogoIcon.Image = AVATAR_ID
+LogoIcon.BackgroundColor3 = T.Bg
 LogoIcon.BorderSizePixel = 0
 LogoIcon.Parent = LogoBox
-Instance.new("UICorner", LogoIcon).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", LogoIcon).CornerRadius = UDim.new(1, 0)
+
+local LogoStroke = Instance.new("UIStroke", LogoIcon)
+LogoStroke.Color = T.Accent
+LogoStroke.Thickness = 1.5
+
+local LogoLetter = Instance.new("TextLabel")
+LogoLetter.Size = UDim2.new(1, 0, 1, 0)
+LogoLetter.BackgroundTransparency = 1
+LogoLetter.Text = "B"
+LogoLetter.TextColor3 = Color3.fromRGB(255, 255, 255)
+LogoLetter.Font = Enum.Font.GothamBlack
+LogoLetter.TextSize = 28
+LogoLetter.Parent = LogoIcon
+
+local LogoGrad = Instance.new("UIGradient", LogoLetter)
+LogoGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
+})
+LogoGrad.Rotation = 90
 
 local LogoText = Instance.new("TextLabel")
 LogoText.Size = UDim2.new(1, -60, 0, 24)
@@ -358,7 +429,7 @@ local LogoSub = Instance.new("TextLabel")
 LogoSub.Size = UDim2.new(1, -60, 0, 16)
 LogoSub.Position = UDim2.new(0, 56, 0, 28)
 LogoSub.BackgroundTransparency = 1
-LogoSub.Text = "v5.1 • Premium"
+LogoSub.Text = "v5.2 • Premium"
 LogoSub.TextColor3 = T.TextDim2
 LogoSub.Font = Enum.Font.GothamMedium
 LogoSub.TextSize = 10
@@ -453,7 +524,6 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- ============ TABS ============
 Hub.Tabs = {}
 Hub.CurrentTab = nil
 Hub.TabInfo = {
@@ -474,7 +544,6 @@ function Hub.switchTab(name)
         TweenService:Create(oldBtn, TweenInfo.new(0.2), {
             BackgroundColor3 = T.Bg3,
             BackgroundTransparency = 1,
-            TextColor3 = T.TextDim
         }):Play()
         if oldBtn:FindFirstChild("Indicator") then
             TweenService:Create(oldBtn.Indicator, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
@@ -495,7 +564,6 @@ function Hub.switchTab(name)
         TweenService:Create(newBtn, TweenInfo.new(0.25), {
             BackgroundColor3 = T.Accent,
             BackgroundTransparency = 0.85,
-            TextColor3 = T.Accent
         }):Play()
         if newBtn:FindFirstChild("Indicator") then
             TweenService:Create(newBtn.Indicator, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
@@ -609,7 +677,7 @@ function Hub.createTab(name, icon)
     return container
 end
 
--- ============ SETTINGS PANEL ============
+-- SETTINGS PANEL
 local SettingsPanel = Instance.new("Frame")
 SettingsPanel.Size = UDim2.new(0, 320, 0, 0)
 SettingsPanel.BackgroundColor3 = T.Bg2
@@ -656,56 +724,4 @@ function Hub.openSettings(sourceContainer, settingsFn)
     local ok, pos = pcall(function() return sourceContainer.AbsolutePosition end)
     if not ok or not pos then SettingsPanel.Visible = false; return end
     local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
-    SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 12, 0, pos.Y)
-    SettingsPanel.Size = UDim2.new(0, 320, 0, 0)
-    SettingsPanel.Visible = true
-end
-
-function Hub.closeSettings()
-    SettingsPanel.Visible = false
-    for _, child in pairs(SPContent:GetChildren()) do
-        if not child:IsA("UIListLayout") then child:Destroy() end
-    end
-end
-
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 and SettingsPanel.Visible then
-        local mousePos = UserInputService:GetMouseLocation()
-        local panelPos = SettingsPanel.AbsolutePosition
-        local panelSize = SettingsPanel.AbsoluteSize
-        if not (mousePos.X >= panelPos.X and mousePos.X <= panelPos.X + panelSize.X 
-                and mousePos.Y >= panelPos.Y and mousePos.Y <= panelPos.Y + panelSize.Y) then
-            Hub.closeSettings()
-        end
-    end
-end))
-
-local menuOpen = false
-function Hub.toggleMenu()
-    menuOpen = not menuOpen
-    MainFrame.Visible = menuOpen
-    if not menuOpen then Hub.closeSettings() end
-    if menuOpen then
-        MainFrame.Size = UDim2.new(0, 900, 0, 0)
-        MainFrame.BackgroundTransparency = 1
-        TweenService:Create(MainFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 900, 0, 600),
-            BackgroundTransparency = 0.05,
-        }):Play()
-        if not Hub.CurrentTab and Hub.Tabs["Speed"] then
-            Hub.switchTab("Speed")
-        end
-    end
-end
-
-FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
-
-Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        Hub.toggleMenu()
-    end
-end))
-
-print("🐗 Core v5.1 загружен (с аватаркой)")
+    SettingsPanel.Position = UDim2.new(0, pos.X +
