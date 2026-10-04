@@ -324,3 +324,106 @@ local lastCheck = 0
 task.spawn(function()
     while not Hub.IsPanicked do
         task.wait(0.1)
+        
+        if not Settings.AutoBoss.enabled then
+            bossState = "idle"
+            continue
+        end
+        
+        -- 1. Попытка атаки
+        if BossSettings.AutoAttack then
+            local now = tick()
+            if now - lastAttack >= BossSettings.AttackDelay then
+                lastAttack = now
+                pcall(function()
+                    local attackRemote = remotes:FindFirstChild("RequestAttack")
+                    if attackRemote then
+                        if attackRemote:IsA("RemoteFunction") then
+                            attackRemote:InvokeServer()
+                        else
+                            attackRemote:FireServer()
+                        end
+                    end
+                end)
+            end
+        end
+        
+        -- 2. Проверка рейда раз в 3 секунды
+        local now = tick()
+        if now - lastCheck >= 3 then
+            lastCheck = now
+            
+            -- Пытаемся зайти в рейд
+            if BossSettings.AutoJoinRaid then
+                pcall(function()
+                    local joinRemote = remotes:FindFirstChild("RaidJoinRequest")
+                    if joinRemote then
+                        joinRemote:FireServer()
+                    end
+                end)
+            end
+            
+            -- Забираем награду
+            if BossSettings.AutoReward then
+                pcall(function()
+                    local rewardRemote = remotes:FindFirstChild("BossEventReward")
+                    if rewardRemote then
+                        rewardRemote:FireServer()
+                    end
+                end)
+            end
+            
+            -- Пропускаем таймер
+            if BossSettings.SkipTimer then
+                pcall(function()
+                    local skipRemote = remotes:FindFirstChild("TestSkipRaid")
+                    if skipRemote then
+                        skipRemote:FireServer()
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- ===== AUTO FARM LOGIC =====
+task.spawn(function()
+    while not Hub.IsPanicked do
+        task.wait(0.05)
+        local now = tick()
+        for key, config in pairs(Settings) do
+            if key ~= "AutoBoss" and config.enabled and (now - lastRun[key] >= config.delay) then
+                lastRun[key] = now
+                if key == "Clicker" then
+                    if hasTargetNearby() then
+                        local ch = player.Character
+                        if ch then
+                            local tool = ch:FindFirstChildWhichIsA("Tool")
+                            if tool then pcall(function() tool:Activate() end) end
+                        end
+                        pcall(function()
+                            VirtualUser:Button1Down(Vector2.new(0, 0))
+                            task.wait(0.05)
+                            VirtualUser:Button1Up(Vector2.new(0, 0))
+                        end)
+                    end
+                elseif key == "Rebirth" then fire("RequestRebirth")
+                elseif key == "EquipBestPets" then fire("EquipBestPets")
+                elseif key == "EquipBestArtifacts" then fire("EquipBestArtifacts")
+                elseif key == "ClaimOffline" then fire("ClaimOfflineEarnings")
+                elseif key == "ClaimDaily" then fire("ClaimDailyReward")
+                elseif key == "ClaimGroup" then fire("ClaimGroupReward")
+                elseif key == "ClaimPlaytime" then fire("ClaimPlaytimeReward")
+                elseif key == "HeroTiles" then fire("HeroTilesAction", "evolve")
+                elseif key == "RequestTrain" then fire("RequestTrain")
+                elseif key == "OpenCrate" then fire("AutoOpenCrate", true)
+                elseif key == "AutoSummon" then fire("AutoSummon", true)
+                elseif key == "UseBoost" then fire("UseBoost")
+                elseif key == "AutoHatch" then fire("AutoHatch")
+                end
+            end
+        end
+    end
+end)
+
+print("[Bizon Hub] Auto модуль загружен (Auto Boss + ПКМ)")
