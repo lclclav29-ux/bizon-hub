@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v3.7 — Loader (Split UI)
+-- 🐗 Bizon Hub v3.8 — Loader (with Auto)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -13,7 +13,6 @@ local function bustCache(url)
     return url .. sep .. "s=" .. SESSION_ID .. "&r=" .. tostring(math.random(1, 999999999))
 end
 
--- === ТЕМА ===
 local THEME = {
     Bg = Color3.fromRGB(15, 12, 25),
     Bg2 = Color3.fromRGB(28, 22, 45),
@@ -547,7 +546,7 @@ local function showKeyUI()
 end
 
 -- === ЗАГРУЗКА МОДУЛЕЙ ===
-local MODULES = {"core", "ui1", "ui2", "ui2b", "ui3", "utilities", "teleport", "rebirth", "farm", "misc"}
+local MODULES = {"core", "ui1", "ui2", "ui2b", "ui3", "utilities", "teleport", "rebirth", "auto", "farm", "misc"}
 
 local function loadAllModulesWithProgress(setProgress)
     for i, name in ipairs(MODULES) do
@@ -571,7 +570,7 @@ local function loadAllModulesWithProgress(setProgress)
 end
 
 -- === ГЛАВНЫЙ ПОТОК ===
-print("🐗 Bizon Hub: старт (v3.7)")
+print("🐗 Bizon Hub: старт (v3.8)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
@@ -608,7 +607,7 @@ else
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v3.7)",
+                Text = "Автовход (v3.8)",
                 Duration = 3,
             })
         end)
