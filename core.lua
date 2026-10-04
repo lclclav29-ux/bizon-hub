@@ -750,5 +750,218 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
         Hub.toggleMenu()
     end
 end))
+-- ============================================
+-- ПКМ МЕНЮ НАСТРОЕК
+-- ============================================
+local CtxMenu = Instance.new("Frame")
+CtxMenu.Size = UDim2.new(0, 220, 0, 0)
+CtxMenu.BackgroundColor3 = T.Bg2
+CtxMenu.BackgroundTransparency = 0.05
+CtxMenu.BorderSizePixel = 0
+CtxMenu.Visible = false
+CtxMenu.ZIndex = 100
+CtxMenu.Parent = ScreenGui
+Instance.new("UICorner", CtxMenu).CornerRadius = UDim.new(0, 10)
 
+local CtxStroke = Instance.new("UIStroke", CtxMenu)
+CtxStroke.Color = T.Accent
+CtxStroke.Thickness = 1.5
+CtxStroke.Transparency = 0.3
+
+local CtxContent = Instance.new("ScrollingFrame")
+CtxContent.Size = UDim2.new(1, -12, 1, -12)
+CtxContent.Position = UDim2.new(0, 6, 0, 6)
+CtxContent.BackgroundTransparency = 1
+CtxContent.BorderSizePixel = 0
+CtxContent.ScrollBarThickness = 3
+CtxContent.ScrollBarImageColor3 = T.Accent
+CtxContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+CtxContent.Parent = CtxMenu
+
+local CtxLayout = Instance.new("UIListLayout", CtxContent)
+CtxLayout.Padding = UDim.new(0, 4)
+
+CtxLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    CtxContent.CanvasSize = UDim2.new(0, 0, 0, CtxLayout.AbsoluteContentSize.Y + 12)
+    CtxMenu.Size = UDim2.new(0, 220, 0, math.clamp(CtxLayout.AbsoluteContentSize.Y + 20, 40, 400))
+end)
+
+Hub.ContextMenu = CtxMenu
+Hub.ContextContent = CtxContent
+
+function Hub.openContext(sourceElement, buildFn)
+    -- Очищаем
+    for _, child in pairs(CtxContent:GetChildren()) do
+        if not child:IsA("UIListLayout") then child:Destroy() end
+    end
+    buildFn(CtxContent)
+    task.wait(0.03)
+    
+    local ok, pos = pcall(function() return sourceElement.AbsolutePosition end)
+    if not ok or not pos then return end
+    
+    local size = sourceElement.AbsoluteSize or Vector2.new(200, 50)
+    local screenSize = workspace.CurrentCamera.ViewportSize
+    
+    local x = pos.X + size.X + 8
+    local y = pos.Y
+    
+    -- Проверка краёв
+    if x + 220 > screenSize.X then
+        x = pos.X - 228
+    end
+    if y + CtxMenu.AbsoluteSize.Y > screenSize.Y then
+        y = screenSize.Y - CtxMenu.AbsoluteSize.Y - 10
+    end
+    
+    CtxMenu.Position = UDim2.new(0, x, 0, y)
+    CtxMenu.Visible = true
+end
+
+function Hub.closeContext()
+    CtxMenu.Visible = false
+    for _, child in pairs(CtxContent:GetChildren()) do
+        if not child:IsA("UIListLayout") then child:Destroy() end
+    end
+end
+
+-- Закрытие по клику вне меню
+Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and CtxMenu.Visible then
+        local mousePos = UserInputService:GetMouseLocation()
+        local panelPos = CtxMenu.AbsolutePosition
+        local panelSize = CtxMenu.AbsoluteSize
+        if not (mousePos.X >= panelPos.X and mousePos.X <= panelPos.X + panelSize.X 
+                and mousePos.Y >= panelPos.Y and mousePos.Y <= panelPos.Y + panelSize.Y) then
+            Hub.closeContext()
+        end
+    end
+end))
+
+-- Создание элементов в ПКМ меню
+function Hub.addContextLabel(parent, text)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 0, 22)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = string.upper(text)
+    lbl.TextColor3 = T.TextDim
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 10
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = parent
+    local pad = Instance.new("UIPadding", lbl)
+    pad.PaddingLeft = UDim.new(0, 8)
+    return lbl
+end
+
+function Hub.addContextButton(parent, text, callback, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.BackgroundColor3 = color or T.Bg3
+    btn.BackgroundTransparency = 0.3
+    btn.Text = text
+    btn.TextColor3 = T.Text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = parent
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local pad = Instance.new("UIPadding", btn)
+    pad.PaddingLeft = UDim.new(0, 10)
+    
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = 0.3}):Play()
+    end)
+    
+    btn.MouseButton1Click:Connect(function()
+        callback()
+    end)
+    return btn
+end
+
+function Hub.addContextSlider(parent, name, minVal, maxVal, default, callback)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 50)
+    container.BackgroundColor3 = T.Bg3
+    container.BackgroundTransparency = 0.3
+    container.BorderSizePixel = 0
+    container.Parent = parent
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -70, 0, 18)
+    label.Position = UDim2.new(0, 10, 0, 4)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = T.Text
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 11
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = container
+    
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(0, 50, 0, 18)
+    valueLabel.Position = UDim2.new(1, -60, 0, 4)
+    valueLabel.BackgroundColor3 = T.Accent
+    valueLabel.BackgroundTransparency = 0.8
+    valueLabel.Text = tostring(default)
+    valueLabel.TextColor3 = T.Accent
+    valueLabel.Font = Enum.Font.GothamBold
+    valueLabel.TextSize = 10
+    valueLabel.BorderSizePixel = 0
+    valueLabel.Parent = container
+    Instance.new("UICorner", valueLabel).CornerRadius = UDim.new(1, 0)
+    
+    local sliderBg = Instance.new("Frame")
+    sliderBg.Size = UDim2.new(1, -20, 0, 6)
+    sliderBg.Position = UDim2.new(0, 10, 0, 32)
+    sliderBg.BackgroundColor3 = T.Bg
+    sliderBg.BorderSizePixel = 0
+    sliderBg.Parent = container
+    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
+    
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new((default - minVal) / (maxVal - minVal), 0, 1, 0)
+    fill.BackgroundColor3 = T.Accent
+    fill.BorderSizePixel = 0
+    fill.Parent = sliderBg
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 12, 0, 12)
+    knob.Position = UDim2.new((default - minVal) / (maxVal - minVal), -6, 0.5, -6)
+    knob.BackgroundColor3 = Color3.new(1,1,1)
+    knob.BorderSizePixel = 0
+    knob.Parent = sliderBg
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+    
+    local sliding = false
+    local function upd(input)
+        local relX = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+        local v = math.floor(minVal + (maxVal - minVal) * relX)
+        fill.Size = UDim2.new(relX, 0, 1, 0)
+        knob.Position = UDim2.new(relX, -6, 0.5, -6)
+        valueLabel.Text = tostring(v)
+        callback(v)
+    end
+    sliderBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; upd(input) end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then upd(input) end
+    end)
+    
+    return container
+end
+
+print("[Bizon Hub] Core — Recode 1.0 загружен (с ПКМ)")
 print("[Bizon Hub] Core — Recode 1.0 загружен")
