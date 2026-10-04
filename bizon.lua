@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub v3.5 — Loader (with Rebirth)
+-- 🐗 Bizon Hub v3.6 — Loader (Neon Key UI)
 local BASE = "https://raw.githubusercontent.com/lclclav29-ux/bizon-hub/main/"
 
 local Players = game:GetService("Players")
@@ -232,7 +232,9 @@ local function loadValidKeys()
     return keys
 end
 
--- === UI КЛЮЧА ===
+-- ============================================
+-- KEY UI (с крестиком + неоновой обводкой)
+-- ============================================
 local function showKeyUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BizonKeySystem"
@@ -257,46 +259,85 @@ local function showKeyUI()
     Frame.Parent = ScreenGui
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 22)
 
-    local stroke = Instance.new("UIStroke", Frame)
-    stroke.Color = THEME.Accent
-    stroke.Thickness = 2
+    -- НЕОНОВАЯ СТАТИЧЕСКАЯ ОБВОДКА (3 слоя)
+    local stroke1 = Instance.new("UIStroke", Frame)
+    stroke1.Color = THEME.Accent
+    stroke1.Thickness = 2
+    stroke1.Transparency = 0
 
-    local Header = Instance.new("Frame")
-    Header.Size = UDim2.new(1, 0, 0, 70)
-    Header.BackgroundColor3 = THEME.Bg2
-    Header.BorderSizePixel = 0
-    Header.Parent = Frame
-    Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 22)
-    local HF = Instance.new("Frame")
-    HF.Size = UDim2.new(1, 0, 0, 20)
-    HF.Position = UDim2.new(0, 0, 1, -20)
-    HF.BackgroundColor3 = THEME.Bg2
-    HF.BorderSizePixel = 0
-    HF.Parent = Header
+    local stroke2 = Instance.new("UIStroke", Frame)
+    stroke2.Color = THEME.AccentGlow
+    stroke2.Thickness = 4
+    stroke2.Transparency = 0.6
 
+    local stroke3 = Instance.new("UIStroke", Frame)
+    stroke3.Color = THEME.AccentGlow
+    stroke3.Thickness = 8
+    stroke3.Transparency = 0.85
+
+    -- КРЕСТИК
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+    CloseBtn.Position = UDim2.new(1, -42, 0, 10)
+    CloseBtn.BackgroundColor3 = THEME.Bg2
+    CloseBtn.BackgroundTransparency = 0.3
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = THEME.TextDim
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    CloseBtn.BorderSizePixel = 0
+    CloseBtn.AutoButtonColor = false
+    CloseBtn.Parent = Frame
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+
+    local closeStroke = Instance.new("UIStroke", CloseBtn)
+    closeStroke.Color = THEME.Stroke or Color3.fromRGB(60, 50, 90)
+    closeStroke.Thickness = 1
+    closeStroke.Transparency = 0.5
+
+    CloseBtn.MouseEnter:Connect(function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = THEME.Danger, BackgroundTransparency = 0, TextColor3 = Color3.new(1,1,1)}):Play()
+        TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = THEME.Danger, Transparency = 0}):Play()
+    end)
+    CloseBtn.MouseLeave:Connect(function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = THEME.Bg2, BackgroundTransparency = 0.3, TextColor3 = THEME.TextDim}):Play()
+        TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = THEME.Stroke or Color3.fromRGB(60, 50, 90), Transparency = 0.5}):Play()
+    end)
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    -- ЗАГОЛОВОК
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.Position = UDim2.new(0, 0, 0, 8)
+    Title.Position = UDim2.new(0, 0, 0, 30)
     Title.BackgroundTransparency = 1
     Title.Text = AD_CONFIG.Title
     Title.TextColor3 = THEME.Accent
     Title.Font = Enum.Font.GothamBlack
     Title.TextSize = 22
-    Title.Parent = Header
+    Title.Parent = Frame
 
     local SubTitle = Instance.new("TextLabel")
     SubTitle.Size = UDim2.new(1, 0, 0, 20)
-    SubTitle.Position = UDim2.new(0, 0, 0, 44)
+    SubTitle.Position = UDim2.new(0, 0, 0, 72)
     SubTitle.BackgroundTransparency = 1
     SubTitle.Text = AD_CONFIG.SubTitle
     SubTitle.TextColor3 = THEME.TextDim
     SubTitle.Font = Enum.Font.Gotham
     SubTitle.TextSize = 12
-    SubTitle.Parent = Header
+    SubTitle.Parent = Frame
+
+    local divider1 = Instance.new("Frame")
+    divider1.Size = UDim2.new(1, -40, 0, 1)
+    divider1.Position = UDim2.new(0, 20, 0, 100)
+    divider1.BackgroundColor3 = Color3.fromRGB(60, 50, 90)
+    divider1.BorderSizePixel = 0
+    divider1.Parent = Frame
 
     local Promo = Instance.new("TextLabel")
     Promo.Size = UDim2.new(1, -40, 0, 60)
-    Promo.Position = UDim2.new(0, 20, 0, 85)
+    Promo.Position = UDim2.new(0, 20, 0, 115)
     Promo.BackgroundTransparency = 1
     Promo.Text = AD_CONFIG.PromoText
     Promo.TextColor3 = THEME.Text
@@ -308,7 +349,7 @@ local function showKeyUI()
 
     local Status = Instance.new("TextLabel")
     Status.Size = UDim2.new(1, -40, 0, 22)
-    Status.Position = UDim2.new(0, 20, 0, 155)
+    Status.Position = UDim2.new(0, 20, 0, 175)
     Status.BackgroundTransparency = 1
     Status.Text = "⏳ Подожди " .. AD_CONFIG.WaitTime .. " сек..."
     Status.TextColor3 = THEME.Warning
@@ -319,7 +360,7 @@ local function showKeyUI()
 
     local SubBtn = Instance.new("TextButton")
     SubBtn.Size = UDim2.new(1, -40, 0, 44)
-    SubBtn.Position = UDim2.new(0, 20, 0, 190)
+    SubBtn.Position = UDim2.new(0, 20, 0, 205)
     SubBtn.BackgroundColor3 = THEME.Bg2
     SubBtn.Text = "🔒 Подожди..."
     SubBtn.TextColor3 = THEME.TextDim
@@ -331,16 +372,16 @@ local function showKeyUI()
     SubBtn.Parent = Frame
     Instance.new("UICorner", SubBtn).CornerRadius = UDim.new(0, 10)
 
-    local divider = Instance.new("Frame")
-    divider.Size = UDim2.new(1, -40, 0, 1)
-    divider.Position = UDim2.new(0, 20, 0, 250)
-    divider.BackgroundColor3 = Color3.fromRGB(60, 50, 90)
-    divider.BorderSizePixel = 0
-    divider.Parent = Frame
+    local divider2 = Instance.new("Frame")
+    divider2.Size = UDim2.new(1, -40, 0, 1)
+    divider2.Position = UDim2.new(0, 20, 0, 262)
+    divider2.BackgroundColor3 = Color3.fromRGB(60, 50, 90)
+    divider2.BorderSizePixel = 0
+    divider2.Parent = Frame
 
     local orLabel = Instance.new("TextLabel")
     orLabel.Size = UDim2.new(1, 0, 0, 20)
-    orLabel.Position = UDim2.new(0, 0, 0, 244)
+    orLabel.Position = UDim2.new(0, 0, 0, 256)
     orLabel.BackgroundTransparency = 1
     orLabel.Text = "или введи свой ключ"
     orLabel.TextColor3 = THEME.TextDim
@@ -350,7 +391,7 @@ local function showKeyUI()
 
     local KeyInput = Instance.new("TextBox")
     KeyInput.Size = UDim2.new(1, -40, 0, 44)
-    KeyInput.Position = UDim2.new(0, 20, 0, 270)
+    KeyInput.Position = UDim2.new(0, 20, 0, 282)
     KeyInput.BackgroundColor3 = THEME.Bg2
     KeyInput.Text = ""
     KeyInput.PlaceholderText = "BISON-XXXX-XXXX"
@@ -366,7 +407,7 @@ local function showKeyUI()
     local rememberState = true
     local RemBox = Instance.new("Frame")
     RemBox.Size = UDim2.new(1, -40, 0, 26)
-    RemBox.Position = UDim2.new(0, 20, 0, 324)
+    RemBox.Position = UDim2.new(0, 20, 0, 336)
     RemBox.BackgroundTransparency = 1
     RemBox.Parent = Frame
 
@@ -533,7 +574,7 @@ local function loadAllModulesWithProgress(setProgress)
 end
 
 -- === ГЛАВНЫЙ ПОТОК ===
-print("🐗 Bizon Hub: старт (v3.5)")
+print("🐗 Bizon Hub: старт (v3.6)")
 print("🔑 Session: " .. SESSION_ID)
 
 local saved = loadSavedKey()
@@ -570,7 +611,7 @@ else
         pcall(function()
             game.StarterGui:SetCore("SendNotification", {
                 Title = "🐗 Bizon Hub",
-                Text = "Автовход (v3.5)",
+                Text = "Автовход (v3.6)",
                 Duration = 3,
             })
         end)
