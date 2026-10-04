@@ -1,4 +1,6 @@
--- 🐗 Bizon Hub Core v5.5 FINAL
+-- ============================================
+-- BIZON HUB — Recode 1.0 — CORE
+-- ============================================
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -16,41 +18,50 @@ function Hub.addConnection(conn)
     return conn
 end
 
+-- ============================================
+-- THEME — Clean Dark Purple
+-- ============================================
 Hub.Theme = {
-    Bg = Color3.fromRGB(12, 10, 20),
-    Bg2 = Color3.fromRGB(22, 18, 38),
-    Bg3 = Color3.fromRGB(32, 26, 52),
-    Bg4 = Color3.fromRGB(42, 34, 68),
+    Bg = Color3.fromRGB(10, 10, 18),
+    Bg2 = Color3.fromRGB(18, 18, 30),
+    Bg3 = Color3.fromRGB(26, 26, 42),
+    Bg4 = Color3.fromRGB(36, 36, 56),
     Accent = Color3.fromRGB(168, 85, 247),
     AccentGlow = Color3.fromRGB(200, 130, 255),
-    Text = Color3.fromRGB(245, 240, 255),
-    TextDim = Color3.fromRGB(150, 140, 175),
-    TextDim2 = Color3.fromRGB(100, 92, 125),
+    Text = Color3.fromRGB(240, 240, 245),
+    TextDim = Color3.fromRGB(140, 140, 160),
+    TextDim2 = Color3.fromRGB(90, 90, 110),
     Success = Color3.fromRGB(80, 240, 160),
     Danger = Color3.fromRGB(240, 70, 100),
     Warning = Color3.fromRGB(255, 200, 50),
-    Stroke = Color3.fromRGB(65, 55, 95),
-    StrokeLight = Color3.fromRGB(95, 80, 140),
+    Stroke = Color3.fromRGB(50, 45, 70),
+    StrokeLight = Color3.fromRGB(80, 70, 110),
 }
 
 Hub.Settings = {
     SpeedEnabled=false, SpeedValue=50, SmoothSpeed=false,
     UseKeybind=false, SpeedKey=Enum.KeyCode.LeftShift,
-    SpeedInAir=false, AutoRun=false,
+    SpeedInAir=false,
     JumpEnabled=false, JumpValue=100, InfiniteJump=false,
     FlyEnabled=false, FlySpeed=50,
     Noclip=false, Fullbright=false,
+    AutoFarmEnabled=false, FarmTargetName="Hitbox",
+    FarmRange=20, FarmHitCooldown=0.1, FarmUseTool=true,
 }
 
 local T = Hub.Theme
 
-local old = player.PlayerGui:FindFirstChild("BizonHub")
-if old then old:Destroy() end
-local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
-if oldWM then oldWM:Destroy() end
-local oldTT = player.PlayerGui:FindFirstChild("BizonTooltip")
-if oldTT then oldTT:Destroy() end
+-- ============================================
+-- CLEANUP
+-- ============================================
+for _, name in ipairs({"BizonHub", "BizonWatermark", "BizonTooltip", "BizonSplash", "BizonKeySystem"}) do
+    local old = player.PlayerGui:FindFirstChild(name)
+    if old then old:Destroy() end
+end
 
+-- ============================================
+-- ROOT GUI
+-- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -70,102 +81,92 @@ WatermarkGui.IgnoreGuiInset = true
 WatermarkGui.Parent = player:WaitForChild("PlayerGui")
 
 local WMFrame = Instance.new("Frame")
-WMFrame.Size = UDim2.new(0, 340, 0, 44)
-WMFrame.Position = UDim2.new(1, -360, 0, 20)
+WMFrame.Size = UDim2.new(0, 320, 0, 42)
+WMFrame.Position = UDim2.new(1, -340, 0, 20)
 WMFrame.BackgroundColor3 = T.Bg2
-WMFrame.BackgroundTransparency = 0.15
+WMFrame.BackgroundTransparency = 0.1
 WMFrame.BorderSizePixel = 0
 WMFrame.Parent = WatermarkGui
-Instance.new("UICorner", WMFrame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", WMFrame).CornerRadius = UDim.new(0, 10)
 
 local WMstroke = Instance.new("UIStroke", WMFrame)
 WMstroke.Color = T.Accent
-WMstroke.Thickness = 1.5
-WMstroke.Transparency = 0.3
+WMstroke.Thickness = 1
+WMstroke.Transparency = 0.4
 
-local WMglow = Instance.new("UIStroke", WMFrame)
-WMglow.Color = T.AccentGlow
-WMglow.Thickness = 6
-WMglow.Transparency = 0.85
+local WMicon = Instance.new("Frame")
+WMicon.Size = UDim2.new(0, 30, 0, 30)
+WMicon.Position = UDim2.new(0, 6, 0.5, -15)
+WMicon.BackgroundColor3 = T.Bg
+WMicon.BorderSizePixel = 0
+WMicon.Parent = WMFrame
+Instance.new("UICorner", WMicon).CornerRadius = UDim.new(1, 0)
 
-local WMiconFrame = Instance.new("Frame")
-WMiconFrame.Size = UDim2.new(0, 32, 0, 32)
-WMiconFrame.Position = UDim2.new(0, 6, 0.5, -16)
-WMiconFrame.BackgroundColor3 = T.Bg
-WMiconFrame.BorderSizePixel = 0
-WMiconFrame.Parent = WMFrame
-Instance.new("UICorner", WMiconFrame).CornerRadius = UDim.new(1, 0)
-
-local WMiconStroke = Instance.new("UIStroke", WMiconFrame)
+local WMiconStroke = Instance.new("UIStroke", WMicon)
 WMiconStroke.Color = T.Accent
-WMiconStroke.Thickness = 1.5
+WMiconStroke.Thickness = 1
 
 local WMiconLetter = Instance.new("TextLabel")
 WMiconLetter.Size = UDim2.new(1, 0, 1, 0)
 WMiconLetter.BackgroundTransparency = 1
 WMiconLetter.Text = "B"
-WMiconLetter.TextColor3 = Color3.fromRGB(255, 255, 255)
+WMiconLetter.TextColor3 = T.Accent
 WMiconLetter.Font = Enum.Font.GothamBlack
-WMiconLetter.TextSize = 20
-WMiconLetter.Parent = WMiconFrame
-
-local WMiconGrad = Instance.new("UIGradient", WMiconLetter)
-WMiconGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
-})
-WMiconGrad.Rotation = 90
+WMiconLetter.TextSize = 18
+WMiconLetter.Parent = WMicon
 
 local WMtitle = Instance.new("TextLabel")
-WMtitle.Size = UDim2.new(0, 130, 1, 0)
-WMtitle.Position = UDim2.new(0, 44, 0, 0)
+WMtitle.Size = UDim2.new(0, 120, 1, 0)
+WMtitle.Position = UDim2.new(0, 42, 0, 0)
 WMtitle.BackgroundTransparency = 1
 WMtitle.Text = "BIZON HUB"
-WMtitle.TextColor3 = T.Accent
-WMtitle.Font = Enum.Font.GothamBlack
-WMtitle.TextSize = 14
+WMtitle.TextColor3 = T.Text
+WMtitle.Font = Enum.Font.GothamBold
+WMtitle.TextSize = 12
 WMtitle.TextXAlignment = Enum.TextXAlignment.Left
 WMtitle.Parent = WMFrame
 
-local WMsep1 = Instance.new("Frame")
-WMsep1.Size = UDim2.new(0, 1, 0, 22)
-WMsep1.Position = UDim2.new(0, 178, 0.5, -11)
-WMsep1.BackgroundColor3 = T.Stroke
-WMsep1.BorderSizePixel = 0
-WMsep1.Parent = WMFrame
+local WMver = Instance.new("TextLabel")
+WMver.Size = UDim2.new(0, 40, 0, 14)
+WMver.Position = UDim2.new(0, 42, 0, 22)
+WMver.BackgroundTransparency = 1
+WMver.Text = "Recode 1.0"
+WMver.TextColor3 = T.TextDim2
+WMver.Font = Enum.Font.GothamMedium
+WMver.TextSize = 9
+WMver.TextXAlignment = Enum.TextXAlignment.Left
+WMver.Parent = WMFrame
+
+local WMsep = Instance.new("Frame")
+WMsep.Size = UDim2.new(0, 1, 0, 22)
+WMsep.Position = UDim2.new(0, 172, 0.5, -11)
+WMsep.BackgroundColor3 = T.Stroke
+WMsep.BorderSizePixel = 0
+WMsep.Parent = WMFrame
 
 local WMfps = Instance.new("TextLabel")
-WMfps.Size = UDim2.new(0, 60, 1, 0)
-WMfps.Position = UDim2.new(0, 186, 0, 0)
+WMfps.Size = UDim2.new(0, 55, 1, 0)
+WMfps.Position = UDim2.new(0, 180, 0, 0)
 WMfps.BackgroundTransparency = 1
 WMfps.Text = "FPS: --"
 WMfps.TextColor3 = T.Text
 WMfps.Font = Enum.Font.GothamBold
-WMfps.TextSize = 11
+WMfps.TextSize = 10
 WMfps.TextXAlignment = Enum.TextXAlignment.Left
 WMfps.Parent = WMFrame
 
 local WMping = Instance.new("TextLabel")
-WMping.Size = UDim2.new(0, 60, 1, 0)
-WMping.Position = UDim2.new(0, 250, 0, 0)
+WMping.Size = UDim2.new(0, 55, 1, 0)
+WMping.Position = UDim2.new(0, 240, 0, 0)
 WMping.BackgroundTransparency = 1
 WMping.Text = "PING: --"
 WMping.TextColor3 = T.Text
 WMping.Font = Enum.Font.GothamBold
-WMping.TextSize = 11
+WMping.TextSize = 10
 WMping.TextXAlignment = Enum.TextXAlignment.Left
 WMping.Parent = WMFrame
 
-local WMver = Instance.new("TextLabel")
-WMver.Size = UDim2.new(0, 40, 1, 0)
-WMver.Position = UDim2.new(1, -44, 0, 0)
-WMver.BackgroundTransparency = 1
-WMver.Text = "v5.5"
-WMver.TextColor3 = T.TextDim
-WMver.Font = Enum.Font.GothamBold
-WMver.TextSize = 10
-WMver.Parent = WMFrame
-
+-- Drag watermark
 local wmDrag, wmStart, wmStartPos
 Hub.addConnection(WMFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -182,16 +183,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
-task.spawn(function()
-    while WMFrame.Parent and not Hub.IsPanicked do
-        TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.95, Thickness = 10}):Play()
-        task.wait(2)
-        if Hub.IsPanicked then break end
-        TweenService:Create(WMglow, TweenInfo.new(2, Enum.EasingStyle.Sine), {Transparency = 0.75, Thickness = 6}):Play()
-        task.wait(2)
-    end
-end)
-
+-- FPS
 local fpsHistory = {}
 task.spawn(function()
     local lastUpdate = tick()
@@ -217,6 +209,7 @@ task.spawn(function()
     end
 end)
 
+-- Ping
 local pingHistory = {}
 task.spawn(function()
     while WMFrame.Parent and not Hub.IsPanicked do
@@ -260,17 +253,12 @@ Tooltip.BorderSizePixel = 0
 Tooltip.Visible = false
 Tooltip.ZIndex = 100
 Tooltip.Parent = TooltipGui
-Instance.new("UICorner", Tooltip).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", Tooltip).CornerRadius = UDim.new(0, 8)
 
 local TTstroke = Instance.new("UIStroke", Tooltip)
 TTstroke.Color = T.Accent
 TTstroke.Thickness = 1.5
 TTstroke.Transparency = 0.3
-
-local TTglow = Instance.new("UIStroke", Tooltip)
-TTglow.Color = T.AccentGlow
-TTglow.Thickness = 4
-TTglow.Transparency = 0.8
 
 local TTpadding = Instance.new("UIPadding", Tooltip)
 TTpadding.PaddingTop = UDim.new(0, 10)
@@ -284,7 +272,7 @@ TTTitle.BackgroundTransparency = 1
 TTTitle.Text = ""
 TTTitle.TextColor3 = T.Accent
 TTTitle.Font = Enum.Font.GothamBold
-TTTitle.TextSize = 13
+TTTitle.TextSize = 12
 TTTitle.TextXAlignment = Enum.TextXAlignment.Left
 TTTitle.Parent = Tooltip
 
@@ -295,7 +283,7 @@ TTDesc.BackgroundTransparency = 1
 TTDesc.Text = ""
 TTDesc.TextColor3 = T.Text
 TTDesc.Font = Enum.Font.Gotham
-TTDesc.TextSize = 11
+TTDesc.TextSize = 10
 TTDesc.TextXAlignment = Enum.TextXAlignment.Left
 TTDesc.TextYAlignment = Enum.TextYAlignment.Top
 TTDesc.TextWrapped = true
@@ -304,9 +292,9 @@ TTDesc.Parent = Tooltip
 function Hub.showTooltip(title, description)
     TTTitle.Text = title
     TTDesc.Text = description or ""
-    local descHeight = math.max(16, math.ceil(#(description or "") / 32) * 16)
+    local descHeight = math.max(14, math.ceil(#(description or "") / 34) * 15)
     TTDesc.Size = UDim2.new(1, 0, 0, descHeight)
-    Tooltip.Size = UDim2.new(0, 260, 0, 22 + descHeight + 10)
+    Tooltip.Size = UDim2.new(0, 260, 0, 20 + descHeight + 10)
 end
 
 local tooltipActive = false
@@ -331,8 +319,7 @@ function Hub.attachTooltip(element, title, description)
         tooltipActive = true
         Hub.showTooltip(title, description or "")
         Tooltip.Visible = true
-        Tooltip.BackgroundTransparency = 0.3
-        TweenService:Create(Tooltip, TweenInfo.new(0.2), {BackgroundTransparency = 0.05}):Play()
+        TweenService:Create(Tooltip, TweenInfo.new(0.15), {BackgroundTransparency = 0.05}):Play()
     end)
     element.MouseLeave:Connect(function()
         tooltipActive = false
@@ -346,8 +333,8 @@ end
 -- FLOAT BUTTON
 -- ============================================
 local FloatBtn = Instance.new("TextButton")
-FloatBtn.Size = UDim2.new(0, 60, 0, 60)
-FloatBtn.Position = UDim2.new(0, 20, 0.5, -30)
+FloatBtn.Size = UDim2.new(0, 56, 0, 56)
+FloatBtn.Position = UDim2.new(0, 20, 0.5, -28)
 FloatBtn.BackgroundColor3 = T.Bg2
 FloatBtn.BackgroundTransparency = 0.1
 FloatBtn.Text = ""
@@ -360,34 +347,27 @@ local FBletter = Instance.new("TextLabel")
 FBletter.Size = UDim2.new(1, 0, 1, 0)
 FBletter.BackgroundTransparency = 1
 FBletter.Text = "B"
-FBletter.TextColor3 = Color3.fromRGB(255, 255, 255)
+FBletter.TextColor3 = T.Accent
 FBletter.Font = Enum.Font.GothamBlack
-FBletter.TextSize = 34
+FBletter.TextSize = 30
 FBletter.Parent = FloatBtn
-
-local FBgrad = Instance.new("UIGradient", FBletter)
-FBgrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
-})
-FBgrad.Rotation = 90
 
 local FBstroke = Instance.new("UIStroke", FloatBtn)
 FBstroke.Color = T.Accent
-FBstroke.Thickness = 2
+FBstroke.Thickness = 1.5
 
 local FBglow = Instance.new("UIStroke", FloatBtn)
 FBglow.Color = T.AccentGlow
-FBglow.Thickness = 8
-FBglow.Transparency = 0.75
+FBglow.Thickness = 6
+FBglow.Transparency = 0.7
 
 task.spawn(function()
     while FloatBtn.Parent and not Hub.IsPanicked do
-        TweenService:Create(FBglow, TweenInfo.new(1.5), {Transparency = 0.95, Thickness = 14}):Play()
-        task.wait(1.5)
+        TweenService:Create(FBglow, TweenInfo.new(1.8, Enum.EasingStyle.Sine), {Transparency = 0.9, Thickness = 10}):Play()
+        task.wait(1.8)
         if Hub.IsPanicked then break end
-        TweenService:Create(FBglow, TweenInfo.new(1.5), {Transparency = 0.6, Thickness = 8}):Play()
-        task.wait(1.5)
+        TweenService:Create(FBglow, TweenInfo.new(1.8, Enum.EasingStyle.Sine), {Transparency = 0.7, Thickness = 6}):Play()
+        task.wait(1.8)
     end
 end)
 
@@ -413,163 +393,95 @@ Hub.FloatBtn = FloatBtn
 -- MAIN FRAME
 -- ============================================
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 900, 0, 600)
-MainFrame.Position = UDim2.new(0.5, -450, 0.5, -300)
+MainFrame.Size = UDim2.new(0, 860, 0, 580)
+MainFrame.Position = UDim2.new(0.5, -430, 0.5, -290)
 MainFrame.BackgroundColor3 = T.Bg
 MainFrame.BackgroundTransparency = 0.05
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 24)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 18)
 
 local MFstroke = Instance.new("UIStroke", MainFrame)
 MFstroke.Color = T.StrokeLight
-MFstroke.Thickness = 1.5
-MFstroke.Transparency = 0.4
-
-local MFglow = Instance.new("UIStroke", MainFrame)
-MFglow.Color = T.AccentGlow
-MFglow.Thickness = 10
-MFglow.Transparency = 0.9
+MFstroke.Thickness = 1
+MFstroke.Transparency = 0.5
 
 Hub.MainFrame = MainFrame
 
--- SIDEBAR
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 200, 1, 0)
-Sidebar.BackgroundColor3 = T.Bg2
-Sidebar.BackgroundTransparency = 0.3
-Sidebar.BorderSizePixel = 0
-Sidebar.Parent = MainFrame
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 24)
+-- HEADER
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 56)
+Header.BackgroundColor3 = T.Bg2
+Header.BackgroundTransparency = 0.3
+Header.BorderSizePixel = 0
+Header.Parent = MainFrame
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 18)
 
-local SidebarFix = Instance.new("Frame")
-SidebarFix.Size = UDim2.new(0, 20, 1, -48)
-SidebarFix.Position = UDim2.new(1, -20, 0, 24)
-SidebarFix.BackgroundColor3 = T.Bg2
-SidebarFix.BackgroundTransparency = 0.3
-SidebarFix.BorderSizePixel = 0
-SidebarFix.Parent = Sidebar
+local HeaderFix = Instance.new("Frame")
+HeaderFix.Size = UDim2.new(1, 0, 0, 18)
+HeaderFix.Position = UDim2.new(0, 0, 1, -18)
+HeaderFix.BackgroundColor3 = T.Bg2
+HeaderFix.BackgroundTransparency = 0.3
+HeaderFix.BorderSizePixel = 0
+HeaderFix.Parent = Header
 
-local LogoBox = Instance.new("Frame")
-LogoBox.Size = UDim2.new(1, -24, 0, 60)
-LogoBox.Position = UDim2.new(0, 12, 0, 16)
-LogoBox.BackgroundTransparency = 1
-LogoBox.Parent = Sidebar
+local HeaderLogo = Instance.new("Frame")
+HeaderLogo.Size = UDim2.new(0, 30, 0, 30)
+HeaderLogo.Position = UDim2.new(0, 20, 0.5, -15)
+HeaderLogo.BackgroundColor3 = T.Bg
+HeaderLogo.BorderSizePixel = 0
+HeaderLogo.Parent = Header
+Instance.new("UICorner", HeaderLogo).CornerRadius = UDim.new(1, 0)
 
-local LogoIcon = Instance.new("Frame")
-LogoIcon.Size = UDim2.new(0, 44, 1, 0)
-LogoIcon.Position = UDim2.new(0, 4, 0, 0)
-LogoIcon.BackgroundColor3 = T.Bg
-LogoIcon.BorderSizePixel = 0
-LogoIcon.Parent = LogoBox
-Instance.new("UICorner", LogoIcon).CornerRadius = UDim.new(1, 0)
+local HeaderLogoStroke = Instance.new("UIStroke", HeaderLogo)
+HeaderLogoStroke.Color = T.Accent
+HeaderLogoStroke.Thickness = 1
 
-local LogoStroke = Instance.new("UIStroke", LogoIcon)
-LogoStroke.Color = T.Accent
-LogoStroke.Thickness = 1.5
+local HeaderLogoLetter = Instance.new("TextLabel")
+HeaderLogoLetter.Size = UDim2.new(1, 0, 1, 0)
+HeaderLogoLetter.BackgroundTransparency = 1
+HeaderLogoLetter.Text = "B"
+HeaderLogoLetter.TextColor3 = T.Accent
+HeaderLogoLetter.Font = Enum.Font.GothamBlack
+HeaderLogoLetter.TextSize = 16
+HeaderLogoLetter.Parent = HeaderLogo
 
-local LogoLetter = Instance.new("TextLabel")
-LogoLetter.Size = UDim2.new(1, 0, 1, 0)
-LogoLetter.BackgroundTransparency = 1
-LogoLetter.Text = "B"
-LogoLetter.TextColor3 = Color3.fromRGB(255, 255, 255)
-LogoLetter.Font = Enum.Font.GothamBlack
-LogoLetter.TextSize = 28
-LogoLetter.Parent = LogoIcon
+local HeaderTitle = Instance.new("TextLabel")
+HeaderTitle.Size = UDim2.new(0, 200, 0, 20)
+HeaderTitle.Position = UDim2.new(0, 58, 0, 12)
+HeaderTitle.BackgroundTransparency = 1
+HeaderTitle.Text = "BIZON HUB"
+HeaderTitle.TextColor3 = T.Text
+HeaderTitle.Font = Enum.Font.GothamBlack
+HeaderTitle.TextSize = 15
+HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
+HeaderTitle.Parent = Header
 
-local LogoGrad = Instance.new("UIGradient", LogoLetter)
-LogoGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 130, 255)),
-})
-LogoGrad.Rotation = 90
+local HeaderSub = Instance.new("TextLabel")
+HeaderSub.Size = UDim2.new(0, 200, 0, 14)
+HeaderSub.Position = UDim2.new(0, 58, 0, 30)
+HeaderSub.BackgroundTransparency = 1
+HeaderSub.Text = "Recode 1.0"
+HeaderSub.TextColor3 = T.TextDim2
+HeaderSub.Font = Enum.Font.GothamMedium
+HeaderSub.TextSize = 9
+HeaderSub.TextXAlignment = Enum.TextXAlignment.Left
+HeaderSub.Parent = Header
 
-local LogoText = Instance.new("TextLabel")
-LogoText.Size = UDim2.new(1, -60, 0, 24)
-LogoText.Position = UDim2.new(0, 56, 0, 6)
-LogoText.BackgroundTransparency = 1
-LogoText.Text = "Bizon Hub"
-LogoText.TextColor3 = T.Text
-LogoText.Font = Enum.Font.GothamBlack
-LogoText.TextSize = 18
-LogoText.TextXAlignment = Enum.TextXAlignment.Left
-LogoText.Parent = LogoBox
-
-local LogoSub = Instance.new("TextLabel")
-LogoSub.Size = UDim2.new(1, -60, 0, 16)
-LogoSub.Position = UDim2.new(0, 56, 0, 28)
-LogoSub.BackgroundTransparency = 1
-LogoSub.Text = "v5.5 • Premium"
-LogoSub.TextColor3 = T.TextDim2
-LogoSub.Font = Enum.Font.GothamMedium
-LogoSub.TextSize = 10
-LogoSub.TextXAlignment = Enum.TextXAlignment.Left
-LogoSub.Parent = LogoBox
-
-local LogoLine = Instance.new("Frame")
-LogoLine.Size = UDim2.new(1, -24, 0, 1)
-LogoLine.Position = UDim2.new(0, 12, 0, 88)
-LogoLine.BackgroundColor3 = T.Stroke
-LogoLine.BackgroundTransparency = 0.5
-LogoLine.BorderSizePixel = 0
-LogoLine.Parent = Sidebar
-
-local TabBar = Instance.new("Frame")
-TabBar.Size = UDim2.new(1, -24, 1, -140)
-TabBar.Position = UDim2.new(0, 12, 0, 104)
-TabBar.BackgroundTransparency = 1
-TabBar.Parent = Sidebar
-
-local TabLayout = Instance.new("UIListLayout", TabBar)
-TabLayout.Padding = UDim.new(0, 6)
-TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, -232, 1, -100)
-Content.Position = UDim2.new(0, 216, 0, 24)
-Content.BackgroundTransparency = 1
-Content.Parent = MainFrame
-
-local ContentHeader = Instance.new("Frame")
-ContentHeader.Size = UDim2.new(1, 0, 0, 56)
-ContentHeader.BackgroundTransparency = 1
-ContentHeader.Parent = Content
-
-local ContentTitle = Instance.new("TextLabel")
-ContentTitle.Size = UDim2.new(1, -120, 0, 32)
-ContentTitle.Position = UDim2.new(0, 0, 0, 6)
-ContentTitle.BackgroundTransparency = 1
-ContentTitle.Text = "Speed"
-ContentTitle.TextColor3 = T.Text
-ContentTitle.Font = Enum.Font.GothamBlack
-ContentTitle.TextSize = 22
-ContentTitle.TextXAlignment = Enum.TextXAlignment.Left
-ContentTitle.Parent = ContentHeader
-
-local ContentSub = Instance.new("TextLabel")
-ContentSub.Size = UDim2.new(1, -120, 0, 18)
-ContentSub.Position = UDim2.new(0, 0, 0, 34)
-ContentSub.BackgroundTransparency = 1
-ContentSub.Text = ""
-ContentSub.TextColor3 = T.TextDim
-ContentSub.Font = Enum.Font.GothamMedium
-ContentSub.TextSize = 11
-ContentSub.TextXAlignment = Enum.TextXAlignment.Left
-ContentSub.Parent = ContentHeader
-
+-- Close button
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 36, 0, 36)
-CloseBtn.Position = UDim2.new(1, -36, 0, 10)
+CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+CloseBtn.Position = UDim2.new(1, -44, 0.5, -16)
 CloseBtn.BackgroundColor3 = T.Bg3
-CloseBtn.Text = "✕"
+CloseBtn.Text = "X"
 CloseBtn.TextColor3 = T.TextDim
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 15
+CloseBtn.TextSize = 14
 CloseBtn.BorderSizePixel = 0
 CloseBtn.AutoButtonColor = false
-CloseBtn.Parent = ContentHeader
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+CloseBtn.Parent = Header
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
 CloseBtn.MouseEnter:Connect(function()
     TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.Danger, TextColor3 = Color3.new(1,1,1)}):Play()
@@ -579,8 +491,9 @@ CloseBtn.MouseLeave:Connect(function()
 end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
+-- Window drag
 local winDrag, winStart, winStartPos
-Hub.addConnection(ContentHeader.InputBegan:Connect(function(input)
+Hub.addConnection(Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         winDrag = true; winStart = input.Position; winStartPos = MainFrame.Position
     end
@@ -595,16 +508,75 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
+-- ============================================
+-- TABS (Sidebar)
+-- ============================================
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 180, 1, -80)
+Sidebar.Position = UDim2.new(0, 12, 0, 68)
+Sidebar.BackgroundColor3 = T.Bg2
+Sidebar.BackgroundTransparency = 0.4
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = MainFrame
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 14)
+
+local TabList = Instance.new("UIListLayout", Sidebar)
+TabList.Padding = UDim.new(0, 4)
+TabList.SortOrder = Enum.SortOrder.LayoutOrder
+
+local TabPad = Instance.new("UIPadding", Sidebar)
+TabPad.PaddingTop = UDim.new(0, 10)
+TabPad.PaddingLeft = UDim.new(0, 8)
+TabPad.PaddingRight = UDim.new(0, 8)
+
+-- Content
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -212, 1, -80)
+Content.Position = UDim2.new(0, 200, 0, 68)
+Content.BackgroundColor3 = T.Bg2
+Content.BackgroundTransparency = 0.4
+Content.BorderSizePixel = 0
+Content.Parent = MainFrame
+Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 14)
+
+-- Content header
+local ContentHeader = Instance.new("Frame")
+ContentHeader.Size = UDim2.new(1, 0, 0, 50)
+ContentHeader.BackgroundTransparency = 1
+ContentHeader.Parent = Content
+
+local ContentTitle = Instance.new("TextLabel")
+ContentTitle.Size = UDim2.new(1, -40, 0, 24)
+ContentTitle.Position = UDim2.new(0, 20, 0, 14)
+ContentTitle.BackgroundTransparency = 1
+ContentTitle.Text = "Speed"
+ContentTitle.TextColor3 = T.Text
+ContentTitle.Font = Enum.Font.GothamBlack
+ContentTitle.TextSize = 18
+ContentTitle.TextXAlignment = Enum.TextXAlignment.Left
+ContentTitle.Parent = ContentHeader
+
+local ContentSub = Instance.new("TextLabel")
+ContentSub.Size = UDim2.new(1, -40, 0, 14)
+ContentSub.Position = UDim2.new(0, 20, 0, 34)
+ContentSub.BackgroundTransparency = 1
+ContentSub.Text = ""
+ContentSub.TextColor3 = T.TextDim
+ContentSub.Font = Enum.Font.GothamMedium
+ContentSub.TextSize = 10
+ContentSub.TextXAlignment = Enum.TextXAlignment.Left
+ContentSub.Parent = ContentHeader
+
+-- ============================================
+-- TAB SYSTEM
+-- ============================================
 Hub.Tabs = {}
 Hub.CurrentTab = nil
 Hub.TabInfo = {
-    Speed = "Настройки скорости",
-    Jump = "Настройки прыжка",
-    Fly = "Полёт в любую сторону",
-    Teleport = "Быстрый телепорт",
-    Worlds = "Телепорт в любой мир",
-    Auto = "Автоматизация",
-    Misc = "Прочее",
+    Speed = "Настройки скорости и движения",
+    Teleport = "Телепорт в миры и точки",
+    Auto = "Автоматизация действий",
+    Misc = "Прочие функции",
 }
 
 function Hub.switchTab(name)
@@ -612,19 +584,19 @@ function Hub.switchTab(name)
     if Hub.CurrentTab and Hub.Tabs[Hub.CurrentTab] then
         Hub.Tabs[Hub.CurrentTab].container.Visible = false
         local oldBtn = Hub.Tabs[Hub.CurrentTab].button
-        TweenService:Create(oldBtn, TweenInfo.new(0.2), {BackgroundColor3 = T.Bg3, BackgroundTransparency = 1}):Play()
-        if oldBtn:FindFirstChild("Indicator") then
-            TweenService:Create(oldBtn.Indicator, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-        end
+        oldBtn.BackgroundColor3 = T.Bg3
+        oldBtn.TextColor3 = T.TextDim
+        local oldIndicator = oldBtn:FindFirstChild("Indicator")
+        if oldIndicator then oldIndicator.BackgroundTransparency = 1 end
     end
     Hub.CurrentTab = name
     if Hub.Tabs[name] then
         Hub.Tabs[name].container.Visible = true
         local newBtn = Hub.Tabs[name].button
-        TweenService:Create(newBtn, TweenInfo.new(0.25), {BackgroundColor3 = T.Accent, BackgroundTransparency = 0.85}):Play()
-        if newBtn:FindFirstChild("Indicator") then
-            TweenService:Create(newBtn.Indicator, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
-        end
+        newBtn.BackgroundColor3 = T.Bg4
+        newBtn.TextColor3 = T.Accent
+        local newIndicator = newBtn:FindFirstChild("Indicator")
+        if newIndicator then newIndicator.BackgroundTransparency = 0 end
     end
     ContentTitle.Text = name
     ContentSub.Text = Hub.TabInfo[name] or ""
@@ -632,14 +604,21 @@ end
 
 function Hub.createTab(name, icon)
     local tabBtn = Instance.new("TextButton")
-    tabBtn.Size = UDim2.new(1, 0, 0, 44)
+    tabBtn.Size = UDim2.new(1, 0, 0, 40)
     tabBtn.BackgroundColor3 = T.Bg3
-    tabBtn.BackgroundTransparency = 1
-    tabBtn.Text = ""
+    tabBtn.BackgroundTransparency = 0.3
+    tabBtn.Text = icon and (icon .. "  " .. name) or name
+    tabBtn.TextColor3 = T.TextDim
+    tabBtn.Font = Enum.Font.GothamBold
+    tabBtn.TextSize = 13
+    tabBtn.TextXAlignment = Enum.TextXAlignment.Left
     tabBtn.BorderSizePixel = 0
     tabBtn.AutoButtonColor = false
-    tabBtn.Parent = TabBar
+    tabBtn.Parent = Sidebar
     Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 10)
+    
+    local Tpad = Instance.new("UIPadding", tabBtn)
+    Tpad.PaddingLeft = UDim.new(0, 14)
     
     local Indicator = Instance.new("Frame")
     Indicator.Name = "Indicator"
@@ -651,107 +630,88 @@ function Hub.createTab(name, icon)
     Indicator.Parent = tabBtn
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
     
-    local IconLbl = Instance.new("TextLabel")
-    IconLbl.Name = "IconLbl"
-    IconLbl.Size = UDim2.new(0, 30, 1, 0)
-    IconLbl.Position = UDim2.new(0, 12, 0, 0)
-    IconLbl.BackgroundTransparency = 1
-    IconLbl.Text = icon or "•"
-    IconLbl.TextColor3 = T.TextDim
-    IconLbl.Font = Enum.Font.GothamBold
-    IconLbl.TextSize = 16
-    IconLbl.Parent = tabBtn
-    
-    local NameLbl = Instance.new("TextLabel")
-    NameLbl.Name = "NameLbl"
-    NameLbl.Size = UDim2.new(1, -50, 1, 0)
-    NameLbl.Position = UDim2.new(0, 44, 0, 0)
-    NameLbl.BackgroundTransparency = 1
-    NameLbl.Text = name
-    NameLbl.TextColor3 = T.TextDim
-    NameLbl.Font = Enum.Font.GothamBold
-    NameLbl.TextSize = 13
-    NameLbl.TextXAlignment = Enum.TextXAlignment.Left
-    NameLbl.Parent = tabBtn
-    
     local container = Instance.new("ScrollingFrame")
-    container.Size = UDim2.new(1, 0, 1, -72)
-    container.Position = UDim2.new(0, 0, 0, 72)
+    container.Size = UDim2.new(1, -16, 1, -70)
+    container.Position = UDim2.new(0, 8, 0, 56)
     container.BackgroundTransparency = 1
     container.BorderSizePixel = 0
-    container.ScrollBarThickness = 4
+    container.ScrollBarThickness = 3
     container.ScrollBarImageColor3 = T.Accent
-    container.ScrollBarImageTransparency = 0.3
+    container.ScrollBarImageTransparency = 0.4
     container.CanvasSize = UDim2.new(0, 0, 0, 0)
     container.Visible = false
     container.Parent = Content
     
     local layout = Instance.new("UIListLayout", container)
-    layout.Padding = UDim.new(0, 8)
+    layout.Padding = UDim.new(0, 6)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     
     local pad = Instance.new("UIPadding", container)
-    pad.PaddingTop = UDim.new(0, 4)
-    pad.PaddingBottom = UDim.new(0, 12)
-    pad.PaddingLeft = UDim.new(0, 4)
-    pad.PaddingRight = UDim.new(0, 12)
+    pad.PaddingTop = UDim.new(0, 6)
+    pad.PaddingBottom = UDim.new(0, 10)
+    pad.PaddingLeft = UDim.new(0, 6)
+    pad.PaddingRight = UDim.new(0, 10)
     
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         container.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
     end)
     
     Hub.Tabs[name] = {button = tabBtn, container = container}
-    tabBtn.MouseButton1Click:Connect(function() Hub.switchTab(name) end)
+    
+    tabBtn.MouseButton1Click:Connect(function()
+        Hub.switchTab(name)
+    end)
     
     tabBtn.MouseEnter:Connect(function()
         if Hub.CurrentTab ~= name then
-            TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundTransparency = 0.7}):Play()
-            TweenService:Create(IconLbl, TweenInfo.new(0.2), {TextColor3 = T.Text}):Play()
-            TweenService:Create(NameLbl, TweenInfo.new(0.2), {TextColor3 = T.Text}):Play()
+            tabBtn.BackgroundColor3 = T.Bg4
+            tabBtn.TextColor3 = T.Text
         end
     end)
     tabBtn.MouseLeave:Connect(function()
         if Hub.CurrentTab ~= name then
-            TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
-            TweenService:Create(NameLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
+            tabBtn.BackgroundColor3 = T.Bg3
+            tabBtn.TextColor3 = T.TextDim
         end
     end)
+    
     return container
 end
 
+-- ============================================
 -- SETTINGS PANEL
+-- ============================================
 local SettingsPanel = Instance.new("Frame")
-SettingsPanel.Size = UDim2.new(0, 320, 0, 0)
+SettingsPanel.Size = UDim2.new(0, 300, 0, 0)
 SettingsPanel.BackgroundColor3 = T.Bg2
 SettingsPanel.BackgroundTransparency = 0.05
 SettingsPanel.BorderSizePixel = 0
 SettingsPanel.Visible = false
 SettingsPanel.ZIndex = 50
 SettingsPanel.Parent = ScreenGui
-Instance.new("UICorner", SettingsPanel).CornerRadius = UDim.new(0, 16)
+Instance.new("UICorner", SettingsPanel).CornerRadius = UDim.new(0, 12)
 
 local SPstroke = Instance.new("UIStroke", SettingsPanel)
 SPstroke.Color = T.Accent
-SPstroke.Thickness = 1.5
-SPstroke.Transparency = 0.3
+SPstroke.Thickness = 1
+SPstroke.Transparency = 0.4
 
 local SPContent = Instance.new("ScrollingFrame")
-SPContent.Size = UDim2.new(1, -16, 1, -16)
-SPContent.Position = UDim2.new(0, 8, 0, 8)
+SPContent.Size = UDim2.new(1, -12, 1, -12)
+SPContent.Position = UDim2.new(0, 6, 0, 6)
 SPContent.BackgroundTransparency = 1
 SPContent.BorderSizePixel = 0
-SPContent.ScrollBarThickness = 4
+SPContent.ScrollBarThickness = 3
 SPContent.ScrollBarImageColor3 = T.Accent
 SPContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 SPContent.Parent = SettingsPanel
 
 local SPLayout = Instance.new("UIListLayout", SPContent)
-SPLayout.Padding = UDim.new(0, 8)
+SPLayout.Padding = UDim.new(0, 6)
 
 SPLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     SPContent.CanvasSize = UDim2.new(0, 0, 0, SPLayout.AbsoluteContentSize.Y + 12)
-    SettingsPanel.Size = UDim2.new(0, 320, 0, math.clamp(SPLayout.AbsoluteContentSize.Y + 20, 60, 500))
+    SettingsPanel.Size = UDim2.new(0, 300, 0, math.clamp(SPLayout.AbsoluteContentSize.Y + 20, 60, 500))
 end)
 
 Hub.SettingsPanel = SettingsPanel
@@ -768,7 +728,7 @@ function Hub.openSettings(sourceContainer, settingsFn)
     if not ok or not pos then SettingsPanel.Visible = false; return end
     local size = sourceContainer.AbsoluteSize or Vector2.new(200, 50)
     SettingsPanel.Position = UDim2.new(0, pos.X + size.X + 12, 0, pos.Y)
-    SettingsPanel.Size = UDim2.new(0, 320, 0, 0)
+    SettingsPanel.Size = UDim2.new(0, 300, 0, 0)
     SettingsPanel.Visible = true
 end
 
@@ -792,16 +752,19 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
+-- ============================================
+-- MENU TOGGLE
+-- ============================================
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
     MainFrame.Visible = menuOpen
     if not menuOpen then Hub.closeSettings() end
     if menuOpen then
-        MainFrame.Size = UDim2.new(0, 900, 0, 0)
+        MainFrame.Size = UDim2.new(0, 860, 0, 0)
         MainFrame.BackgroundTransparency = 1
-        TweenService:Create(MainFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 900, 0, 600),
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+            Size = UDim2.new(0, 860, 0, 580),
             BackgroundTransparency = 0.05,
         }):Play()
         if not Hub.CurrentTab and Hub.Tabs["Speed"] then
@@ -812,7 +775,6 @@ end
 
 FloatBtn.MouseButton1Click:Connect(Hub.toggleMenu)
 
--- ✅ ИСПРАВЛЕНО: InputBegan (правильно!)
 Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.RightControl then
@@ -820,4 +782,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core v5.5 FINAL загружен")
+print("[Bizon Hub] Core — Recode 1.0 загружен")
