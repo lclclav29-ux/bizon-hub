@@ -1,4 +1,4 @@
--- 🐗 Bizon Hub Core v5.0 (Large Modern UI)
+-- 🐗 Bizon Hub Core v5.1 (with Avatar)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -11,12 +11,14 @@ local Hub = _G.BizonHub
 Hub.Connections = Hub.Connections or {}
 Hub.IsPanicked = false
 
+-- ID АВАТАРКИ
+local AVATAR_ID = "rbxassetid://10511856020"
+
 function Hub.addConnection(conn)
     table.insert(Hub.Connections, conn)
     return conn
 end
 
--- ============ ТЕМА ============
 Hub.Theme = {
     Bg = Color3.fromRGB(12, 10, 20),
     Bg2 = Color3.fromRGB(22, 18, 38),
@@ -49,13 +51,11 @@ Hub.Settings = {
 
 local T = Hub.Theme
 
--- Удаляем старые GUI
 local old = player.PlayerGui:FindFirstChild("BizonHub")
 if old then old:Destroy() end
 local oldWM = player.PlayerGui:FindFirstChild("BizonWatermark")
 if oldWM then oldWM:Destroy() end
 
--- ROOT
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BizonHub"
 ScreenGui.ResetOnSpawn = false
@@ -64,7 +64,9 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 Hub.ScreenGui = ScreenGui
 
--- ============ WATERMARK ============
+-- ============================================
+-- WATERMARK
+-- ============================================
 local WatermarkGui = Instance.new("ScreenGui")
 WatermarkGui.Name = "BizonWatermark"
 WatermarkGui.ResetOnSpawn = false
@@ -91,19 +93,20 @@ WMglow.Color = T.AccentGlow
 WMglow.Thickness = 6
 WMglow.Transparency = 0.85
 
-local WMicon = Instance.new("TextLabel")
-WMicon.Size = UDim2.new(0, 40, 1, 0)
-WMicon.Position = UDim2.new(0, 8, 0, 0)
-WMicon.BackgroundTransparency = 1
-WMicon.Text = "🐗"
-WMicon.TextColor3 = T.Accent
-WMicon.Font = Enum.Font.GothamBold
-WMicon.TextSize = 22
+-- АВАТАРКА
+local WMicon = Instance.new("ImageLabel")
+WMicon.Size = UDim2.new(0, 32, 0, 32)
+WMicon.Position = UDim2.new(0, 6, 0.5, -16)
+WMicon.BackgroundColor3 = T.Bg3
+WMicon.BackgroundTransparency = 0.3
+WMicon.Image = AVATAR_ID
+WMicon.BorderSizePixel = 0
 WMicon.Parent = WMFrame
+Instance.new("UICorner", WMicon).CornerRadius = UDim.new(0, 8)
 
 local WMtitle = Instance.new("TextLabel")
 WMtitle.Size = UDim2.new(0, 130, 1, 0)
-WMtitle.Position = UDim2.new(0, 46, 0, 0)
+WMtitle.Position = UDim2.new(0, 44, 0, 0)
 WMtitle.BackgroundTransparency = 1
 WMtitle.Text = "BIZON HUB"
 WMtitle.TextColor3 = T.Accent
@@ -145,7 +148,7 @@ local WMver = Instance.new("TextLabel")
 WMver.Size = UDim2.new(0, 40, 1, 0)
 WMver.Position = UDim2.new(1, -44, 0, 0)
 WMver.BackgroundTransparency = 1
-WMver.Text = "v5.0"
+WMver.Text = "v5.1"
 WMver.TextColor3 = T.TextDim
 WMver.Font = Enum.Font.GothamBold
 WMver.TextSize = 10
@@ -232,14 +235,19 @@ FloatBtn.Size = UDim2.new(0, 60, 0, 60)
 FloatBtn.Position = UDim2.new(0, 20, 0.5, -30)
 FloatBtn.BackgroundColor3 = T.Bg2
 FloatBtn.BackgroundTransparency = 0.1
-FloatBtn.Text = "🐗"
-FloatBtn.TextColor3 = T.Accent
-FloatBtn.Font = Enum.Font.GothamBold
-FloatBtn.TextSize = 30
+FloatBtn.Text = ""
 FloatBtn.BorderSizePixel = 0
 FloatBtn.AutoButtonColor = false
 FloatBtn.Parent = ScreenGui
 Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
+
+local FBimg = Instance.new("ImageLabel")
+FBimg.Size = UDim2.new(1, -8, 1, -8)
+FBimg.Position = UDim2.new(0, 4, 0, 4)
+FBimg.BackgroundTransparency = 1
+FBimg.Image = AVATAR_ID
+FBimg.Parent = FloatBtn
+Instance.new("UICorner", FBimg).CornerRadius = UDim.new(1, 0)
 
 local FBstroke = Instance.new("UIStroke", FloatBtn)
 FBstroke.Color = T.Accent
@@ -278,7 +286,7 @@ end))
 
 Hub.FloatBtn = FloatBtn
 
--- ============ MAIN FRAME (900x600) ============
+-- ============ MAIN FRAME ============
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 900, 0, 600)
 MainFrame.Position = UDim2.new(0.5, -450, 0.5, -300)
@@ -301,7 +309,7 @@ MFglow.Transparency = 0.9
 
 Hub.MainFrame = MainFrame
 
--- ============ SIDEBAR (слева) ============
+-- ============ SIDEBAR ============
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 200, 1, 0)
 Sidebar.BackgroundColor3 = T.Bg2
@@ -318,21 +326,20 @@ SidebarFix.BackgroundTransparency = 0.3
 SidebarFix.BorderSizePixel = 0
 SidebarFix.Parent = Sidebar
 
--- Логотип в сайдбаре
 local LogoBox = Instance.new("Frame")
 LogoBox.Size = UDim2.new(1, -24, 0, 60)
 LogoBox.Position = UDim2.new(0, 12, 0, 16)
 LogoBox.BackgroundTransparency = 1
 LogoBox.Parent = Sidebar
 
-local LogoIcon = Instance.new("TextLabel")
+-- АВАТАРКА в сайдбаре
+local LogoIcon = Instance.new("ImageLabel")
 LogoIcon.Size = UDim2.new(0, 44, 1, 0)
 LogoIcon.Position = UDim2.new(0, 4, 0, 0)
 LogoIcon.BackgroundColor3 = T.Bg3
-LogoIcon.Text = "🐗"
-LogoIcon.TextColor3 = T.Accent
-LogoIcon.Font = Enum.Font.GothamBold
-LogoIcon.TextSize = 28
+LogoIcon.BackgroundTransparency = 0.3
+LogoIcon.Image = AVATAR_ID
+LogoIcon.BorderSizePixel = 0
 LogoIcon.Parent = LogoBox
 Instance.new("UICorner", LogoIcon).CornerRadius = UDim.new(0, 12)
 
@@ -351,7 +358,7 @@ local LogoSub = Instance.new("TextLabel")
 LogoSub.Size = UDim2.new(1, -60, 0, 16)
 LogoSub.Position = UDim2.new(0, 56, 0, 28)
 LogoSub.BackgroundTransparency = 1
-LogoSub.Text = "v5.0 • Premium"
+LogoSub.Text = "v5.1 • Premium"
 LogoSub.TextColor3 = T.TextDim2
 LogoSub.Font = Enum.Font.GothamMedium
 LogoSub.TextSize = 10
@@ -366,7 +373,6 @@ LogoLine.BackgroundTransparency = 0.5
 LogoLine.BorderSizePixel = 0
 LogoLine.Parent = Sidebar
 
--- Контейнер вкладок
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, -24, 1, -140)
 TabBar.Position = UDim2.new(0, 12, 0, 104)
@@ -377,14 +383,12 @@ local TabLayout = Instance.new("UIListLayout", TabBar)
 TabLayout.Padding = UDim.new(0, 6)
 TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Content area (справа)
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -232, 1, -100)
 Content.Position = UDim2.new(0, 216, 0, 24)
 Content.BackgroundTransparency = 1
 Content.Parent = MainFrame
 
--- ============ HEADER в Content ============
 local ContentHeader = Instance.new("Frame")
 ContentHeader.Size = UDim2.new(1, 0, 0, 56)
 ContentHeader.BackgroundTransparency = 1
@@ -412,7 +416,6 @@ ContentSub.TextSize = 11
 ContentSub.TextXAlignment = Enum.TextXAlignment.Left
 ContentSub.Parent = ContentHeader
 
--- Close кнопка
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 36, 0, 36)
 CloseBtn.Position = UDim2.new(1, -36, 0, 10)
@@ -434,7 +437,6 @@ CloseBtn.MouseLeave:Connect(function()
 end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
--- Drag window
 local winDrag, winStart, winStartPos
 Hub.addConnection(ContentHeader.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -451,7 +453,7 @@ Hub.addConnection(UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- ============ TAB FUNCTION ============
+-- ============ TABS ============
 Hub.Tabs = {}
 Hub.CurrentTab = nil
 Hub.TabInfo = {
@@ -459,9 +461,7 @@ Hub.TabInfo = {
     Jump = "Настройки прыжка",
     Fly = "Полёт в любую сторону",
     Teleport = "Быстрый телепорт и сохранение точек",
-    Rebirth = "Автоматическое перерождение",
     Auto = "Автоматизация всех действий",
-    Farm = "Авто-кликер и фарм",
     Misc = "Прочие функции и Skybox",
 }
 
@@ -479,6 +479,12 @@ function Hub.switchTab(name)
         if oldBtn:FindFirstChild("Indicator") then
             TweenService:Create(oldBtn.Indicator, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
         end
+        if oldBtn:FindFirstChild("IconLbl") then
+            TweenService:Create(oldBtn.IconLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
+        end
+        if oldBtn:FindFirstChild("NameLbl") then
+            TweenService:Create(oldBtn.NameLbl, TweenInfo.new(0.2), {TextColor3 = T.TextDim}):Play()
+        end
     end
     
     Hub.CurrentTab = name
@@ -494,13 +500,18 @@ function Hub.switchTab(name)
         if newBtn:FindFirstChild("Indicator") then
             TweenService:Create(newBtn.Indicator, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
         end
+        if newBtn:FindFirstChild("IconLbl") then
+            TweenService:Create(newBtn.IconLbl, TweenInfo.new(0.25), {TextColor3 = T.Text}):Play()
+        end
+        if newBtn:FindFirstChild("NameLbl") then
+            TweenService:Create(newBtn.NameLbl, TweenInfo.new(0.25), {TextColor3 = T.Text}):Play()
+        end
     end
     
     ContentTitle.Text = name
     ContentSub.Text = Hub.TabInfo[name] or ""
 end
 
--- ============ CREATE TAB ============
 function Hub.createTab(name, icon)
     local tabBtn = Instance.new("TextButton")
     tabBtn.Size = UDim2.new(1, 0, 0, 44)
@@ -512,7 +523,6 @@ function Hub.createTab(name, icon)
     tabBtn.Parent = TabBar
     Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 10)
     
-    -- Индикатор (слева)
     local Indicator = Instance.new("Frame")
     Indicator.Name = "Indicator"
     Indicator.Size = UDim2.new(0, 3, 0, 20)
@@ -523,8 +533,8 @@ function Hub.createTab(name, icon)
     Indicator.Parent = tabBtn
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
     
-    -- Иконка
     local IconLbl = Instance.new("TextLabel")
+    IconLbl.Name = "IconLbl"
     IconLbl.Size = UDim2.new(0, 30, 1, 0)
     IconLbl.Position = UDim2.new(0, 12, 0, 0)
     IconLbl.BackgroundTransparency = 1
@@ -534,8 +544,8 @@ function Hub.createTab(name, icon)
     IconLbl.TextSize = 16
     IconLbl.Parent = tabBtn
     
-    -- Название
     local NameLbl = Instance.new("TextLabel")
+    NameLbl.Name = "NameLbl"
     NameLbl.Size = UDim2.new(1, -50, 1, 0)
     NameLbl.Position = UDim2.new(0, 44, 0, 0)
     NameLbl.BackgroundTransparency = 1
@@ -546,10 +556,6 @@ function Hub.createTab(name, icon)
     NameLbl.TextXAlignment = Enum.TextXAlignment.Left
     NameLbl.Parent = tabBtn
     
-    -- Храним ссылки
-    tabBtn:SetAttribute("IconLbl", IconLbl:GetFullName())
-    
-    -- Контейнер контента
     local container = Instance.new("ScrollingFrame")
     container.Size = UDim2.new(1, 0, 1, -72)
     container.Position = UDim2.new(0, 0, 0, 72)
@@ -579,16 +585,12 @@ function Hub.createTab(name, icon)
     Hub.Tabs[name] = {
         button = tabBtn,
         container = container,
-        icon = IconLbl,
-        name = NameLbl,
     }
     
-    -- Клик
     tabBtn.MouseButton1Click:Connect(function()
         Hub.switchTab(name)
     end)
     
-    -- Hover
     tabBtn.MouseEnter:Connect(function()
         if Hub.CurrentTab ~= name then
             TweenService:Create(tabBtn, TweenInfo.new(0.2), {BackgroundTransparency = 0.7}):Play()
@@ -679,7 +681,6 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
--- ============ TOGGLE MENU ============
 local menuOpen = false
 function Hub.toggleMenu()
     menuOpen = not menuOpen
@@ -707,4 +708,4 @@ Hub.addConnection(UserInputService.InputBegan:Connect(function(input, gp)
     end
 end))
 
-print("🐗 Core v5.0 (Large Modern UI) загружен")
+print("🐗 Core v5.1 загружен (с аватаркой)")
